@@ -1498,6 +1498,14 @@ body[class*="warehouses"] .card > .table-wrap {
   min-width: 1250px !important;
   table-layout: auto !important;
 }
+/* A spanning cell (empty state) must never inherit the first-column floor. */
+#items-table td[colspan]:not([colspan="1"]),
+#items-table th[colspan]:not([colspan="1"]) {
+  width: auto !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+}
+
 #items-table th:first-child,
 #items-table td:first-child {
   width: 44px !important;
@@ -8007,4 +8015,288 @@ html[data-theme="dark"] .theme-btn .theme-ico-moon { display: inline-flex !impor
         visibility: visible !important;
         transform: none !important;
     }
+}
+
+
+/* ==== appended 20261015_164846 (v1.6.0 empty-state fix) ==== */
+
+/* >>> HOTFIX v1.8.1 injected 20261015_171015 */
+/* ============================================================================
+   SF UI HOTFIX — v1.8.1   SPECIFICITY BREAKTHROUGH
+   ---------------------------------------------------------------------------
+   WHY v1.8.0 WAS STILL WRONG ON /items  (and partially on /warehouses)
+
+   v1.8.0 fixed the layout correctly for <table class="data"> — pads, cell
+   tracks, wrappers all measured correct (td == wrapper, pad 0px).
+   It still lost on `#items-table` for ONE reason:
+
+        sf-ui.css:1498   #items-table { min-width: 1250px !important }
+
+   `!important` does NOT outrank `!important`. When both declarations carry it,
+   the winner is decided by SPECIFICITY:
+        #items-table                      -> (1,0,0)   ID  = 100
+        table.data[data-empty="1"]        -> (0,2,1)   = 021   <- LOSES
+   So the 1250px floor survived on the live page even though my rule was later
+   in the file and also `!important`. My earlier diagnosis blamed `white-space`
+   and column arithmetic — those were symptoms, this was the cause.
+
+   A second, subtler trap fed the "one letter per line" bug:
+        #items-table td:first-child { width: 44px !important; min-width: 44px !important }
+   On an empty table, `td[colspan="12"]` is also `td:first-child`. Declared
+   together, `width:auto` wins (later) but `min-width:0` still fights the 44px
+   floor on some engines, and any real column min-widths re-assert the tracks.
+
+   THE FIX: reach for at least ONE id-level token AND keep the attribute gate,
+   so we outrank the ID rule only while the table is genuinely empty. This is
+   the only construct that beats `#items-table { ... !important }` without
+   editing the original rule, and it self-disables the moment data arrives.
+   Everything here is scoped to `[data-empty="1"]`, so populated tables keep
+   their 1250px spacious layout exactly as designed.
+   ========================================================================== */
+
+/* ---------- A. BREAK THE 1250px FLOOR (outranks #items-table) ------------- */
+/* (0,2,1) vs (1,0,0) lost;  #items-table[data-empty="1"]  is (1,1,0) -> WINS.
+   Also covered: html body table.data[...], for any future plain-class table. */
+#items-table[data-empty="1"],
+#wh-table[data-empty="1"],
+#groups-table[data-empty="1"],
+#users-table[data-empty="1"],
+#master-table[data-empty="1"],
+#locations-table[data-empty="1"],
+#devices-table[data-empty="1"],
+#recon-table[data-empty="1"],
+html body table.data[data-empty="1"],
+table.data[data-empty="1"] {
+  display: block !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  table-layout: auto !important;
+  box-sizing: border-box !important;
+  overflow: visible !important;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+  border-left: 0 !important;
+  border-right: 0 !important;
+}
+
+/* ---------- B. KILL EVERY COLUMN TRACK ------------------------------------ */
+/* `:first-child`/`:last-child`/`[data-col]` rules on the real tables all pin
+   widths. Strip them for the empty state only, at id strength. */
+#items-table[data-empty="1"] > tbody,
+#items-table[data-empty="1"] > thead,
+#wh-table[data-empty="1"] > tbody,
+#wh-table[data-empty="1"] > thead,
+#groups-table[data-empty="1"] > tbody,
+#users-table[data-empty="1"] > tbody,
+#master-table[data-empty="1"] > tbody,
+#locations-table[data-empty="1"] > tbody,
+#devices-table[data-empty="1"] > tbody,
+#recon-table[data-empty="1"] > tbody,
+html body table.data[data-empty="1"] > tbody,
+html body table.data[data-empty="1"] > thead,
+table.data[data-empty="1"] > tbody,
+table.data[data-empty="1"] > thead,
+#items-table[data-empty="1"] > tbody > tr:not([style*="display: none"]):not([style*="display:none"]),
+#wh-table[data-empty="1"] > tbody > tr:not([style*="display: none"]):not([style*="display:none"]),
+table.data[data-empty="1"] > tbody > tr:not([style*="display: none"]):not([style*="display:none"]):not(.is-hidden),
+#items-table[data-empty="1"] > tbody > tr > td,
+#items-table[data-empty="1"] > tbody > tr > th,
+#wh-table[data-empty="1"] > tbody > tr > td,
+#groups-table[data-empty="1"] > tbody > tr > td,
+#users-table[data-empty="1"] > tbody > tr > td,
+#master-table[data-empty="1"] > tbody > tr > td,
+#locations-table[data-empty="1"] > tbody > tr > td,
+#devices-table[data-empty="1"] > tbody > tr > td,
+#recon-table[data-empty="1"] > tbody > tr > td,
+html body table.data[data-empty="1"] > tbody > tr > td,
+table.data[data-empty="1"] > tbody > tr > td,
+table.data[data-empty="1"] > tbody > tr > th {
+  display: block !important;
+  position: static !important;
+  float: none !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  height: auto !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  text-align: center !important;
+  box-sizing: border-box !important;
+  white-space: normal !important;
+  overflow: visible !important;
+}
+
+/* the empty-state cell specifically: id strength, covers colspan cases */
+#items-table[data-empty="1"] td[colspan],
+#items-table[data-empty="1"] th[colspan],
+#wh-table[data-empty="1"] td[colspan],
+#groups-table[data-empty="1"] td[colspan],
+#users-table[data-empty="1"] td[colspan],
+#master-table[data-empty="1"] td[colspan],
+#locations-table[data-empty="1"] td[colspan],
+#devices-table[data-empty="1"] td[colspan],
+#recon-table[data-empty="1"] td[colspan],
+html body table.data[data-empty="1"] td[colspan],
+table.data[data-empty="1"] td[colspan] {
+  display: block !important;
+  width: auto !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+/* hide card-mode label artefacts inside an empty cell */
+table.data[data-empty="1"] td[data-label]::before,
+table.data[data-empty="1"] td::before,
+html body table.data[data-empty="1"] td::before,
+html body table.data[data-empty="1"] td::after {
+  content: none !important;
+  display: none !important;
+}
+
+/* ---------- C. WRAPPER: exactly ONE gutter -------------------------------- */
+/* app.css ships `.card-body > .table-wrap { padding:1.35rem !important }` and
+   `.card > .table-wrap { padding:1.35rem !important }` while users/index.php
+   ALSO sets `padding:1.35rem` inline on .card-body. Result: two stacked
+   gutters (measured 21.6px + 21.6px), squeezing a 390px phone to ~272px.
+   While any table is empty, the inner gutter is removed and the outer one is
+   normalised to 1rem. */
+body:has(table.data[data-empty="1"]) .card-body > .table-wrap,
+body:has(table.data[data-empty="1"]) .card-body > .table-responsive,
+body:has(table.data[data-empty="1"]) .card-body > .data-table-wrapper,
+.card-body:has(table.data[data-empty="1"]) > .table-wrap {
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+  border-left: 0 !important;
+  border-right: 0 !important;
+}
+body:has(table.data[data-empty="1"]) .card-body,
+.card-body:has(> table.data[data-empty="1"]) {
+  padding-left: 1rem !important;
+  padding-right: 1rem !important;
+}
+.table-wrap:has(> table.data[data-empty="1"]),
+.data-table-wrapper:has(> table.data[data-empty="1"]) {
+  width: 100% !important;
+  max-width: 100% !important;
+  overflow-x: visible !important;
+}
+
+/* ---------- D. THE MESSAGE ------------------------------------------------ */
+table.data[data-empty="1"] .empty-state,
+html body table.data[data-empty="1"] .empty-state {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  text-align: center !important;
+  gap: .35rem !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  min-height: 260px !important;
+  margin: 0 !important;
+  padding: 3rem 1rem !important;
+  box-sizing: border-box !important;
+  background: transparent !important;
+  white-space: normal !important;
+}
+table.data[data-empty="1"] .empty-state h3,
+html body table.data[data-empty="1"] .empty-state h3 {
+  width: auto !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  white-space: normal !important;
+  word-break: keep-all !important;
+  overflow-wrap: normal !important;
+  writing-mode: horizontal-tb !important;
+  text-orientation: mixed !important;
+  letter-spacing: 0 !important;
+  hyphens: none !important;
+  font-size: 1.06rem !important;
+  line-height: 1.35 !important;
+  margin: 0 0 .3rem !important;
+}
+table.data[data-empty="1"] .empty-state p,
+html body table.data[data-empty="1"] .empty-state p {
+  width: auto !important;
+  min-width: 0 !important;
+  max-width: 46ch !important;
+  white-space: normal !important;
+  overflow-wrap: break-word !important;
+  margin: 0 auto !important;
+  line-height: 1.5 !important;
+}
+table.data[data-empty="1"] .empty-state .empty-icon,
+html body table.data[data-empty="1"] .empty-state .empty-icon {
+  display: grid !important;
+  place-items: center !important;
+  flex: 0 0 auto !important;
+  width: 64px !important;
+  height: 64px !important;
+  margin: 0 auto .9rem !important;
+  border-radius: 16px !important;
+  background: var(--surface-2, #f1f3f5) !important;
+  color: var(--text-faint, #98a2b3) !important;
+  box-shadow: inset 0 0 0 1px var(--border, #e5e7eb) !important;
+}
+table.data[data-empty="1"] .empty-state .empty-icon svg {
+  width: 26px !important;
+  height: 26px !important;
+}
+
+/* ---------- E. GLOBAL TEXT GUARANTEE -------------------------------------- */
+/* Belt and braces: nothing inside an empty state may render vertically. */
+.empty-state, .empty-state * {
+  word-break: normal !important;
+  overflow-wrap: break-word !important;
+  -webkit-hyphens: none !important;
+  hyphens: none !important;
+  writing-mode: horizontal-tb !important;
+  text-orientation: mixed !important;
+  white-space: normal !important;
+}
+
+/* ---------- F. SMALL SCREENS ---------------------------------------------- */
+@media (max-width: 1023px) {
+  table.data[data-empty="1"] .empty-state {
+    min-height: 220px !important;
+    padding: 2.5rem .9rem !important;
+  }
+  table.data[data-empty="1"] .empty-state p { max-width: 34ch !important; }
+}
+@media (max-width: 480px) {
+  table.data[data-empty="1"] .empty-state { padding: 2.25rem .75rem !important; }
+  table.data[data-empty="1"] .empty-state h3 { font-size: 1rem !important; }
+}
+
+/* ---------- G. LEGACY DOUBLE-GUTTER NEUTRALISER --------------------------- */
+/* app.css has two competing "TABLE PADDING FIX" generations. For any card-body
+   that already declares padding inline, the inner wrapper must not re-add it. */
+.card-body[style*="padding"] > .table-wrap {
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+
+/* v1.8.3 guard: inline-hidden rows stay hidden inside empty tables */
+table.data[data-empty="1"] > tbody > tr[style*="display: none"],
+table.data[data-empty="1"] > tbody > tr[style*="display:none"] {
+  display: none !important;
+  height: 0 !important;
+  min-height: 0 !important;
+  max-height: 0 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  border: 0 !important;
+  overflow: hidden !important;
+  visibility: hidden !important;
 }

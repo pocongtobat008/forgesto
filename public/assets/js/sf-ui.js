@@ -425,16 +425,34 @@
         function selectedLabel(el) { var o = el.options ? el.options[el.selectedIndex] : null; return o ? o.textContent : ''; }
 
         function toggleEmpty(tbody, vis, table) {
+            /* A server-rendered empty state may already exist (items/index.php
+               renders one when the dataset is empty). Reuse it — appending a
+               second row produced two stacked "no data" messages and inherited
+               the 44px first-column width floor (40px cell => 1-char lines). */
             var ph = tbody.querySelector('tr.sf-filter-empty');
+            var seeded = tbody.querySelector('tr:not(.sf-filter-empty) > td > .empty-state');
+            var host = ph || (seeded ? seeded.closest('tr') : null);
             if (vis === 0) {
-                if (!ph) {
-                    ph = doc.createElement('tr');
-                    ph.className = 'sf-filter-empty';
+                if (!host) {
+                    host = doc.createElement('tr');
+                    host.className = 'sf-filter-empty';
                     var cols = table.querySelectorAll('thead th').length || 6;
-                    ph.innerHTML = '<td colspan="' + cols + '"><div class="empty-state"><h3>Tidak ada data cocok</h3><p>Ubah kata kunci atau filter yang dipakai.</p></div></td>';
-                    tbody.appendChild(ph);
+                    host.innerHTML = '<td colspan="' + cols + '"><div class="empty-state"><h3>Tidak ada data cocok</h3><p>Ubah kata kunci atau filter yang dipakai.</p></div></td>';
+                    tbody.appendChild(host);
+                } else if (seeded && !ph) {
+                    /* re-target the seeded row's copy for the filter case */
+                    var h3 = host.querySelector('.empty-state h3');
+                    var p  = host.querySelector('.empty-state p');
+                    if (h3) h3.textContent = 'Tidak ada data cocok';
+                    if (p)  p.textContent  = 'Ubah kata kunci atau filter yang dipakai.';
                 }
-            } else if (ph) { ph.remove(); }
+            } else if (ph) {
+                ph.remove();
+            } else if (seeded) {
+                /* data rows are present again but a seeded empty row lingers */
+                var sr = seeded.closest('tr');
+                if (sr && tbody.querySelectorAll('tr').length > 1) sr.remove();
+            }
         }
 
         var t;
@@ -1007,3 +1025,104 @@
     if (doc.readyState === 'loading') doc.addEventListener('DOMContentLoaded', boot);
     else boot();
 })();
+/* SF-EMPTYMARK v1.8.1 */
+(function () {
+    function mark() {
+        document.querySelectorAll('table.data, table[id$="-table"]').forEach(function (t) {
+            var tb = t.tBodies[0];
+            if (!tb) return;
+            var hasEmpty = !!tb.querySelector('.empty-state');
+            var rows = tb.querySelectorAll('tr');
+            var onlyEmpty = hasEmpty;
+            for (var i = 0; i < rows.length; i++) {
+                if (!rows[i].querySelector('.empty-state')) { onlyEmpty = false; break; }
+            }
+            if (onlyEmpty) { t.setAttribute('data-empty', '1'); }
+            else { t.removeAttribute('data-empty'); }
+        });
+    }
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', mark);
+    } else { mark(); }
+    document.addEventListener('sf:table-updated', mark);
+    /* observe tbody mutations (filters, ajax, materiality placeholders) */
+    if (window.MutationObserver) {
+        var mo = new MutationObserver(function (muts) {
+            for (var i = 0; i < muts.length; i++) {
+                var n = muts[i].target;
+                if (n && n.nodeType === 1 && (n.matches && (n.matches('tbody') || n.closest && n.closest('table')))) {
+                    mark(); return;
+                }
+            }
+        });
+        document.addEventListener('DOMContentLoaded', function () {
+            document.querySelectorAll('table.data, table[id$="-table"]').forEach(function (t) {
+                if (t.tBodies[0]) mo.observe(t.tBodies[0], { childList: true, subtree: true });
+            });
+            mark();
+        });
+    }
+    window.sfMarkEmptyTables = mark;
+})();
+/* /SF-EMPTYMARK */
+/* SF-EMPTYMARK v1.8.0 */
+(function () {
+    var timer = null;
+    function mark() {
+        document.querySelectorAll('table.data, table[id$="-table"]').forEach(function (t) {
+            var tb = t.tBodies[0];
+            if (!tb || !tb.rows.length) return;
+            var anyEmpty = false, visEmpty = 0, visOther = 0;
+            for (var i = 0; i < tb.rows.length; i++) {
+                var r = tb.rows[i];
+                var hasES = !!r.querySelector('.empty-state');
+                if (hasES) anyEmpty = true;
+                var cs = window.getComputedStyle(r);
+                var rc = r.getBoundingClientRect();
+                var vis = cs.display !== 'none' && rc.width > 0 && rc.height > 0;
+                if (!vis) continue;
+                if (hasES) visEmpty++; else visOther++;
+            }
+            if (anyEmpty && visOther === 0 && visEmpty > 0) {
+                t.setAttribute('data-empty', '1');
+            } else {
+                t.removeAttribute('data-empty');
+            }
+        });
+    }
+    function markSoon() {
+        if (timer) clearTimeout(timer);
+        timer = setTimeout(mark, 60);
+    }
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', mark);
+    } else { mark(); }
+    document.addEventListener('sf:table-updated', markSoon);
+    if (window.MutationObserver) {
+        var mo = new MutationObserver(function (muts) {
+            for (var i = 0; i < muts.length; i++) {
+                var n = muts[i].target;
+                if (n && n.nodeType === 1 && n.matches &&
+                    (n.matches('tbody') || (n.closest && n.closest('table')))) {
+                    markSoon(); return;
+                }
+            }
+        });
+        var hook = function () {
+            document.querySelectorAll('table.data, table[id$="-table"]').forEach(function (t) {
+                if (t.tBodies[0]) mo.observe(t.tBodies[0], {
+                    childList: true, subtree: true,
+                    attributes: true, attributeFilter: ['style', 'class']
+                });
+            });
+            mark();
+        };
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', hook);
+        } else { hook(); }
+        /* late hook: tables rendered by ajax after load */
+        setTimeout(hook, 1500);
+    }
+    window.sfMarkEmptyTables = mark;
+})();
+/* /SF-EMPTYMARK */
