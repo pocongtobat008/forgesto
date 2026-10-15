@@ -161,11 +161,11 @@
         }).join('');
 
         return '<!DOCTYPE html><html lang="id"><head><meta charset="utf-8">' +
-            '<title>Analisis Materialitas — ' + esc(groupLabel()) + '</title>' +
+            '<title>Analisis Materialitas: ' + esc(groupLabel()) + '</title>' +
             '<style>' + printCss() + '</style></head><body>' +
             '<header class="doc-head">' +
               '<div class="brand">StockForge</div>' +
-              '<h1>Analisis Materialitas — Rekonsiliasi Nilai Stok</h1>' +
+              '<h1>Analisis Materialitas: Rekonsiliasi Nilai Stok</h1>' +
               '<div class="meta">' +
                 '<span><b>Group:</b> ' + esc(groupLabel()) + '</span>' +
                 '<span><b>Ambang materialitas:</b> ' + esc(thresholdLabel()) + '</span>' +
@@ -177,7 +177,7 @@
             '<table><thead><tr><th class="num">#</th>' +
               cols.map(function (c) { return '<th>' + esc(c) + '</th>'; }).join('') +
             '</tr></thead><tbody>' + rowsHtml + '</tbody></table>' +
-            '<footer class="doc-foot">Dibuat otomatis oleh StockForge — daftar mengikuti filter Analisis Materialitas yang aktif.</footer>' +
+            '<footer class="doc-foot">Dibuat otomatis oleh StockForge. Daftar mengikuti filter Analisis Materialitas yang aktif.</footer>' +
             '</body></html>';
     }
 

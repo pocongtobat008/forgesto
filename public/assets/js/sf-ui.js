@@ -575,7 +575,7 @@
                 var kind = btn.getAttribute('data-kind');   // search | resolve
                 var form = m.querySelector('form');
                 form.setAttribute('action', btn.getAttribute('data-action'));
-                m.querySelector('#disc-modal-title').textContent = (kind === 'resolve' ? 'Selesaikan Selisih — ' : 'Cari Selisih — ') + btn.getAttribute('data-code');
+                m.querySelector('#disc-modal-title').textContent = (kind === 'resolve' ? 'Selesaikan Selisih · ' : 'Cari Selisih · ') + btn.getAttribute('data-code');
                 var itemEl = m.querySelector('#disc-modal-item');
                 if (itemEl) itemEl.textContent = btn.getAttribute('data-code') + ' · ' + btn.getAttribute('data-name');
                 m.querySelector('#disc-modal-ctx').textContent = btn.getAttribute('data-group');
@@ -650,7 +650,7 @@
             var n = hits.length;
             if (n === 1) {
                 var link = hits[0].querySelector('a[href*="/items/"]');
-                if (link) { sfToast('Item ' + code + ' ditemukan — membuka detail', 'success', 1400); setTimeout(function () { location.href = link.getAttribute('href'); }, 420); return; }
+                if (link) { sfToast('Item ' + code + ' ditemukan, membuka detail', 'success', 1400); setTimeout(function () { location.href = link.getAttribute('href'); }, 420); return; }
             }
             if (n === 0) { sfToast('Kode “' + code + '” tidak ditemukan pada filter saat ini', 'warning'); return; }
             sfToast(n + ' item cocok dengan “' + code + '”', 'info');

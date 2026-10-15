@@ -34,9 +34,9 @@ $actionBadge = static fn (string $a): string => match (true) {
         <div class="sf-help-col">
             <strong><?= __('Apa yang Anda lihat di sini') ?></strong>
             <ol>
-                <li><b><?= __('Jejak audit') ?></b> — tiap perubahan angka rekonsiliasi (qty &amp; harga) tercatat otomatis: nilai lama &rarr; nilai baru, pelaku, waktu, dan alasan.</li>
-                <li><b><?= __('Koreksi Angka') ?></b> — dilakukan dari halaman <a href="<?= url('reconciliation') ?>">Rekonsiliasi</a> &rarr; buka detail item &rarr; tombol <em><?= __('Koreksi Angka') ?></em>.</li>
-                <li><b><?= __('Verifikasi') ?></b> — perubahan non-admin berstatus <em><?= __('Menunggu Verifikasi') ?></em> sampai Admin STO menyetujuinya.</li>
+                <li><b><?= __('Jejak audit') ?></b>. Tiap perubahan angka rekonsiliasi (qty &amp; harga) tercatat otomatis: nilai lama &rarr; nilai baru, pelaku, waktu, dan alasan.</li>
+                <li><b><?= __('Koreksi Angka') ?></b>. Dilakukan dari halaman <a href="<?= url('reconciliation') ?>">Rekonsiliasi</a> &rarr; buka detail item &rarr; tombol <em><?= __('Koreksi Angka') ?></em>.</li>
+                <li><b><?= __('Verifikasi') ?></b>. Perubahan non-admin berstatus <em><?= __('Menunggu Verifikasi') ?></em> sampai Admin STO menyetujuinya.</li>
             </ol>
         </div>
         <div class="sf-help-col">

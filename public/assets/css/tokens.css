@@ -46,14 +46,14 @@
     --text: #212529;            /* Mantine gray-9 (high contrast 14:1) */
     --text-2: #495057;          /* Mantine gray-7 (secondary text 7:1) */
     --text-3: #6c757d;          /* Mantine gray-6 (helper text) */
-    --text-faint: #868e96;      /* Mantine gray-5 (muted / dimmed 4.6:1) */
+    --text-faint: #6b7280;      /* Mantine gray-5 (muted / dimmed 4.6:1) */
     --text-muted: #495057;
 
     /* Crisp 1px Borders */
     --border: #dee2e6;          /* Mantine gray-3 */
     --border-soft: #e9ecef;     /* Mantine gray-2 */
     --color-line: #dee2e6;
-    --color-line-2: #ced4da;    /* Mantine gray-4 */
+    --color-line-2: #868e96;    /* Mantine gray-4 */
 
     /* Mantine Subtle Elevation Shadows */
     --shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 10px 15px -5px rgba(0, 0, 0, 0.04);
@@ -67,16 +67,16 @@
     --shadow-xs: var(--card-shadow);
 
     /* Semantic Status Colors (WCAG AA compliant) */
-    --success: #12b886;         /* Mantine teal-6 */
+    --success: #047857;         /* Mantine teal-6 */
     --success-bg: #e6fcf5;      /* Mantine teal-0 */
     --success-text: #0ca678;    /* Mantine teal-7 */
     --warning: #f59e0b;         /* Mantine yellow-6 */
     --warning-bg: #fff9db;      /* Mantine yellow-0 */
-    --warning-text: #e67700;    /* Mantine yellow-8 */
-    --danger: #fa5252;          /* Mantine red-6 */
+    --warning-text: #b45309;    /* Mantine yellow-8 */
+    --danger: #b91c1c;          /* Mantine red-6 */
     --danger-bg: #ffe3e3;       /* Mantine red-0 */
     --danger-text: #e03131;     /* Mantine red-8 */
-    --info: #228be6;            /* Mantine blue-6 */
+    --info: #1971c2;            /* Mantine blue-6 */
     --info-bg: #e7f5ff;         /* Mantine blue-0 */
     --info-text: #1971c2;       /* Mantine blue-7 */
 
@@ -121,6 +121,36 @@
     --color-paper: #ffffff;
     --color-ink-4: #666680;
     --color-accent-ink: #1971c2;
+
+    /* --- P2b: slate + utility palette (light) --- */
+    --slate-50:  #f8fafc;
+    --slate-100: #f1f5f9;
+    --slate-200: #e2e8f0;
+    --slate-300: #cbd5e1;
+    --slate-400: #94a3b8;
+    --slate-500: #64748b;
+    --slate-600: #475569;
+    --slate-700: #334155;
+    --slate-800: #1e293b;
+    --slate-900: #0f172a;
+    --gray-200:  #e5e7eb;
+    --emerald-500: #10b981;
+    --emerald-600: #059669;
+    --red-500:   #ef4444;
+    --red-600:   #dc2626;
+    --amber-600: #d97706;
+    --blue-500:  #3b82f6;
+    --amber-100: #fef3c7;
+    --badge-active: #2563eb;
+    --brand-ink-deep: #1a1108;
+
+    /* --- P2b: semantic -100/-700 scales (light) --- */
+    --success-100: #d1fae5;  --success-700: #047857;
+    --warning-100: #fef3c7;  --warning-700: #b45309;
+    --danger-100:  #fee2e2;  --danger-700:  #b91c1c;
+    --info-100:    #e0f2fe;  --info-700:    #0369a1;
+    --text-1: var(--text);
+    --color-scheme: light;
 }
 
 /* Dark Mode (Mantine Dark Theme) */
@@ -137,14 +167,14 @@
     --text: #c1c2c5;            /* Mantine dark-0 */
     --text-2: #a6a7ab;          /* Mantine dark-1 */
     --text-3: #909296;          /* Mantine dark-2 */
-    --text-faint: #5c5f66;      /* Mantine dark-3 */
+    --text-faint: #9ca3af;      /* Mantine dark-3 */
     --text-muted: #909296;
 
     /* Crisp Dark Borders */
     --border: #2c2e33;          /* Mantine dark-5 */
     --border-soft: #25262b;     /* Mantine dark-6 */
     --color-line: #2c2e33;
-    --color-line-2: #373a40;    /* Mantine dark-4 */
+    --color-line-2: #6c757d;    /* Mantine dark-4 */
 
     /* Shadows in Dark Mode */
     --shadow: 0 1px 3px rgba(0, 0, 0, 0.2), 0 10px 15px -5px rgba(0, 0, 0, 0.2);
@@ -159,16 +189,46 @@
     --brand-ink: #f7ce59;
 
     /* Semantic Status Colors in Dark */
-    --success: #20c997;
+    --success: #087f5b;
     --success-bg: rgba(18, 184, 134, 0.15);
     --success-text: #38d9a9;
     --warning: #fcc419;
     --warning-bg: rgba(245, 158, 11, 0.15);
     --warning-text: #ffe066;
-    --danger: #ff6b6b;
+    --danger: #e03131;
     --danger-bg: rgba(250, 82, 82, 0.15);
     --danger-text: #ff8787;
     --info: #339af0;
     --info-bg: rgba(34, 139, 230, 0.15);
     --info-text: #74c0fc;
+
+    /* --- P2b: slate + utility palette (dark) --- */
+    --slate-50:  #1a1b1e;
+    --slate-100: #1e2024;
+    --slate-200: #2c2e33;
+    --slate-300: #3a3d44;
+    --slate-400: #5c5f66;
+    --slate-500: #868e96;
+    --slate-600: #a6a7ab;
+    --slate-700: #c1c2c5;
+    --slate-800: #dfe0e2;
+    --slate-900: #f1f3f5;
+    --gray-200:  #2c2e33;
+    --emerald-500: #20c997;
+    --emerald-600: #099268;
+    --red-500:   #ff6b6b;
+    --red-600:   #e03131;
+    --amber-600: #fcc419;
+    --blue-500:  #4dabf7;
+    --amber-100: #3b2f0a;
+    --badge-active: #4dabf7;
+    --brand-ink-deep: #f7ce59;
+
+    /* --- P2b: semantic -100/-700 scales (dark) --- */
+    --success-100: #0b2e22;  --success-700: #38d9a9;
+    --warning-100: #33280a;  --warning-700: #ffe066;
+    --danger-100:  #3b1213;  --danger-700:  #ff8787;
+    --info-100:    #10263a;  --info-700:    #74c0fc;
+    --text-1: var(--text);
+    --color-scheme: dark;
 }

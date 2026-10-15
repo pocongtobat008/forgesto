@@ -215,7 +215,8 @@ return [
     'act.advanced' => 'Pencarian lanjutan',
     'Cari halaman, data, atau perintah...' => 'Cari halaman, data, atau perintah...',
     'unit' => 'unit',
-    'Bisa pakai kamera HP atau scanner USB/gun — arahkan ke kode lalu Enter.' => 'Bisa pakai kamera HP atau scanner USB/gun — arahkan ke kode lalu Enter.',
+    'Bisa pakai kamera HP atau scanner USB/gun: arahkan ke kode lalu Enter.' => 'Bisa pakai kamera HP atau scanner USB/gun: arahkan ke kode lalu Enter.',
+    'Item terkunci: hanya Power Admin / Admin STO yang bisa mengubah' => 'Item terkunci: hanya Power Admin / Admin STO yang bisa mengubah',
     'Pilih semua tampil' => 'Pilih semua tampil',
     'theme.toggle' => 'Toggle mode terang/gelap',
 ];

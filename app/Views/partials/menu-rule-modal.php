@@ -376,6 +376,15 @@ $__userRole = (string) ($__user['role'] ?? 'observer');
     background: rgba(16,185,129,0.12);
     color: #059669;
 }
+.mrm-picto {
+    width: 14px;
+    height: 14px;
+    flex: 0 0 auto;
+    vertical-align: -2px;
+}
+.mrm-col-pill.is-hidden {
+    text-decoration: none;
+}
 .mrm-status-badge.badge-restricted {
     background: rgba(239,68,68,0.12);
     color: #dc2626;
@@ -398,6 +407,10 @@ $__userRole = (string) ($__user['role'] ?? 'observer');
 }
 </style>
 
+<script>
+var MRM_ICON_CHECK = <?= json_encode(icon('check','mrm-picto')) ?>;
+var MRM_ICON_X     = <?= json_encode(icon('x','mrm-picto')) ?>;
+</script>
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     var modal = document.getElementById('sf-menu-rule-modal');
@@ -530,7 +543,11 @@ document.addEventListener('DOMContentLoaded', function () {
                 var badge = document.getElementById('mrm-badge-' + (act === 'pic_post' ? 'pic-post' : act));
                 if (badge) {
                     badge.className = 'mrm-status-badge ' + (isAllowed ? 'badge-allowed' : 'badge-restricted');
-                    badge.textContent = isAllowed ? '✓ Diizinkan' : '✕ Dibatasi';
+                    var badgeIcon = <?= json_encode(icon('check', 'mrm-picto')) ?>;
+                    var badgeIconX = <?= json_encode(icon('x', 'mrm-picto')) ?>;
+                    badge.innerHTML = (isAllowed
+                        ? badgeIcon  + '<span>Diizinkan</span>'
+                        : badgeIconX + '<span>Dibatasi</span>');
                 }
             }
         });
@@ -551,18 +568,18 @@ document.addEventListener('DOMContentLoaded', function () {
                 var pill = document.createElement('div');
                 pill.className = 'mrm-col-pill ' + (isHidden ? 'is-hidden' : 'is-shown');
                 pill.setAttribute('data-col', k);
-                pill.innerHTML = (isHidden ? '✕ ' : '✓ ') + '<span>' + colLabel + '</span>';
+                pill.innerHTML = (isHidden ? MRM_ICON_X : MRM_ICON_CHECK) + '<span>' + colLabel + '</span>';
 
                 if (isPowerAdmin) {
                     pill.addEventListener('click', function () {
                         if (hiddenColsSet.has(k)) {
                             hiddenColsSet.delete(k);
                             this.className = 'mrm-col-pill is-shown';
-                            this.innerHTML = '✓ <span>' + colLabel + '</span>';
+                            this.innerHTML = MRM_ICON_CHECK + '<span>' + colLabel + '</span>';
                         } else {
                             hiddenColsSet.add(k);
                             this.className = 'mrm-col-pill is-hidden';
-                            this.innerHTML = '✕ <span>' + colLabel + '</span>';
+                            this.innerHTML = MRM_ICON_X + '<span>' + colLabel + '</span>';
                         }
                     });
                 }

@@ -168,7 +168,7 @@ class AuditController extends Controller
 
         (new Notification())->toRole(
             'adminsto',
-            'Audit selesai — perlu konfirmasi',
+            'Audit selesai: perlu konfirmasi',
             'Batch group ' . ($submission['group_id']) . " selesai diaudit ({$audited} item). Menunggu konfirmasi rekonsiliasi.",
             'info',
             '/reconciliation',

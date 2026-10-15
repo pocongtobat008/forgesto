@@ -352,7 +352,7 @@ foreach ($rules as $r) {
                                         <?php endforeach; ?>
                                     </div>
                                 <?php else: ?>
-                                    <span style="color:var(--text-muted);font-size:.8rem;">&mdash; <?= __('Tidak ada batasan tabel') ?> &mdash;</span>
+                                    <span style="color:var(--text-muted);font-size:.8rem;">- <?= __('Tidak ada batasan tabel') ?> -</span>
                                 <?php endif; ?>
                             </td>
 

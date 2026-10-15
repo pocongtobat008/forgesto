@@ -95,7 +95,7 @@ $roleBadge = static fn (string $role): string => match ($role) {
                             <td data-label="<?= __('Role') ?>" class="col-hide-tablet"><span class="badge <?= $roleBadge((string) $user['role']) ?>"><?= e(role_label($user['role'])) ?></span></td>
                             <td data-label="<?= __('Group') ?>">
                                 <?php if (in_array($user['role'], ['observer', 'audit'], true)): ?>
-                                    <span class="text-sm"><?= e($user['group_codes'] ?: '— belum ada —') ?></span>
+                                    <span class="text-sm"><?= e($user['group_codes'] ?: '- belum ada -') ?></span>
                                 <?php else: ?>
                                     <span class="badge badge-brand"><?= __('Semua group') ?></span>
                                 <?php endif; ?>

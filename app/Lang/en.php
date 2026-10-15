@@ -636,7 +636,7 @@ return [
     'Hapus semua filter dan urutan' => 'Clear all filters and sorting',
     'Harga' => 'Price',
     'Item terkunci hanya bisa diubah Power Admin / Admin STO' => 'Locked items can only be changed by Power Admin / Admin STO',
-    'Item terkunci — hanya Power Admin / Admin STO yang bisa mengubah' => 'Locked item — only Power Admin / Admin STO can change it',
+    'Item terkunci: hanya Power Admin / Admin STO yang bisa mengubah' => 'Locked item: only Power Admin / Admin STO can change it',
     'Jumlah baris custom (10 sampai 500)' => 'Custom row count (10 to 500)',
     'Jumlah baris per halaman' => 'Rows per page',
     'Jumlah hitung' => 'Count total',
@@ -798,6 +798,6 @@ return [
     "Hasil hitung masuk, belum diaudit." => "Count result entered, not yet audited.",
     "Perlu ditindaklanjuti / dikoreksi." => "Needs follow-up / correction.",
     "Sudah diaudit / selisih tuntas." => "Audited / discrepancy resolved.",
-    'Bisa pakai kamera HP atau scanner USB/gun — arahkan ke kode lalu Enter.' => 'Use phone camera or USB/gun scanner — point to code then press Enter.',
+    'Bisa pakai kamera HP atau scanner USB/gun: arahkan ke kode lalu Enter.' => 'Use phone camera or USB/gun scanner: point to code then press Enter.',
     'Pilih semua tampil' => 'Select all visible',
 ];

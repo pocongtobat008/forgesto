@@ -82,10 +82,10 @@ class Reconciliation extends Model
                 $label = $auditStatus === 'resolved' ? 'Selesai (selisih tuntas)' : 'Selesai diaudit';
             } elseif ($auditStatus === 'discrepancy') {
                 $stage = 'discrepancy';
-                $label = 'Ada selisih — perlu tindak lanjut';
+                $label = 'Ada selisih: perlu tindak lanjut';
             } elseif ($countStatus === 'counted' || $countStatus === 'posted') {
                 $stage = 'counted';
-                $label = 'Sudah dihitung — menunggu audit';
+                $label = 'Sudah dihitung: menunggu audit';
             } else {
                 $stage = 'pending';
                 $label = 'Belum dihitung';

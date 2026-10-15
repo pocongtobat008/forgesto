@@ -106,7 +106,7 @@ foreach ($__keepKeys as $__k) {
     <?php if (empty($isReadOnly)): ?>
     <div class="scan-hint">
         <span class="hint">
-            <?= icon('barcode') ?> <?= __('Bisa pakai kamera HP atau scanner USB/gun — arahkan ke kode lalu Enter.') ?>
+            <?= icon('barcode') ?> <?= __('Bisa pakai kamera HP atau scanner USB/gun: arahkan ke kode lalu Enter.') ?>
             Tekan <span class="kbd"><?= __('Ctrl B') ?></span>
         </span>
     </div>

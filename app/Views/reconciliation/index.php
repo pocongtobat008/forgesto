@@ -127,14 +127,14 @@ $isAdminUser     = in_array(\App\Core\Auth::role(), ['poweradmin', 'adminsto'], 
         <div class="stat-icon"><?= icon('trending-up') ?></div>
         <span class="stat-label"><?= __('Surplus / Plus (+)') ?></span>
         <div class="stat-value kpi-amt" title="<?= e(format_rupiah((float) $totals['total_plus_amount'], true)) ?>"><?= format_rupiah_compact((float) $totals['total_plus_amount'], true) ?></div>
-        <div class="stat-meta"><?= (int) $totals['plus_items'] ?> item — fisik lebih dari stok buku</div>
+        <div class="stat-meta"><?= (int) $totals['plus_items'] ?> item dengan fisik lebih dari stok buku</div>
     </div>
 
     <div class="stat is-danger" style="--i:2">
         <div class="stat-icon"><?= icon('trending-down') ?></div>
         <span class="stat-label"><?= __('Defisit / Minus (-)') ?></span>
         <div class="stat-value kpi-amt" title="<?= e(format_rupiah((float) $totals['total_minus_amount'], true)) ?>"><?= format_rupiah_compact((float) $totals['total_minus_amount'], true) ?></div>
-        <div class="stat-meta"><?= (int) $totals['minus_items'] ?> item — fisik kurang dari stok buku</div>
+        <div class="stat-meta"><?= (int) $totals['minus_items'] ?> item dengan fisik kurang dari stok buku</div>
     </div>
 
     <div class="stat is-info" style="--i:3">
@@ -171,7 +171,7 @@ asort($matGroups);
     <div class="flex flex-wrap gap-md items-center justify-between" style="margin-bottom:1rem;">
         <div>
             <h2 style="font-size:1.05rem;font-weight:600;margin:0;"><?= icon('spark') ?> Analisis Materialitas</h2>
-            <p class="text-xs muted mt-1" style="margin-bottom:0;">Geser ambang nilai untuk melihat berapa item yang benar-benar material &mdash; item yang menanggung porsi terbesar selisih nilai.</p>
+            <p class="text-xs muted mt-1" style="margin-bottom:0;">Geser ambang nilai untuk melihat berapa item yang benar-benar material. Item yang menanggung porsi terbesar selisih nilai.</p>
         </div>
         <div class="flex items-center gap-sm" style="flex-wrap:wrap;">
             <span class="badge badge-brand"><?= __('Fokus nilai selisih') ?></span>
@@ -204,7 +204,7 @@ asort($matGroups);
                 <?php endif; ?>
                 <span class="text-xs uppercase font-bold tracking-wider muted"><?= __('Ambang materialitas') ?></span>
                 <div class="sf-mat-readout" id="sf-mat-readout"><?= format_rupiah($matDefault, true) ?></div>
-                <p class="text-xs muted" style="margin:.15rem 0 .2rem;">Geser untuk memfilter tabel di bawah &mdash; item di atas ambang tetap tampil.</p>
+                <p class="text-xs muted" style="margin:.15rem 0 .2rem;">Geser untuk memfilter tabel di bawah. Item di atas ambang tetap tampil.</p>
                 <input type="range" class="sf-mat-slider" id="sf-mat-slider" min="0" max="100000000"
                        value="<?= (int) $matDefault ?>" data-default="<?= (int) $matDefault ?>"
                        aria-label="<?= __('Ambang materialitas selisih nilai') ?>">
@@ -269,7 +269,7 @@ $stageTiles = [
     <div class="flex flex-wrap gap-md items-center justify-between" style="margin-bottom:1rem;">
         <div>
             <h2 style="font-size:1.05rem;font-weight:600;margin:0;"><?= icon('activity') ?> Alur &amp; Kemajuan Stock Take</h2>
-            <p class="text-xs muted mt-1" style="margin-bottom:0;">Klik salah satu tahapan untuk menyaring tabel di bawah. Alur: <strong><?= __('Belum Dihitung &rarr; Sudah Dihitung &rarr; Selesai') ?></strong> &mdash; item dengan selisih masuk tahapan <em><?= __('Ada Selisih') ?></em> dulu untuk ditindaklanjuti.</p>
+            <p class="text-xs muted mt-1" style="margin-bottom:0;">Klik salah satu tahapan untuk menyaring tabel di bawah. Alur: <strong><?= __('Belum Dihitung &rarr; Sudah Dihitung &rarr; Selesai') ?></strong>. Item dengan selisih masuk tahapan <em><?= __('Ada Selisih') ?></em> dulu untuk ditindaklanjuti.</p>
         </div>
         <div class="flex items-center gap-sm" style="flex-wrap:wrap;">
             <?php if ($curStage !== null): ?>
@@ -303,20 +303,20 @@ $stageTiles = [
                 <div class="sf-help-col">
                     <strong><?= __('Alur stock take') ?></strong>
                     <ol>
-                        <li><b><?= __('Hitung') ?></b> — petugas memindai / mengetik qty fisik (menu Audit / Audit Rekonsiliasi).</li>
-                        <li><b><?= __('Audit') ?></b> — petugas audit mengecek hasil hitung vs stok buku.</li>
-                        <li><b><?= __('Koreksi bila ada selisih') ?></b> — buka detail item &rarr; <em><?= __('Koreksi Angka') ?></em> (butuh alasan).</li>
-                        <li><b><?= __('Verifikasi') ?></b> — Admin STO / Power Admin menyetujui; status berubah jadi <em><?= __('Terverifikasi') ?></em>.</li>
+                        <li><b><?= __('Hitung') ?></b>. Petugas memindai / mengetik qty fisik (menu Audit / Audit Rekonsiliasi).</li>
+                        <li><b><?= __('Audit') ?></b>. Petugas audit mengecek hasil hitung vs stok buku.</li>
+                        <li><b><?= __('Koreksi bila ada selisih') ?></b>. Buka detail item, pilih <em><?= __('Koreksi Angka') ?></em> (butuh alasan).</li>
+                        <li><b><?= __('Verifikasi') ?></b>. Admin STO / Power Admin menyetujui; status berubah jadi <em><?= __('Terverifikasi') ?></em>.</li>
                     </ol>
                 </div>
                 <div class="sf-help-col">
                     <strong><?= __('Hak akses angka &amp; audit') ?></strong>
                     <ul>
-                        <li><?= icon('eye') ?> <b><?= __('Observer') ?></b> — hanya melihat, tidak bisa mengubah; kolom stok buku &amp; nilai disamarkan.</li>
-                        <li><?= icon('clipboard-check') ?> <b><?= __('Petugas / Audit') ?></b> — isi &amp; koreksi hasil hitung; perubahan masuk <em><?= __('Menunggu Verifikasi') ?></em>.</li>
-                        <li><?= icon('shield-check') ?> <b><?= __('Admin STO / Power Admin') ?></b> — lihat nilai penuh, verifikasi, dan bisa mengubah item <em><?= __('terkunci') ?></em>.</li>
+                        <li><?= icon('eye') ?> <b><?= __('Observer') ?></b>. Hanya melihat, tidak bisa mengubah; kolom stok buku &amp; nilai disamarkan.</li>
+                        <li><?= icon('clipboard-check') ?> <b><?= __('Petugas / Audit') ?></b>. Isi &amp; koreksi hasil hitung; perubahan masuk <em><?= __('Menunggu Verifikasi') ?></em>.</li>
+                        <li><?= icon('shield-check') ?> <b><?= __('Admin STO / Power Admin') ?></b>. Lihat nilai penuh, verifikasi, dan bisa mengubah item <em><?= __('terkunci') ?></em>.</li>
                     </ul>
-                    <p class="text-xs muted" style="margin:.4rem 0 0;">Tombol yang tidak bisa Anda tekan biasanya karena item <b><?= __('terkunci') ?></b> atau statusnya sudah <b><?= __('Terverifikasi') ?></b> — hubungi Admin STO bila perlu.</p>
+                    <p class="text-xs muted" style="margin:.4rem 0 0;">Tombol yang tidak bisa Anda tekan biasanya karena item <b><?= __('terkunci') ?></b> atau statusnya sudah <b><?= __('Terverifikasi') ?></b>. Hubungi Admin STO bila perlu.</p>
                 </div>
             </div>
         </details>
@@ -705,7 +705,7 @@ $gtCond = $gt['diff_qty'] > 0 ? 'plus' : ($gt['diff_qty'] < 0 ? 'minus' : 'match
                                     <?php if ($stg !== null): ?>
                                         <div class="cell-sub text-xs muted mt-1"><?= e($stg['stage_label']) ?></div>
                                         <?php if (($stg['is_locked'] ?? 0) === 1): ?>
-                                            <div class="text-xs mt-1" style="color:var(--text-muted);" title="<?= __('Item terkunci — hanya Power Admin / Admin STO yang bisa mengubah') ?>">
+                                            <div class="text-xs mt-1" style="color:var(--text-muted);" title="<?= __('Item terkunci: hanya Power Admin / Admin STO yang bisa mengubah') ?>">
                                                 <?= icon('lock') ?> Terkunci
                                             </div>
                                         <?php elseif (! empty($stg['counted_by_name'])): ?>
@@ -957,7 +957,7 @@ function initRowActions() {
 
         form.setAttribute('action', <?= json_encode(url('reconciliation/')) ?> + btn.getAttribute('data-id'));
 
-        if (titleEl) titleEl.textContent = 'Koreksi Angka — ' + btn.getAttribute('data-code');
+        if (titleEl) titleEl.textContent = 'Koreksi Angka · ' + btn.getAttribute('data-code');
         if (ctxEl) {
             ctxEl.innerHTML = '<strong>' + btn.getAttribute('data-name') + '</strong>'
                 + ' &bull; angka saat ini: <strong class="mono">' + curQty + '</strong> '
@@ -1325,7 +1325,7 @@ document.addEventListener('DOMContentLoaded', function () {
       var name = (l.textContent||'').trim();
       var cur = th.getAttribute('title') || '';
       if (cur.indexOf(name) === 0) return;
-      th.setAttribute('title', cur ? (name + ' — ' + cur) : name);
+      th.setAttribute('title', cur ? (name + ' · ' + cur) : name);
     });
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', fill); else fill();
