@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" role="img" aria-label="StockForge">
+  <defs>
+    <linearGradient id="sfA" x1="6" y1="4" x2="42" y2="44" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#f0b429"/>
+      <stop offset=".55" stop-color="#f7ce59"/>
+      <stop offset="1" stop-color="#d98e1a"/>
+    </linearGradient>
+    <linearGradient id="sfB" x1="10" y1="34" x2="40" y2="8" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#fdf0c4"/>
+      <stop offset="1" stop-color="#ffffff"/>
+    </linearGradient>
+    <linearGradient id="sfC" x1="14" y1="30" x2="36" y2="12" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#ffffff" stop-opacity=".35"/>
+      <stop offset="1" stop-color="#ffffff" stop-opacity=".9"/>
+    </linearGradient>
+  </defs>
+
+  <!-- squircle plate -->
+  <rect x="1.5" y="1.5" width="45" height="45" rx="13.5" fill="url(#sfA)"/>
+  <rect x="1.5" y="1.5" width="45" height="45" rx="13.5" fill="none" stroke="#ffffff" stroke-opacity=".18" stroke-width="1"/>
+
+  <!-- forge: stacked ingot (top) + base bar (bottom) -->
+  <path d="M24 8.5 L37.5 15.4 L24 22.3 L10.5 15.4 Z" fill="none" stroke="url(#sfB)" stroke-width="2.3" stroke-linejoin="round" stroke-linecap="round"/>
+  <path d="M24 22.3 L24 39.5" stroke="url(#sfB)" stroke-width="2.3" stroke-linecap="round" opacity=".55"/>
+  <path d="M10.5 15.4 L10.5 25.2 L24 32.1 L37.5 25.2 L37.5 15.4" fill="none" stroke="#ffffff" stroke-opacity=".55" stroke-width="2.1" stroke-linejoin="round" stroke-linecap="round"/>
+  <path d="M10.5 25.2 L24 32.1 L37.5 25.2" fill="none" stroke="#ffffff" stroke-opacity=".85" stroke-width="2.3" stroke-linejoin="round" stroke-linecap="round"/>
+
+  <!-- verified tick badge -->
+  <circle cx="34" cy="35.5" r="8.2" fill="url(#sfC)"/>
+  <circle cx="34" cy="35.5" r="8.2" fill="none" stroke="#ffffff" stroke-opacity=".55" stroke-width="1"/>
+  <path d="M30.4 35.6 L33.1 38.3 L37.9 33.2" fill="none" stroke="#d98e1a" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

@@ -1,0 +1,32 @@
+# =====================================================================
+#  StockForge - Root .htaccess (XAMPP / shared hosting friendly)
+#
+#  Lets the app be opened at http://localhost/sistock instead of
+#  http://localhost/sistock/public.
+#
+#  If you point your DocumentRoot directly at the public/ folder
+#  (recommended for production), you can delete this file.
+# =====================================================================
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Assets physically live in public/assets but are served from the app root.
+    RewriteRule ^assets/(.*)$ public/assets/$1 [L]
+
+    # Hard-block the application source, configuration and data folders so they
+    # can never be reached directly when the app root is the document root.
+    RewriteRule ^(app|config|database|storage)(/|$) - [F,L]
+
+    # Everything that is not a real file/directory goes to the front controller.
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule ^ index.php [L]
+</IfModule>
+
+# Never expose the application source, config or database dumps.
+<IfModule mod_authz_core.c>
+    <FilesMatch "\.(sql|md|ini|log|lock|json)$">
+        Require all denied
+    </FilesMatch>
+</IfModule>

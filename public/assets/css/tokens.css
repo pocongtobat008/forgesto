@@ -1,0 +1,174 @@
+/* =====================================================================
+   StockForge · MANTINE ADMIN DASHBOARD & SAAS APPSHELL THEME
+   UI/UX Pro Max · ERP Admin Portal Design System
+   ===================================================================== */
+
+:root {
+    /* Mantine Primary Colors (Blue / Azure) */
+    --mantine-primary: #228be6;
+    --mantine-primary-hover: #1c7ed6;
+    --mantine-primary-active: #1971c2;
+    --mantine-primary-light: #e7f5ff;
+    --mantine-primary-light-hover: #d0ebff;
+    --mantine-primary-light-color: #1971c2;
+    --mantine-primary-outline: rgba(34, 139, 230, 0.35);
+
+    /* Interactive Accent (Mantine Blue) */
+    --accent: #228be6;
+    --accent-hover: #1c7ed6;
+    --accent-ink: #1864ab;
+    --accent-border: rgba(34, 139, 230, 0.35);
+
+    /* STO Brand Warm Amber / Gold (Preserved for Identity & Operations) */
+    --brand-50: #fef9e7;
+    --brand-100: #fdf0c4;
+    --brand-200: #fbe59d;
+    --brand-300: #f9d976;
+    --brand-400: #f7ce59;
+    --brand-500: #f0b429;
+    --brand-600: #d98e1a;
+    --brand-700: #b36b13;
+    --brand-ink: #7a4a00;
+    --brand-800: #8d4d0d;
+    --brand-900: #6b3608;
+    --brand-soft: rgba(240, 180, 41, 0.12);
+    --brand: var(--brand-500);
+
+    /* Mantine Gray Scale & Surfaces (Light Mode) */
+    --bg: #f8f9fa;              /* Mantine gray-0 */
+    --bg-grad: radial-gradient(circle at 50% 0%, rgba(34, 139, 230, 0.04), transparent 60%);
+    --surface: #ffffff;         /* Pure white cards / header / navbar */
+    --surface-2: #f1f3f5;       /* Mantine gray-1 (hover, subtle surfaces) */
+    --surface-3: #e9ecef;       /* Mantine gray-2 (active, tags) */
+    --header-bg: rgba(255, 255, 255, 0.95);
+
+    /* Text Colors (Mantine Typography Contrast) */
+    --text: #212529;            /* Mantine gray-9 (high contrast 14:1) */
+    --text-2: #495057;          /* Mantine gray-7 (secondary text 7:1) */
+    --text-3: #6c757d;          /* Mantine gray-6 (helper text) */
+    --text-faint: #868e96;      /* Mantine gray-5 (muted / dimmed 4.6:1) */
+    --text-muted: #495057;
+
+    /* Crisp 1px Borders */
+    --border: #dee2e6;          /* Mantine gray-3 */
+    --border-soft: #e9ecef;     /* Mantine gray-2 */
+    --color-line: #dee2e6;
+    --color-line-2: #ced4da;    /* Mantine gray-4 */
+
+    /* Mantine Subtle Elevation Shadows */
+    --shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 10px 15px -5px rgba(0, 0, 0, 0.04);
+    --card-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.08);
+    --shadow-soft: 0 1px 2px rgba(0, 0, 0, 0.05);
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.08), 0 2px 4px -1px rgba(0, 0, 0, 0.04);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.03);
+    --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    --shadow-accent: 0 4px 14px rgba(34, 139, 230, 0.25);
+    --shadow-xs: var(--card-shadow);
+
+    /* Semantic Status Colors (WCAG AA compliant) */
+    --success: #12b886;         /* Mantine teal-6 */
+    --success-bg: #e6fcf5;      /* Mantine teal-0 */
+    --success-text: #0ca678;    /* Mantine teal-7 */
+    --warning: #f59e0b;         /* Mantine yellow-6 */
+    --warning-bg: #fff9db;      /* Mantine yellow-0 */
+    --warning-text: #e67700;    /* Mantine yellow-8 */
+    --danger: #fa5252;          /* Mantine red-6 */
+    --danger-bg: #ffe3e3;       /* Mantine red-0 */
+    --danger-text: #e03131;     /* Mantine red-8 */
+    --info: #228be6;            /* Mantine blue-6 */
+    --info-bg: #e7f5ff;         /* Mantine blue-0 */
+    --info-text: #1971c2;       /* Mantine blue-7 */
+
+    /* Mantine Radius Scale */
+    --radius-xs: 4px;
+    --radius-sm: 6px;
+    --radius-md: 8px;
+    --radius-lg: 12px;
+    --radius-xl: 16px;
+    --radius: var(--radius-md);
+    --radius-pill: 9999px;
+
+    /* Mantine AppShell Dimensions */
+    --topbar-h: 60px;
+    --sidebar-w: 260px;
+    --sidebar-collapsed-w: 68px;
+    --sidebar-drawer-w: 280px;
+    --content-max: 1440px;
+    --spacing-touch: 44px;
+
+    /* Typography */
+    --font-sans: "Google Sans Flex", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --font-display: "Google Sans Flex", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    --font-mono: "Google Sans Flex", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    --text-xs: 12px;
+    --text-sm: 13.5px;
+    --text-base: 14.5px;
+    --text-lg: 16px;
+    --text-xl: 18px;
+    --text-2xl: 22px;
+
+    /* Transitions & Motion */
+    --dur-1: 120ms;
+    --dur-2: 200ms;
+    --dur-3: 300ms;
+    --ease-out: cubic-bezier(0, 0, 0.2, 1);
+    --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+    --ease-in: cubic-bezier(0.4, 0, 1, 1);
+
+    /* Color Aliases */
+    --color-ink: #1a1b1e;
+    --color-paper: #ffffff;
+    --color-ink-4: #666680;
+    --color-accent-ink: #1971c2;
+}
+
+/* Dark Mode (Mantine Dark Theme) */
+[data-theme="dark"] {
+    /* Mantine Dark Scale */
+    --bg: #141517;              /* Mantine dark-8 */
+    --bg-grad: radial-gradient(circle at 50% 0%, rgba(34, 139, 230, 0.08), transparent 60%);
+    --surface: #1a1b1e;         /* Mantine dark-7 */
+    --surface-2: #25262b;       /* Mantine dark-6 */
+    --surface-3: #2c2e33;       /* Mantine dark-5 */
+    --header-bg: rgba(26, 27, 30, 0.95);
+
+    /* Text Colors */
+    --text: #c1c2c5;            /* Mantine dark-0 */
+    --text-2: #a6a7ab;          /* Mantine dark-1 */
+    --text-3: #909296;          /* Mantine dark-2 */
+    --text-faint: #5c5f66;      /* Mantine dark-3 */
+    --text-muted: #909296;
+
+    /* Crisp Dark Borders */
+    --border: #2c2e33;          /* Mantine dark-5 */
+    --border-soft: #25262b;     /* Mantine dark-6 */
+    --color-line: #2c2e33;
+    --color-line-2: #373a40;    /* Mantine dark-4 */
+
+    /* Shadows in Dark Mode */
+    --shadow: 0 1px 3px rgba(0, 0, 0, 0.2), 0 10px 15px -5px rgba(0, 0, 0, 0.2);
+    --card-shadow: 0 1px 3px rgba(0, 0, 0, 0.2), 0 1px 2px rgba(0, 0, 0, 0.3);
+    --shadow-soft: 0 1px 2px rgba(0, 0, 0, 0.2);
+
+    /* Mantine Primary in Dark Mode */
+    --mantine-primary-light: rgba(34, 139, 230, 0.16);
+    --mantine-primary-light-hover: rgba(34, 139, 230, 0.26);
+    --mantine-primary-light-color: #74c0fc;
+    --color-accent-ink: #74c0fc;
+    --brand-ink: #f7ce59;
+
+    /* Semantic Status Colors in Dark */
+    --success: #20c997;
+    --success-bg: rgba(18, 184, 134, 0.15);
+    --success-text: #38d9a9;
+    --warning: #fcc419;
+    --warning-bg: rgba(245, 158, 11, 0.15);
+    --warning-text: #ffe066;
+    --danger: #ff6b6b;
+    --danger-bg: rgba(250, 82, 82, 0.15);
+    --danger-text: #ff8787;
+    --info: #339af0;
+    --info-bg: rgba(34, 139, 230, 0.15);
+    --info-text: #74c0fc;
+}

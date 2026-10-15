@@ -1,0 +1,22 @@
+# StockForge - Apache configuration
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Serve existing files/directories directly (assets, etc).
+    RewriteCond %{REQUEST_FILENAME} -f [OR]
+    RewriteCond %{REQUEST_FILENAME} -d
+    RewriteRule ^ - [L]
+
+    # Route everything else through the front controller.
+    RewriteRule ^ index.php [L]
+</IfModule>
+
+<IfModule mod_headers.c>
+    Header set X-Content-Type-Options "nosniff"
+    Header set X-Frame-Options "SAMEORIGIN"
+</IfModule>
+
+# Block access to sensitive file types.
+<FilesMatch "\.(sql|md|json|lock|ini)$">
+    Require all denied
+</FilesMatch>

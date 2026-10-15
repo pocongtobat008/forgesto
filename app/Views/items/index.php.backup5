@@ -1,0 +1,668 @@
+<?php
+/**
+ * @var array $items
+ * @var array $filters
+ * @var array $groups
+ * @var array $locations
+ * @var array $summary
+ */
+use App\Core\View;
+
+// DEFAULT: redirect ke tab "Belum dihitung" jika tidak ada filter count_status
+if (empty($_GET['count_status']) && empty($_GET['search']) && empty($_GET['col']) && empty($_GET['adv'])) {
+    header('Location: /items?count_status[]=pending');
+    exit;
+}
+
+$__xfQs = [];
+foreach ((array) ($filters['col'] ?? []) as $__k => $__vals) { foreach ((array) $__vals as $__v) { $__xfQs[] = 'col[' . rawurlencode($__k) . '][]=' . rawurlencode($__v); } }
+foreach ((array) ($filters['adv'] ?? []) as $__i => $__c) { foreach (['col','op','val'] as $__f) { $__xfQs[] = 'adv[' . $__i . '][' . $__f . ']=' . rawurlencode((string) $__c[$__f]); } }
+if (! empty($filters['search'])) { $__xfQs[] = 'search=' . rawurlencode($filters['search']); }
+$exportQs = $__xfQs ? '?' . implode('&', $__xfQs) : '';
+$activeCount = count($filters['col'] ?? []) + count($filters['adv'] ?? []) + (empty($filters['search']) ? 0 : 1);
+
+$countBadge = static fn (string $status): string => match ($status) {
+    'pending' => 'badge-danger',
+    'counted' => 'badge-warning',
+    'posted'  => 'badge-info',
+    default   => '',
+};
+$countLabel = static fn (string $status): string => match ($status) {
+    'pending' => __('status.not_counted'),
+    'counted' => 'Sudah dihitung',
+    'posted'  => 'Terposting',
+    default   => $status,
+};
+$auditBadge = static fn (string $status): string => match ($status) {
+    'pending'     => '',
+    'audited'     => 'badge-success',
+    'discrepancy' => 'badge-danger',
+    'resolved'    => 'badge-brand',
+    default       => '',
+};
+$auditLabel = static fn (string $status): string => match ($status) {
+    'pending'     => __('status.not_audited'),
+    'audited'     => __('status.audited'),
+    'discrepancy' => 'Selisih',
+    'resolved'    => 'Selesai',
+    default       => $status,
+};
+
+$__keepKeys = ['group_id', 'location_id', 'count_status', 'audit_status', 'search', 'locked', 'posted', 'col', 'adv', 'sort', 'dir'];
+$cleanQuery = [];
+foreach ($__keepKeys as $__k) {
+    if (isset($_GET[$__k]) && $_GET[$__k] !== '' && $_GET[$__k] !== []) {
+        $cleanQuery[$__k] = $_GET[$__k];
+    }
+}
+?>
+<div class="page-head">
+    <div>
+        <h1><?= __('Observer Counting') ?></h1>
+        <p><?= __('Hitung seluruh data di lokasi, kirim ke audit, lalu Admin STO memverifikasi hasilnya.') ?></p>
+    </div>
+    <div class="spacer"></div>
+    <div class="btn-group">
+        <?php if (can('import_data')): ?>
+            <a class="btn btn-outline" href="<?= url('import') ?>"><?= icon('upload') ?> Import</a>
+        <?php endif; ?>
+        <?php if (can('manage_data')): ?>
+            <a class="btn" href="<?= url('items/create') ?>"><?= icon('plus') ?> <?= __('act.add') ?> Data</a>
+        <?php endif; ?>
+    </div>
+</div>
+
+<!-- Ringkasan cepat -->
+<div class="grid grid-4 grid-tablet-4">
+    <div class="stat is-brand" style="--i:0">
+        <div class="stat-icon"><?= icon('package') ?></div>
+        <span class="stat-label"><?= __('Total') ?></span>
+        <div class="stat-value"><?= (int) $summary['total'] ?></div>
+        <div class="stat-meta"><?= __('item sesuai filter') ?></div>
+    </div>
+    <div class="stat is-success" style="--i:1">
+        <div class="stat-icon"><?= icon('check') ?></div>
+        <span class="stat-label"><?= __('status.counted') ?></span>
+        <div class="stat-value"><?= (int) $summary['counted'] ?></div>
+        <div class="stat-meta"><?= percent((int) $summary['counted'], (int) $summary['total']) ?>%</div>
+    </div>
+    <div class="stat is-info" style="--i:2">
+        <div class="stat-icon"><?= icon('clipboard-check') ?></div>
+        <span class="stat-label"><?= __('status.audited') ?></span>
+        <div class="stat-value"><?= (int) $summary['audited'] ?></div>
+        <div class="stat-meta"><?= percent((int) $summary['audited'], (int) $summary['total']) ?>%</div>
+    </div>
+    <div class="stat is-danger" style="--i:3">
+        <div class="stat-icon"><?= icon('alert-circle') ?></div>
+        <span class="stat-label"><?= __('status.not_counted') ?></span>
+        <div class="stat-value"><?= (int) $summary['not_counted'] ?></div>
+        <div class="stat-meta"><?= (int) $summary['locked'] ?> terkunci</div>
+    </div>
+</div>
+
+<div class="card mt-2">
+    <div class="scan-hint">
+        <span class="hint">
+            <?= icon('barcode') ?> <?= __('Bisa pakai kamera HP atau scanner USB/gun — arahkan ke kode lalu Enter.') ?>
+            Tekan <span class="kbd"><?= __('Ctrl B') ?></span>
+        </span>
+    </div>
+    <div class="items-loader" id="items-loader" role="status" aria-live="polite" aria-hidden="true">
+        <div class="items-loader-box"><span class="sf-spin" aria-hidden="true"></span><span><?= __('Memuat data...') ?></span></div>
+    </div>
+    <script>
+    (function () {
+      var ov = document.getElementById('items-loader');
+      if (!ov) return;
+      function show() { ov.classList.add('is-on'); ov.setAttribute('aria-hidden', 'false'); }
+      function hide() { ov.classList.remove('is-on'); ov.setAttribute('aria-hidden', 'true'); }
+      var f = document.getElementById('items-filter');
+      if (f) f.addEventListener('submit', show);
+      document.addEventListener('click', function (ev) {
+        var a = ev.target.closest && ev.target.closest('a[href*="items"][href*="page="]');
+        if (a && !ev.defaultPrevented) show();
+      });
+      var proto = HTMLFormElement.prototype.submit;
+      HTMLFormElement.prototype.submit = function () { if (this.id === 'items-filter') show(); return proto.apply(this, arguments); };
+      var rs = HTMLFormElement.prototype.requestSubmit;
+      if (rs) HTMLFormElement.prototype.requestSubmit = function () { if (this.id === 'items-filter') show(); return rs.apply(this, arguments); };
+      window.addEventListener('pageshow', hide);
+    })();
+    </script>
+    <form method="get" action="<?= url('items') ?>" class="filters items-filters" id="items-filter" style="border:none;box-shadow:none;">
+        <div class="filter-bar">
+            <div class="form-group is-search">
+                <label for="search"><?= __('label.quick_search') ?></label>
+                <input type="search" id="search" name="search" value="<?= e($filters['search'] ?? '') ?>"
+                       placeholder="<?= __('Kode, nama, kategori, group, lokasi...') ?>" autocomplete="off" enterkeyhint="search">
+            </div>
+            <div class="form-group is-barcode">
+                <span class="form-label-lite"><?= __('Barcode') ?></span>
+                <button type="button" class="btn btn-brand" data-scan-open aria-label="<?= __('Scan barcode atau QR') ?>">
+                    <?= icon('scan') ?> Scan barcode
+                </button>
+            </div>
+            <!-- DUPLICATE ADV BUTTON REMOVED -->
+        </div>
+
+        <div class="adv-backdrop" id="adv-backdrop" hidden></div>
+        <aside class="adv-drawer" id="adv-panel" role="dialog" aria-modal="true" aria-labelledby="adv-title" hidden>
+            <div class="adv-drawer-head">
+                <div>
+                    <strong id="adv-title"><?= __('label.advanced_search') ?></strong>
+                    <div class="muted text-sm"><?= __('Gabungan kondisi dengan AND. Maksimal 12 kondisi.') ?></div>
+                </div>
+                <button type="button" class="btn btn-ghost btn-sm adv-close" aria-label="<?= __('Tutup') ?>">&times;</button>
+            </div>
+            <div class="adv-drawer-body">
+                <div id="adv-rows"></div>
+                <button type="button" class="btn btn-outline btn-sm" id="adv-add"><?= __('label.add_condition') ?></button>
+            </div>
+            <div class="adv-drawer-foot">
+                <a class="btn btn-ghost btn-sm" href="<?= url('items') ?>" id="adv-clear">Bersihkan</a>
+                <button type="submit" class="btn btn-brand" form="items-filter"><?= __('act.search') ?></button>
+            </div>
+        </aside>
+
+        <?php foreach ($filters['col'] as $ck => $cvals): ?>
+            <?php foreach ((array) $cvals as $cv): ?>
+                <input type="hidden" name="col[<?= e($ck) ?>][]" value="<?= e($cv) ?>" class="col-hidden">
+            <?php endforeach; ?>
+        <?php endforeach; ?>
+        <?php foreach ($filters['adv'] as $i => $cond): ?>
+            <input type="hidden" name="adv[<?= (int) $i ?>][col]" value="<?= e($cond['col']) ?>">
+            <input type="hidden" name="adv[<?= (int) $i ?>][op]" value="<?= e($cond['op']) ?>">
+            <input type="hidden" name="adv[<?= (int) $i ?>][val]" value="<?= e($cond['val']) ?>">
+        <?php endforeach; ?>
+        <noscript><button type="submit" class="btn btn-outline"><?= __('Terapkan') ?></button></noscript>
+    </form>
+
+    <?php if (can('post_data') && count((array) ($filters['group_id'] ?? [])) === 1): ?>
+        <div class="card-body" style="padding:.85rem 1.1rem;border-bottom:1px solid var(--border);">
+            <form method="post" action="<?= url('items/bulk-post') ?>" class="flex items-center gap wrap"
+                  data-confirm="<?= e(__('Posting semua data yang sudah dihitung pada group ini ke audit?')) ?>">
+                <?= csrf_field() ?>
+                <input type="hidden" name="group_id" value="<?= (int) ((array) $filters['group_id'])[0] ?>">
+                <span class="text-sm muted">Selesaikan penghitungan group ini lalu kirim sekaligus ke audit.</span>
+                <button type="submit" class="btn btn-sm"><?= icon('send') ?> Posting semua yang sudah dihitung</button>
+            </form>
+        </div>
+    <?php endif; ?>
+
+    <div class="sf-memo-bar" style="display:flex;gap:.6rem;align-items:center;flex-wrap:wrap;padding:.6rem 1.1rem;border-bottom:1px solid var(--border);">
+        <label class="text-sm" style="display:inline-flex;gap:.4rem;align-items:center;cursor:pointer;min-height:44px;">
+            <input type="checkbox" id="memo-all" aria-label="<?= __('Pilih semua item tampil') ?>"> <?= __('Pilih semua tampil') ?>
+        </label>
+        <span class="text-sm muted" id="memo-count"><?= __('0 item dipilih') ?></span>
+    </div>
+
+    <?php
+    // --- Tab kelompok penghitungan (server-side, mempertahankan filter lain) ---
+    $__cs = (array) ($filters['count_status'] ?? []);
+    sort($__cs);
+    // DEFAULT TAB: 'pending' (Belum dihitung) agar petugas fokus ke yang perlu dikerjakan
+    $__tab = 'pending';
+    if ($__cs === []) {
+        $__tab = 'pending'; // Default: Belum dihitung
+    } elseif ($__cs === ['pending']) {
+        $__tab = 'pending';
+    } elseif ($__cs !== [] && ! in_array('pending', $__cs, true)) {
+        $__tab = 'counted';
+    } else {
+        $__tab = 'all'; // Jika filter campuran atau semua
+    }
+    $__baseQ = $_GET;
+    unset($__baseQ['count_status'], $__baseQ['page']);
+    $__tabUrl = static function (array $cs) use ($__baseQ): string {
+        $q = $__baseQ;
+        if ($cs !== []) { $q['count_status'] = $cs; }
+        return url('items') . ($q !== [] ? '?' . http_build_query($q) : '');
+    };
+    $__tabs = [
+        ['pending', __('status.not_counted'),  ['pending'],                     (int) $tabCounts['not_counted']],
+        ['counted', __('status.counted'),  ['counted', 'posted'],           (int) $tabCounts['counted']],
+        ['all',     __('status.all'),           [],                              (int) $tabCounts['total']],
+    ];
+    ?>
+    <div class="sf-tabs items-tabs" role="tablist" aria-label="<?= __('Kelompok penghitungan') ?>">
+        <?php foreach ($__tabs as [$__k, $__lbl, $__csVals, $__n]): ?>
+            <a class="tab-pill<?= $__tab === $__k ? ' is-active' : '' ?>" role="tab"
+               aria-selected="<?= $__tab === $__k ? 'true' : 'false' ?>"
+               href="<?= e($__tabUrl($__csVals)) ?>" data-no-progress>
+                <?= e($__lbl) ?> <span class="tab-count"><?= $__n ?></span>
+            </a>
+        <?php endforeach; ?>
+    </div>
+
+    <!-- Kolom: sembunyikan & ubah lebar kolom (generik table-colmgr.js) -->
+        <div class="table-toolbar" style="display:flex;gap:.5rem;margin-bottom:.75rem;flex-wrap:wrap;align-items:center;">
+        <div style="flex:1"></div>
+        <button type="button" class="btn btn-success btn-icon-only" id="adv-toggle" aria-label="<?= __('adv.open') ?>" title="<?= __('adv.label') ?>"><?= icon('filter') ?></button>
+        <?php $__cc = 0; foreach (($filters["col"] ?? []) as $__v) { if ($__v) $__cc++; } $__hs = !empty($filters["sort"]); $__adv = !empty($filters["adv"]) || !empty($_GET["adv"]); ?>
+        <?php if ($__cc || $__hs || $__adv): ?>
+        <a class="btn btn-ghost btn-icon-only col-clear-all" href="<?= url("items") ?>" aria-label="<?= __('Hapus semua filter dan urutan') ?>" title="<?= __('Hapus semua filter dan urutan') ?>"><?= icon('x') ?></a>
+        <?php endif; ?>
+        <a class="btn btn-brand btn-icon-only" id="btn-export-toolbar" href="<?= url('items/export.xlsx') ?><?= $exportQs ?>" aria-label="<?= __('Unduh Excel hasil filter') ?>" title="<?= __('Unduh Excel hasil filter') ?>"><?= icon('download') ?></a>
+        <div class="col-mgr" id="items-colmgr">
+        <button type="button" class="btn btn-ghost" id="items-colmgr-btn" aria-expanded="false" title="<?= __('Sesuaikan kolom') ?>">
+            <?= icon('layers') ?> <span>Kolom</span>
+        </button>
+        <div class="col-mgr-panel" id="items-colmgr-panel" hidden></div>
+        <button type="button" class="btn btn-ghost" id="items-colmgr-reset"><?= __('Reset') ?></button>
+    </div>
+    </div>
+    <div class="table-wrap">
+        <table class="data" id="items-table" data-colmgr-key="items-v1" data-colmgr-prefix="items">
+            <thead>
+                <tr>
+                    <th style="width:40px"><span class="sr-only"><?= __('Pilih') ?></span></th>
+                    <th style="width:140px" class="t-center"><?= __('Aksi') ?></th>
+                    <th style="width:160px" class="t-center"><?= __('Status Hitung') ?></th>
+                    <?php
+                    // REORDERED: Aksi + Status Hitung di kiri, HAPUS Sistem & Selisih (petugas tidak boleh lihat qty sistem)
+                    $XF_COLS = [
+                      ['code','Kode',''], ['name','Nama',''], ['group','Group',''], ['location','Lokasi',''],
+                      ['device','Device',' col-hide-tablet'], 
+                      ['counted','Hitung',' col-hide-tablet t-center'], ['unit','Satuan',' col-hide-tablet t-center'],
+                      ['category','Kategori',' col-hide-tablet'], ['price','Harga',' col-hide-tablet t-right'],
+                      ['audit','Status Audit',' t-center'],
+                    ];
+                    $sortKey = $filters['sort']['key'] ?? null; $sortDir = $filters['sort']['dir'] ?? null;
+                    $colActive = function (string $k) use ($filters): bool {
+                        foreach (($filters['col'] ?? []) as $ck => $vals) { if ($ck === $k && $vals) return true; }
+                        return false;
+                    };
+                    foreach ($XF_COLS as [$k, $lbl, $cls]):
+                        $on = $colActive($k) || $sortKey === $k;
+                        $arrow = $sortKey === $k ? ($sortDir === 'DESC' ? ' &#9662;' : ' &#9652;') : '';
+                    ?>
+                    <th class="xf-th<?= $cls ?>" data-col="<?= $k ?>"><span class="xf-label"><?= e(__($lbl)) ?><?= $arrow ?></span><button type="button" class="xf-btn<?= $on ? ' is-active' : '' ?>" data-xf="<?= $k ?>" aria-label="<?= e(__( 'Filter &amp; urutkan kolom :l', ['l' => __($lbl)])) ?>" aria-haspopup="dialog" title="<?= __('Filter &amp; urutkan') ?>"><?= icon('filter') ?></button></th>
+                    <?php endforeach; ?>
+                </tr>
+            </thead>
+            <tbody>
+                <?php if ($items['items'] === []): ?>
+                    <tr>
+                        <td colspan="12">
+                            <div class="empty-state">
+                                <div class="empty-icon"><?= icon('package') ?></div>
+                                <h3><?= __('Tidak ada data') ?></h3>
+                                <p>Sesuaikan filter atau tambahkan data baru / import dari Excel.</p>
+                            </div>
+                        </td>
+                    </tr>
+                <?php else: ?>
+                    <?php foreach ($items['items'] as $item): ?>
+                        <?php
+                        $isLocked = (int) $item['is_locked'] === 1;
+                        $canCount = can('count_data') && (! $isLocked || can('unlock_data'));
+                        ?>
+                        <tr data-item-id="<?= (int) $item['id'] ?>">
+                            <td class="memo-pick"><input type="checkbox" class="memo-check" value="<?= (int) $item['id'] ?>" aria-label="Pilih item <?= e($item['code']) ?>"></td>
+                            <td data-label="<?= __('Aksi') ?>" class="t-center">
+                                <?php if ($canCount): ?>
+                                    <form method="post" action="<?= url('items/' . (int) $item['id'] . '/count') ?>" class="flex gap-sm items-center" style="justify-content:center;">
+                                        <?= csrf_field() ?>
+                                        <input type="number" name="counted_qty" min="0" value="<?= $item['counted_qty'] === null ? '' : (int) $item['counted_qty'] ?>" placeholder="0"
+                                               style="width:84px;padding:.3rem .5rem;font-size:.8rem;" aria-label="<?= __('Jumlah hitung') ?>" required>
+                                        <button type="submit" class="btn btn-outline btn-xs" aria-label="<?= __('Simpan hitung') ?>"><?= icon('check') ?></button>
+                                    </form>
+                                <?php else: ?>
+                                    <a class="btn btn-outline btn-xs" href="<?= url('items/' . (int) $item['id']) ?>"><?= icon('eye') ?> Detail</a>
+                                <?php endif; ?>
+                            </td>
+                            <td data-label="<?= __('Status Hitung') ?>" class="t-center">
+                                <span class="badge <?= $countBadge((string) $item['count_status']) ?>"><?= e($countLabel((string) $item['count_status'])) ?></span>
+                            </td>
+                            <td data-label="<?= __('Kode') ?>">
+                                <div class="code-cell">
+                                    <span class="kbd"><?= e($item['code']) ?></span>
+                                    <?php if ($isLocked): ?>
+                                        <span class="lock-pill" title="<?= __('Data terkunci - tidak bisa diubah tanpa permission unlock') ?>">
+                                            <?= icon('shield-lock') ?><span class="lock-pill-text"><?= __('Terkunci') ?></span>
+                                        </span>
+                                    <?php endif; ?>
+                                </div>
+                            </td>
+                            <td data-label="<?= __('Nama') ?>">
+                                <div class="cell-title"><a href="<?= url('items/' . (int) $item['id']) ?>"><?= e($item['name']) ?></a></div>
+                                <div class="cell-sub"><?= e($item['category'] ?: 'Tanpa kategori') ?><?= $item['unit'] ? ' · ' . e($item['unit']) : '' ?></div>
+                            </td>
+                            <td data-label="<?= __('Group') ?>"><?= e($item['group_name']) ?></td>
+                            <td data-label="<?= __('Lokasi') ?>"><?= e($item['location_name'] ?: '-') ?></td>
+                            <td data-label="<?= __('Device') ?>" class="col-hide-tablet"><?= e($item['device_name'] ?: '-') ?></td>
+
+                            <td data-label="<?= __('Hitung') ?>" class="col-hide-tablet t-center mono tabular"><?= $item['counted_qty'] === null ? '—' : (int) $item['counted_qty'] ?></td>
+                            <td data-label="<?= __('Satuan') ?>" class="col-hide-tablet t-center"><?= e($item['unit'] ?: '-') ?></td>
+                            <td data-label="<?= __('Kategori') ?>" class="col-hide-tablet"><?= e($item['category'] ?: '-') ?></td>
+                            <td data-label="<?= __('Harga') ?>" class="col-hide-tablet t-right mono tabular"><?= $item['unit_price'] === null ? '-' : 'Rp ' . number_format((float) $item['unit_price'], 0, ',', '.') ?></td>
+                            <td data-label="<?= __('Status Audit') ?>" class="t-center">
+                                <span class="badge <?= $auditBadge((string) $item['audit_status']) ?>"><?= e($auditLabel((string) $item['audit_status'])) ?></span>
+                            </td>
+
+                        </tr>
+                    <?php endforeach; ?>
+                <?php endif; ?>
+            </tbody>
+        </table></div>
+
+
+<div class="xf-pop" id="xf-pop" role="dialog" aria-modal="false" hidden>
+    <div class="xf-pop-head"><strong id="xf-title"><?= __('Filter') ?></strong></div>
+    <input type="search" id="xf-q" class="xf-q" placeholder="<?= __('Cari di daftar...') ?>" autocomplete="off">
+    <div class="xf-sort" role="group" aria-label="<?= __('Urutkan') ?>"><button type="button" class="xf-sort-btn" data-dir="asc" id="xf-sort-asc"><?= __('Urutkan naik') ?></button><button type="button" class="xf-sort-btn" data-dir="desc" id="xf-sort-desc"><?= __('Urutkan turun') ?></button></div>
+    <div class="xf-list" id="xf-list" role="listbox" aria-multiselectable="true"><div class="xf-loading"><?= __('Memuat...') ?></div></div>
+    <div class="xf-foot">
+        <span class="spacer"></span>
+        <button type="button" class="btn btn-outline btn-sm" id="xf-cancel"><?= __('Batal') ?></button>
+        <button type="button" class="btn btn-brand btn-sm" id="xf-apply"><?= __('Terapkan') ?></button>
+    </div>
+</div>
+
+<script>
+(function() {
+  function init() {
+(function () {
+  var f = document.getElementById('items-filter');
+  var pop = document.getElementById('xf-pop');
+  if (!f || !pop) return;
+  var LABELS = <?= json_encode(['code'=>__('Kode'),'name'=>__('Nama'),'group'=>__('Group'),'location'=>__('Lokasi'),'device'=>__('Device'),'expected'=>__('Sistem'),'counted'=>__('Hitung'),'unit'=>__('Satuan'),'category'=>__('Kategori'),'price'=>__('Harga'),'count'=>__('Status Hitung'),'audit'=>__('Status Audit')], JSON_UNESCAPED_UNICODE) ?>;
+  var NUMK = { expected:1, counted:1, price:1 };
+  var sortKey = <?= json_encode($sortKey ?? null) ?>, sortDir = <?= json_encode($sortDir ?? null) ?>;
+  var DISPLAY = <?= json_encode(['counted'=>__('Sudah dihitung'),'pending'=>__('Belum dihitung'),'posted'=>__('Terposting'),'audited'=>__('Sudah diaudit'),'discrepancy'=>__('Selisih'),'resolved'=>__('Selesai')], JSON_UNESCAPED_UNICODE) ?>;
+  var current = null, picked = [], cache = {};
+  var list = document.getElementById('xf-list'), q = document.getElementById('xf-q');
+  var title = document.getElementById('xf-title');
+  var base = <?= json_encode(url('items/distinct'), JSON_UNESCAPED_SLASHES) ?>;
+  var sbase = <?= json_encode(url('items'), JSON_UNESCAPED_SLASHES) ?>;
+
+  // Collect current col filters from hidden inputs (so picks survive re-open)
+  function currentFilters(key) {
+    var out = [];
+    f.querySelectorAll('input.col-hidden').forEach(function (i) {
+      var m = i.name.match(/^col\[([a-z]+)\]/);
+      if (m && m[1] === key) out.push(i.value);
+    });
+    return out;
+  }
+  function filterQueryExcept(key) {
+    var fd = new FormData(f), p = new URLSearchParams();
+    fd.forEach(function (v, k) { if (!/^col\[/.test(k) || k.indexOf('col[' + key + ']') !== 0) p.append(k, v); });
+    return p.toString();
+  }
+  function openPop(btn) {
+    current = btn.getAttribute('data-xf');
+    picked = currentFilters(current);
+    title.textContent = 'Filter: ' + LABELS[current];
+    markSortState();
+    q.value = '';
+    list.innerHTML = '<div class="xf-loading">' + <?= json_encode(__('Memuat...'), JSON_UNESCAPED_UNICODE) ?> + '</div>';
+    var r = btn.getBoundingClientRect();
+    pop.hidden = false;
+    var left = Math.min(r.left + window.scrollX, window.scrollX + document.documentElement.clientWidth - 300);
+    pop.style.left = Math.max(8, left) + 'px';
+    pop.style.top = (r.bottom + window.scrollY + 6) + 'px';
+    loadValues();
+    q.focus();
+  }
+  function loadValues() {
+    var qs = filterQueryExcept(current);
+    var key = current;
+    var url = base + '?key=' + encodeURIComponent(key) + (qs ? '&' + qs : '');
+    fetch(url, { credentials: 'same-origin' }).then(function (r) { return r.json(); }).then(function (d) {
+      if (key !== current) return;
+      cache[key] = d.values || [];
+      render();
+    }).catch(function () { list.innerHTML = '<div class="xf-loading">' + <?= json_encode(__('Gagal memuat daftar.'), JSON_UNESCAPED_UNICODE) ?> + '</div>'; });
+  }
+  function render() {
+    var term = q.value.trim().toLowerCase();
+    var vals = cache[current] || [];
+    if (vals.length === 0) { list.innerHTML = '<div class="xf-loading">' + <?= json_encode(__('Tidak ada nilai.'), JSON_UNESCAPED_UNICODE) ?> + '</div>'; return; }
+    var html = '', shown = 0;
+    vals.forEach(function (v) {
+      if (term && v.toLowerCase().indexOf(term) === -1) return;
+      shown++;
+      var on = picked.indexOf(v) !== -1;
+      var label = DISPLAY[v] || v;
+      html += '<label class="xf-opt' + (on ? ' is-on' : '') + '"><input type="checkbox" value="' + escAttr(v) + '"' + (on ? ' checked' : '') + '><span>' + escHtml(label) + '</span></label>';
+    });
+    list.innerHTML = shown ? html : '<div class="xf-loading">' + <?= json_encode(__('Tidak ada yang cocok.'), JSON_UNESCAPED_UNICODE) ?> + '</div>';
+  }
+  function escHtml(s) { return String(s).replace(/[&<>"']/g, function (c) { return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+  function escAttr(s) { return escHtml(s); }
+  list.addEventListener('change', function (e) {
+    var v = e.target.value;
+    if (e.target.checked) { if (picked.indexOf(v) === -1) picked.push(v); }
+    else picked = picked.filter(function (x) { return x !== v; });
+    e.target.closest('.xf-opt').classList.toggle('is-on', e.target.checked);
+  });
+  q.addEventListener('input', render);
+  function close() { pop.hidden = true; current = null; }
+  function apply() {
+    // replace hidden col inputs for current key
+    f.querySelectorAll('input.col-hidden').forEach(function (i) { if (i.name.indexOf('col[' + current + ']') === 0) i.remove(); });
+    picked.forEach(function (v) {
+      var h = document.createElement('input');
+      h.type = 'hidden'; h.className = 'col-hidden'; h.name = 'col[' + current + '][]'; h.value = v;
+      f.appendChild(h);
+    });
+    f.requestSubmit ? f.requestSubmit() : f.submit();
+  }
+  // ---- Sort dari menu filter (seperti Excel) ----
+  function applySort(dir) {
+    var old = f.querySelectorAll('input.sort-hidden');
+    old.forEach(function (i) { i.remove(); });
+    var k = document.createElement('input'); k.type = 'hidden'; k.className = 'sort-hidden'; k.name = 'sort'; k.value = current;
+    var d = document.createElement('input'); d.type = 'hidden'; d.className = 'sort-hidden'; d.name = 'dir'; d.value = dir;
+    f.appendChild(k); f.appendChild(d);
+    f.requestSubmit ? f.requestSubmit() : f.submit();
+  }
+  var xfSortAsc = document.getElementById('xf-sort-asc');
+  var xfSortDesc = document.getElementById('xf-sort-desc');
+  if (xfSortAsc) xfSortAsc.addEventListener('click', function () { applySort('asc'); });
+  if (xfSortDesc) xfSortDesc.addEventListener('click', function () { applySort('desc'); });
+  function markSortState() {
+    document.querySelectorAll('.xf-sort-btn').forEach(function (b) {
+      var on = current && sortKey === current && sortDir && b.dataset.dir === (sortDir === 'DESC' ? 'desc' : 'asc');
+      b.classList.toggle('is-on', !!on);
+    });
+  }
+  document.querySelectorAll('.xf-btn').forEach(function (b) {
+    b.addEventListener('click', function (e) {
+      e.stopPropagation();
+      if (!pop.hidden && current === b.getAttribute('data-xf')) { close(); return; }
+      openPop(b);
+    });
+  });
+  var xfApply = document.getElementById('xf-apply');
+  var xfCancel = document.getElementById('xf-cancel');
+  var xfClear = document.getElementById('xf-clear');
+  if (xfApply) xfApply.addEventListener('click', apply);
+  if (xfCancel) xfCancel.addEventListener('click', close);
+  if (xfClear) xfClear.addEventListener('click', function () { picked = []; render(); });
+  document.addEventListener('click', function (e) { if (!pop.hidden && !pop.contains(e.target)) close(); });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape') close(); });
+
+  // Quick search: debounce, no Enter needed
+  var s = document.getElementById('search'), t = null;
+  if (s) {
+    s.addEventListener('input', function () { clearTimeout(t); t = setTimeout(function () { f.requestSubmit ? f.requestSubmit() : f.submit(); }, 350); });
+    s.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); clearTimeout(t); f.requestSubmit ? f.requestSubmit() : f.submit(); } });
+  }
+
+  // Advanced panel
+  var adv = document.getElementById('adv-panel'), advBtn = document.getElementById('adv-toggle');
+  console.log('[DEBUG] adv:', adv, 'advBtn:', advBtn);
+  if (!advBtn) { console.error('[ERROR] Button #adv-toggle not found!'); }
+  var advRows = document.getElementById('adv-rows');
+  var COLDEF = <?= json_encode([['code',__('Kode')],['name',__('Nama')],['category',__('Kategori')],['group',__('Group')],['group_code',__('Kode Group')],['location',__('Lokasi')],['location_code',__('Kode Lokasi')],['device',__('Device')],['device_type',__('Jenis Device')],['device_serial',__('Serial Device')],['unit',__('Satuan')],['price',__('Harga Satuan')],['expected',__('Sistem')],['counted',__('Hitung')],['count',__('Status Hitung')],['audit',__('Status Audit')],['amount_note',__('Catatan Jumlah')],['condition_note',__('Catatan Kondisi')]], JSON_UNESCAPED_UNICODE) ?>;
+  var OPS = <?= json_encode([['in',__('salah satu dari')],['contains',__('mengandung')],['equals',__('sama dengan')],['starts',__('diawali')],['gt',__('lebih dari')],['lt',__('kurang dari')],['empty',__('kosong')]], JSON_UNESCAPED_UNICODE) ?>;
+  var NUMERIC = { expected:1, counted:1, price:1 };
+  var backdrop = document.getElementById('adv-backdrop');
+  // Portal: pindahkan drawer+backdrop ke <body> agar position:fixed tidak terjebak di ancestor ber-transform.
+  document.body.appendChild(backdrop); document.body.appendChild(adv);
+  function openAdv() { adv.hidden = false; backdrop.hidden = false; advBtn.setAttribute('aria-expanded','true'); if (advRows.children.length === 0) addRow(); var first = advRows.querySelector('.adv-col'); if (first) first.focus(); }
+  function closeAdv() { adv.hidden = true; backdrop.hidden = true; advBtn.setAttribute('aria-expanded','false'); advBtn.focus(); }
+  var existing = <?= json_encode(array_values($filters['adv'])) ?>;
+  function rowHtml(i, c) {
+    c = c || {};
+    var colOpts = COLDEF.map(function (d) { return '<option value="' + d[0] + '"' + (c.col === d[0] ? ' selected' : '') + '>' + d[1] + '</option>'; }).join('');
+    var opOpts = OPS.map(function (o) { return '<option value="' + o[0] + '"' + (c.op === o[0] ? ' selected' : '') + '>' + o[1] + '</option>'; }).join('');
+    return '<div class="adv-row" data-i="' + i + '">' +
+      '<select class="adv-col" aria-label="Kolom">' + colOpts + '</select>' +
+      '<select class="adv-op" aria-label="Kondisi">' + opOpts + '</select>' +
+      '<input class="adv-val" type="text" placeholder="Nilai" value="' + escAttr(c.val || '') + '" aria-label="Nilai">' +
+      '<button type="button" class="btn btn-outline btn-sm adv-pick" aria-label="Pilih nilai">Pilih nilai</button>' +
+      '<button type="button" class="btn btn-ghost btn-sm adv-del" aria-label="Hapus kondisi">×</button></div>';
+  }
+  function addRow(c) { advRows.insertAdjacentHTML('beforeend', rowHtml(advRows.children.length, c)); }
+  existing.forEach(function (c) { addRow(c); });
+  advRows.querySelectorAll('.adv-row').forEach(function (r) { var isIn = r.querySelector('.adv-op').value === 'in'; r.querySelector('.adv-pick').hidden = !isIn; r.querySelector('.adv-val').hidden = isIn; refreshPickLabel(r); });
+  // ---- Multi-nilai (op 'in'): pilih dari daftar nilai kolom + cari ----
+  var pick = document.createElement('div');
+  pick.className = 'adv-pick-pop'; pick.hidden = true;
+  pick.innerHTML = '<input type="search" class="adv-pick-q" placeholder="Cari nilai..." aria-label="Cari nilai"><div class="adv-pick-list"></div><div class="adv-pick-foot"><button type="button" class="btn btn-ghost btn-sm adv-pick-clear">Kosongkan</button><button type="button" class="btn btn-brand btn-sm adv-pick-ok">Terapkan</button></div>';
+  document.body.appendChild(pick);
+  var pickRow = null, pickCache = {};
+  function selectedOf(row) { var v = row.querySelector('.adv-val').value; return v ? v.split('\x1f') : []; }
+  function refreshPickLabel(row) {
+    var n = selectedOf(row).length; var b = row.querySelector('.adv-pick');
+    if (b) b.textContent = n ? ('Pilih nilai (' + n + ')') : 'Pilih nilai';
+  }
+  function renderPick() {
+    var list = pick.querySelector('.adv-pick-list'); var q = pick.querySelector('.adv-pick-q').value.toLowerCase();
+    var sel = selectedOf(pickRow); var vals = pickCache[pickRow.querySelector('.adv-col').value] || [];
+    list.innerHTML = vals.filter(function (v) { return !q || v.toLowerCase().indexOf(q) !== -1; }).map(function (v) {
+      var on = sel.indexOf(v) !== -1;
+      return '<label class="adv-pick-opt"><input type="checkbox" value="' + escAttr(v) + '"' + (on ? ' checked' : '') + '> <span>' + escAttr(v) + '</span></label>';
+    }).join('') || '<div class="adv-pick-empty">' + <?= json_encode(__('Tidak ada yang cocok'), JSON_UNESCAPED_UNICODE) ?> + '</div>';
+  }
+  function openPick(row, btn) {
+    pickRow = row; var col = row.querySelector('.adv-col').value;
+    var r = btn.getBoundingClientRect(); var ph = 320; var top = r.bottom + 6; if (top + ph > window.innerHeight && r.top - ph - 6 > 0) top = r.top - ph - 6; pick.style.top = top + 'px'; pick.style.left = Math.max(8, Math.min(r.left, window.innerWidth - 308)) + 'px';
+    pick.querySelector('.adv-pick-q').value = ''; pick.hidden = false;
+    if (pickCache[col]) { renderPick(); pick.querySelector('.adv-pick-q').focus(); return; }
+    pick.querySelector('.adv-pick-list').innerHTML = '<div class="adv-pick-empty">' + <?= json_encode(__('Memuat...'), JSON_UNESCAPED_UNICODE) ?> + '</div>';
+    fetch(<?= json_encode(url('items/distinct'), JSON_UNESCAPED_SLASHES) ?> + '?key=' + encodeURIComponent(col), { credentials: 'same-origin' }).then(function (r) { return r.json(); }).then(function (j) {
+      pickCache[col] = (j.values || []); renderPick(); pick.querySelector('.adv-pick-q').focus();
+    }).catch(function () { pick.querySelector('.adv-pick-list').innerHTML = '<div class="adv-pick-empty">' + <?= json_encode(__('Gagal memuat nilai'), JSON_UNESCAPED_UNICODE) ?> + '</div>'; });
+  }
+  function closePick() { pick.hidden = true; pickRow = null; }
+  pick.querySelector('.adv-pick-q').addEventListener('input', renderPick);
+  pick.querySelector('.adv-pick-clear').addEventListener('click', function () { if (pickRow) { pickRow.querySelector('.adv-val').value = ''; refreshPickLabel(pickRow); renderPick(); } });
+  pick.querySelector('.adv-pick-ok').addEventListener('click', function () { closePick(); });
+  pick.querySelector('.adv-pick-list').addEventListener('change', function (e) {
+    if (!pickRow || e.target.type !== 'checkbox') return;
+    var vals = Array.prototype.map.call(pick.querySelectorAll('.adv-pick-list input:checked'), function (i) { return i.value; });
+    pickRow.querySelector('.adv-val').value = vals.join('\x1f'); refreshPickLabel(pickRow);
+  });
+  advRows.addEventListener('click', function (e) {
+    if (e.target.classList.contains('adv-pick')) { e.stopPropagation(); var row = e.target.closest('.adv-row'); if (pick.hidden || pickRow !== row) openPick(row, e.target); else closePick(); }
+  });
+  document.addEventListener('click', function (e) { if (!pick.hidden && !pick.contains(e.target) && !(e.target.classList && e.target.classList.contains('adv-pick'))) closePick(); });
+  advRows.addEventListener('change', function (e) {
+    if (e.target.classList.contains('adv-col')) { var row = e.target.closest('.adv-row'); row.querySelector('.adv-val').value = ''; refreshPickLabel(row); }
+    if (e.target.classList.contains('adv-op')) { var r2 = e.target.closest('.adv-row'); var isIn = e.target.value === 'in'; r2.querySelector('.adv-pick').hidden = !isIn; r2.querySelector('.adv-val').hidden = isIn; if (!isIn) r2.querySelector('.adv-val').value = r2.querySelector('.adv-val').value.split('\x1f')[0]; refreshPickLabel(r2); }
+  });
+  if (advBtn) {
+    advBtn.addEventListener('click', function () { if (adv.hidden) openAdv(); else closeAdv(); });
+  } else {
+    console.error('[ERROR] advBtn is null, cannot attach click listener');
+  }
+  document.querySelector('button[form="items-filter"]') && document.querySelector('button[form="items-filter"]').addEventListener('click', function () { closeAdv(); closePick(); });
+  backdrop.addEventListener('click', closeAdv);
+  adv.querySelector('.adv-close').addEventListener('click', closeAdv);
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !adv.hidden) closeAdv(); });
+  document.getElementById('adv-add').addEventListener('click', function () {
+    if (advRows.children.length >= 12) return;
+    addRow();
+  });
+  advRows.addEventListener('click', function (e) {
+    if (e.target.classList.contains('adv-del')) e.target.closest('.adv-row').remove();
+  });
+  // Serialize advanced rows into hidden inputs right before submit
+  f.addEventListener('submit', function () {
+    f.querySelectorAll('input[name^="adv["]').forEach(function (i) { i.remove(); });
+    var n = 0;
+    advRows.querySelectorAll('.adv-row').forEach(function (r) {
+      var col = r.querySelector('.adv-col').value, op = r.querySelector('.adv-op').value, val = r.querySelector('.adv-val').value.trim();
+      if (op !== 'empty' && val === '') return;
+      [['col', col], ['op', op], ['val', val]].forEach(function (kv) {
+        var h = document.createElement('input'); h.type = 'hidden'; h.name = 'adv[' + n + '][' + kv[0] + ']'; h.value = kv[1]; f.appendChild(h);
+      });
+      n++;
+    });
+  });
+})();
+  }
+  
+  // Run init when DOM is ready, handling all loading states
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+})();
+</script>
+
+    <?= View::partial('partials/pagination', ['paginator' => $items, 'query' => $cleanQuery]) ?>
+</div>
+
+<!-- Bottom Action Bar (Mobile/Tablet) -->
+<div class="bottom-action-bar">
+    <button type="button" class="btn btn-primary" data-scan-open style="flex: 1;">
+        <?= icon('scan') ?> Scan Barcode
+    </button>
+    <button type="button" class="btn btn-outline" onclick="document.querySelector('#search').focus()" style="flex: 0 0 auto;">
+        <?= icon('search') ?> Cari
+    </button>
+</div>
+
+
+<!-- Modal scanner barcode -->
+<div class="modal-backdrop" data-scan-modal role="dialog" aria-modal="true" aria-label="<?= __('Scan barcode') ?>">
+    <div class="modal">
+        <div class="modal-header">
+            <h3><?= icon('scan') ?> Scan Barcode / QR</h3>
+            <div class="spacer"></div>
+            <button type="button" class="icon-btn" data-scan-close aria-label="<?= __('Tutup') ?>"><?= icon('x') ?></button>
+        </div>
+        <div class="modal-body">
+            <div id="scanner-viewport"></div>
+            <p class="scanner-hint">Arahkan kamera ke barcode atau QR code. Hasil scan otomatis mengisi pencarian lalu memfilter tabel.</p>
+        </div>
+    </div>
+</div>
+
+<script src="<?= asset_v('js/table-colmgr.js') ?>" defer></script>
+<script>
+(function () {
+    var MEMO_URL = '/items/memo/preview';
+    var PDF_URL = '/items/memo.pdf';
+    var all = document.getElementById('memo-all');
+    var cnt = document.getElementById('memo-count');
+    function boxes() { return Array.prototype.slice.call(document.querySelectorAll('.memo-check')); }
+    function visible(cb) { var r = cb.closest('tr'); return r && r.style.display !== 'none' && !r.hidden; }
+    function picked() { return boxes().filter(function (c) { return c.checked; }).map(function (c) { return c.value; }); }
+    function refresh() {
+        var ids = picked();
+        cnt.textContent = ids.length + ' item dipilih';
+        if (all) {
+            var vis = boxes().filter(visible);
+            all.checked = vis.length > 0 && vis.every(function (c) { return c.checked; });
+        }
+    }
+    if (all) all.addEventListener('change', function () {
+        boxes().filter(visible).forEach(function (c) { c.checked = all.checked; });
+        refresh();
+    });
+    document.addEventListener('change', function (e) {
+        if (e.target.classList && e.target.classList.contains('memo-check')) refresh();
+    });
+    refresh();
+})();
+
+<!-- Barcode Scanner + Posting Modal -->
+<script src="<?= asset_v('js/items-barcode-posting.js') ?>"></script>
+</script>

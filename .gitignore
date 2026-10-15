@@ -1,0 +1,20 @@
+/storage/imports/*
+/storage/logs/*
+!/storage/imports/.gitkeep
+!/storage/logs/.gitkeep
+
+.env
+.env.*
+*.log
+Thumbs.db
+.DS_Store
+
+# Backup dirs (local only, not for git)
+.hallmark/
+.ui_backup/
+backup_theme_pre_mantine_*/
+backup_*/
+*.bak
+*.bak_*
+*.backup
+routes.backup.*
