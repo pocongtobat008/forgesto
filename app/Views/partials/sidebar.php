@@ -42,6 +42,20 @@ $is = static function (string $prefix) use ($path, $isActivePath): string {
 
 $role = $user['role'] ?? null;
 ?>
+<?php
+// ---- Tahun Buku badge (moved from topbar header) ----
+$__bp = $activeBookPeriod ?? null;
+$__months = ['01'=>'Jan','02'=>'Feb','03'=>'Mar','04'=>'Apr','05'=>'Mei','06'=>'Jun',
+             '07'=>'Jul','08'=>'Agu','09'=>'Sep','10'=>'Okt','11'=>'Nov','12'=>'Des'];
+$__bpShort = '—'; $__bpFull = 'Belum diatur'; $__bpClosed = false;
+if ($__bp) {
+    $__p = explode('-', (string)($__bp['audit_month'] ?? ''));
+    $__mm = $__p[1] ?? ''; $__yy = $__p[0] ?? '';
+    $__bpShort = ($__months[$__mm] ?? ($__mm !== '' ? $__mm : '—')) . "'" . substr((string)$__yy, -2);
+    $__bpFull  = ($__mm !== '' ? ($__months[$__mm] ?? $__mm) : '—') . ' ' . $__yy;
+    $__bpClosed = ($__bp['status'] ?? 'open') === 'closed';
+}
+?>
 <aside class="sidebar" data-sidebar>
     <div class="sidebar-header-mobile">
         <a href="<?= url('dashboard') ?>" class="brand-link" aria-label="<?= e(config('app.name')) ?>">
@@ -51,6 +65,14 @@ $role = $user['role'] ?? null;
             <strong><?= e(config('app.name')) ?></strong>
             <span><?= e(config('app.company')) ?></span>
         </div>
+        <a href="<?= url('tahun-buku') ?>"
+           class="sf-year-badge <?= $__bpClosed ? 'is-closed' : 'is-open' ?>"
+           title="<?= $__bpClosed ? 'Tahun Buku (Ditutup): ' : 'Tahun Buku Aktif: ' ?><?= e($__bpFull) ?>"
+           aria-label="<?= $__bpClosed ? 'Tahun buku ditutup: ' : 'Tahun buku berjalan: ' ?><?= e($__bpFull) ?>"
+           data-no-progress>
+            <span class="sf-yb-dot" aria-hidden="true"></span>
+            <span class="sf-yb-text"><?= e($__bpShort) ?></span>
+        </a>
         <button type="button" class="icon-btn sidebar-close" data-sidebar-close aria-label="<?= __('Tutup menu') ?>" title="<?= __('Tutup menu') ?>">
             <?= icon('x') ?>
         </button>
@@ -228,45 +250,7 @@ $role = $user['role'] ?? null;
         </div>
         <?php endif; ?>
 
-        <!-- Sidebar Footer: Modern Language Switcher & Role Badge (UI UX Max Pro) -->
-        <div class="sidebar-footer">
-            <?php $__loc = current_locale(); ?>
-            <div class="sidebar-theme-box">
-                <button type="button" class="sidebar-theme-toggle" data-theme-toggle data-tip="<?= e(__('Ganti Tema')) ?>" aria-label="<?= e(__('Ganti Tema (Gelap / Terang)')) ?>">
-                    <span class="stt-ico stt-ico-sun" aria-hidden="true"><?= icon('sun') ?></span>
-                    <span class="stt-ico stt-ico-moon" aria-hidden="true"><?= icon('moon') ?></span>
-                    <span class="stt-label"><?= __('Tema') ?></span>
-                    <span class="stt-track" aria-hidden="true"><span class="stt-knob"></span></span>
-                </button>
-            </div>
-            <div class="sidebar-lang-box" data-tip="<?= e(__('lang.label')) ?>">
-                <div class="sidebar-lang-header">
-                    <span class="sidebar-lang-ico"><?= icon('globe') ?></span>
-                    <span class="sidebar-lang-title"><?= __('Bahasa') ?></span>
-                </div>
-                <div class="sidebar-lang-switch" role="group" aria-label="<?= e(__('lang.label')) ?>">
-                    <a class="sidebar-lang-opt<?= $__loc === 'id' ? ' is-active' : '' ?>" href="<?= e(locale_url('id')) ?>" hreflang="id" title="<?= e(__('lang.id')) ?>" data-no-progress>
-                        <span class="lang-code">ID</span>
-                        <span class="lang-name">Indonesia</span>
-                    </a>
-                    <a class="sidebar-lang-opt<?= $__loc === 'en' ? ' is-active' : '' ?>" href="<?= e(locale_url('en')) ?>" hreflang="en" title="<?= e(__('lang.en')) ?>" data-no-progress>
-                        <span class="lang-code">EN</span>
-                        <span class="lang-name">English</span>
-                    </a>
-                </div>
-            </div>
-
-            <div class="sidebar-role-box">
-                <div class="sidebar-role-label"><?= e(__('nav.role_active')) ?></div>
-                <div class="sidebar-role-wrap">
-                    <span class="badge badge-brand"><?= e(role_label($role)) ?></span>
-                    <?php if ($role === 'observer' || $role === 'audit'): ?>
-                        <div class="text-xs faint mt-1">
-                            <?= count(\App\Core\Auth::groupIds()) ?> group didelegasikan
-                        </div>
-                    <?php endif; ?>
-                </div>
-            </div>
-        </div>
+        
     </nav>
+
 </aside>

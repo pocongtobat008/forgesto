@@ -162,6 +162,7 @@ $pageTitle = $title ?? 'Dashboard';
     <script src="<?= asset_v('js/app.js') ?>"></script>
     <script src="<?= asset_v('js/sf-ui.js') ?>"></script>
     <script src="<?= asset_v('js/notif-popup.js') ?>"></script>
+    <script src="<?= asset_v('js/wh-modal.js') ?>"></script>
     <script src="<?= asset_v('js/sf-mat.js') ?>"></script>
     <script src="<?= asset_v('js/table-colmgr.js') ?>"></script>
     <?= $bodyExtra ?? '' ?>

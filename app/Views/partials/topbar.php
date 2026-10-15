@@ -11,11 +11,29 @@
 $displayTitle = $title ?? 'Dashboard';
 $displaySubtitle = $subtitle ?? (string) config('app.tagline');
 $initial = strtoupper(mb_substr((string) ($user['name'] ?? 'S'), 0, 1));
+
+// ---- Tahun Buku (active period) — compact format: Okt'26 ----
+$bp = $activeBookPeriod ?? null;
+$bpMonths = ['01'=>'Jan','02'=>'Feb','03'=>'Mar','04'=>'Apr','05'=>'Mei','06'=>'Jun',
+             '07'=>'Jul','08'=>'Agu','09'=>'Sep','10'=>'Okt','11'=>'Nov','12'=>'Des'];
+$bpFullMonths = ['01'=>'Januari','02'=>'Februari','03'=>'Maret','04'=>'April','05'=>'Mei','06'=>'Juni',
+                 '07'=>'Juli','08'=>'Agustus','09'=>'September','10'=>'Oktober','11'=>'November','12'=>'Desember'];
+$bpShort = '—';
+$bpFull  = 'Belum diatur';
+$isClosed = false;
+if ($bp) {
+    $bpParts = explode('-', (string) ($bp['audit_month'] ?? ''));
+    $mm = $bpParts[1] ?? '';
+    $yy = $bpParts[0] ?? '';
+    $bpShort = ($bpMonths[$mm] ?? ($mm !== '' ? $mm : '—')) . "'" . substr((string) $yy, -2);
+    $bpFull  = ($bpFullMonths[$mm] ?? ($mm !== '' ? $mm : '—')) . ' ' . $yy;
+    $isClosed = ($bp['status'] ?? 'open') === 'closed';
+}
 ?>
 <header class="topbar">
     <div class="topbar-left">
         <!-- Modern SaaS & Startup Sidebar Toggle (Expanded/Collapsed state indicator) -->
-        <button type="button" class="topbar-sidebar-toggle" data-sidebar-toggle aria-label="<?= __('Toggle navigasi sidebar') ?>" title="<?= __('Ciutkan / Bentangkan Menu (Ctrl+\\)') ?>">
+        <button type="button" class="topbar-sidebar-toggle" data-sidebar-toggle aria-label="<?= __('Toggle navigasi sidebar') ?>" title="<?= __('Ciutkan / Bentangkan Menu (Ctrl+\\\\)') ?>">
             <span class="st-icon st-icon-panel-collapse" aria-hidden="true" title="<?= __('Ciutkan sidebar') ?>">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
                     <rect width="18" height="18" x="3" y="3" rx="3.5"/>
@@ -43,59 +61,70 @@ $initial = strtoupper(mb_substr((string) ($user['name'] ?? 'S'), 0, 1));
         <div class="topbar-brand-wrap">
             <a href="<?= url('dashboard') ?>" class="topbar-brand" aria-label="<?= e(config('app.name')) ?>">
                 <img src="<?= asset_v('img/logo.svg') ?>" alt="<?= e(config('app.name')) ?>" class="topbar-logo" width="30" height="30">
+            </a>
                 <div class="topbar-brand-col">
                     <div class="tb-brand-title">
                         <strong class="tb-name"><?= e(config('app.name')) ?></strong>
                         <span class="tb-badge">STO</span>
                     </div>
-                    <?php
-                    $bp = $activeBookPeriod ?? null;
-                    $bpMonths = ['01'=>'Jan','02'=>'Feb','03'=>'Mar','04'=>'Apr','05'=>'Mei','06'=>'Jun',
-                                 '07'=>'Jul','08'=>'Agu','09'=>'Sep','10'=>'Okt','11'=>'Nov','12'=>'Des'];
-                    $bpFullMonths = ['01'=>'Januari','02'=>'Februari','03'=>'Maret','04'=>'April','05'=>'Mei','06'=>'Juni',
-                                     '07'=>'Juli','08'=>'Agustus','09'=>'September','10'=>'Oktober','11'=>'November','12'=>'Desember'];
-                    $bpSubText = 'Belum diatur';
-                    $isClosed = false;
-                    if ($bp) {
-                        $bpParts = explode('-', (string) ($bp['audit_month'] ?? ''));
-                        $mFullName = $bpFullMonths[$bpParts[1] ?? ''] ?? ($bp['audit_month'] ?? '');
-                        $bpSubText = $mFullName . ' ' . ($bpParts[0] ?? '');
-                        $isClosed = ($bp['status'] ?? 'open') === 'closed';
-                    }
-                    ?>
-                    <a href="<?= url('tahun-buku') ?>" class="tb-period-sub <?= $isClosed ? 'is-closed' : 'is-open' ?>" title="<?= $isClosed ? 'Tahun Buku (Read-Only): ' . e($bpSubText) : 'Tahun Buku Aktif: ' . e($bpSubText) ?>" data-no-progress>
-                        <span class="env-dot <?= $isClosed ? 'dot-closed' : 'dot-open' ?>"></span>
-                        <span class="tb-period-text"><?= e($bpSubText) ?></span>
-                        <span class="tb-period-tag"><?= $isClosed ? 'Read-Only' : 'Berjalan' ?></span>
+                    <a href="<?= url('tahun-buku') ?>" class="tb-period-sub <?= $isClosed ? 'is-closed' : 'is-open' ?>"
+                       title="<?= $isClosed ? 'Tahun Buku (Read-Only): ' . e($bpFull) : 'Tahun Buku Aktif: ' . e($bpFull) ?>"
+                       data-tip="<?= $isClosed ? 'Tahun Buku (Ditutup): ' . e($bpFull) : 'Tahun Buku Aktif: ' . e($bpFull) ?>"
+                       aria-label="<?= $isClosed ? 'Tahun buku ditutup: ' . e($bpFull) : 'Tahun buku berjalan: ' . e($bpFull) ?>"
+                       data-no-progress>
+                        <span class="env-dot <?= $isClosed ? 'dot-closed' : 'dot-open' ?>" aria-hidden="true"></span>
+                        <span class="tb-period-text"><?= e($bpShort) ?></span>
                     </a>
                 </div>
-            </a>
         </div>
 
         <!-- Warehouse Selector -->
-        <form method="post" action="<?= url('warehouses/switch') ?>" class="wh-switch">
-            <?= csrf_field() ?>
-            <input type="hidden" name="return_to" value="<?= e($_SERVER['REQUEST_URI'] ?? '/dashboard') ?>">
-            <div class="wh-switch-inner" title="<?= __('Gudang Aktif (Pilih untuk berganti)') ?>">
-                <span class="wh-switch-ico" aria-hidden="true"><?= icon('building') ?></span>
-                <?php $__whs = \App\Core\Auth::visibleWarehouseIds(); ?>
+        <div class="wh-slot">
+            <?php
+            $__whs = \App\Core\Auth::visibleWarehouseIds();
+            $__whList = (new \App\Models\Warehouse())->forActiveUser(\App\Core\Auth::groupIds(), \App\Core\Auth::allGroups());
+            $__cur = \App\Core\Auth::activeWarehouse();
+            $__curName = $__cur['name'] ?? '—';
+            $__allowAll = (bool) \App\Core\Auth::allGroups();
+            $__isAll = ! \App\Core\Auth::hasWarehouse();
+            ?>
+            <form method="post" action="<?= url('warehouses/switch') ?>" class="wh-switch">
+                <?= csrf_field() ?>
+                <input type="hidden" name="return_to" value="<?= e($_SERVER['REQUEST_URI'] ?? '/dashboard') ?>">
                 <?php if (count($__whs) > 1): ?>
-                    <select name="warehouse_id" data-wh-switch data-auto-submit onchange="this.form.submit()" aria-label="<?= __('Pilih Gudang') ?>">
-                        <?php if (\App\Core\Auth::allGroups()): ?>
-                            <option value="all" <?= ! \App\Core\Auth::hasWarehouse() ? 'selected' : '' ?>><?= __('Semua Gudang') ?></option>
-                        <?php endif; ?>
-                        <?php foreach ((new \App\Models\Warehouse())->forActiveUser(\App\Core\Auth::groupIds(), \App\Core\Auth::allGroups()) as $__w): ?>
-                            <option value="<?= (int) $__w['id'] ?>" <?= (int) \App\Core\Auth::warehouseId() === (int) $__w['id'] ? 'selected' : '' ?>>
-                                <?= e($__w['name']) ?>
-                            </option>
-                        <?php endforeach; ?>
-                    </select>
+                    <!-- Desktop: native select (compact) -->
+                    <div class="wh-switch-inner wh-inner-desk" title="<?= __('Gudang Aktif (Pilih untuk berganti)') ?>">
+                        <span class="wh-switch-ico" aria-hidden="true"><?= icon('building') ?></span>
+                        <select name="warehouse_id" data-wh-switch data-auto-submit onchange="this.form.submit()" aria-label="<?= __('Pilih Gudang') ?>">
+                            <?php if ($__allowAll): ?>
+                                <option value="all" <?= $__isAll ? 'selected' : '' ?>><?= __('Semua Gudang') ?></option>
+                            <?php endif; ?>
+                            <?php foreach ($__whList as $__w): ?>
+                                <option value="<?= (int) $__w['id'] ?>" <?= (int) \App\Core\Auth::warehouseId() === (int) $__w['id'] ? 'selected' : '' ?>>
+                                    <?= e($__w['name']) ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+
+                    <!-- Mobile: button that opens a warehouse picker modal -->
+                    <button type="button" class="wh-trigger wh-trigger-mob" data-wh-modal-open
+                            aria-haspopup="dialog" aria-label="<?= e(__('Pilih Gudang') . ': ' . ($__isAll ? __('Semua Gudang') : $__curName)) ?>"
+                            title="<?= e(__('Pilih Gudang')) ?>">
+                        <span class="wh-trigger-ico" aria-hidden="true"><?= icon('building') ?></span>
+                        <span class="wh-trigger-label"><?= e($__isAll ? __('Semua Gudang') : $__curName) ?></span>
+                        <span class="wh-trigger-chev" aria-hidden="true">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+                        </span>
+                    </button>
                 <?php else: ?>
-                    <?php $__cur = \App\Core\Auth::activeWarehouse(); ?>
-                    <span class="wh-switch-static"><?= e($__cur['name'] ?? '—') ?></span>
+                    <div class="wh-switch-inner">
+                        <span class="wh-switch-ico" aria-hidden="true"><?= icon('building') ?></span>
+                        <span class="wh-switch-static"><?= e($__curName) ?></span>
+                    </div>
                 <?php endif; ?>
-            </div>
-        </form>
+            </form>
+        </div>
     </div>
 
     <!-- Spotlight Search -->
@@ -111,6 +140,14 @@ $initial = strtoupper(mb_substr((string) ($user['name'] ?? 'S'), 0, 1));
     <div class="topbar-actions">
         <!-- Hidden button hook for programmatic [data-scan-open] calls -->
         <button type="button" id="global-scan-trigger" data-scan-open class="sr-only" style="display:none;" aria-hidden="true"></button>
+
+        <!-- Theme toggle (moved from sidebar -> header, next to notifications) -->
+        <button type="button" class="icon-btn theme-btn" data-theme-toggle
+                aria-label="<?= e(__('Ganti Tema (Gelap / Terang)')) ?>"
+                title="<?= e(__('Ganti Tema')) ?>">
+            <span class="theme-ico theme-ico-sun" aria-hidden="true"><?= icon('sun') ?></span>
+            <span class="theme-ico theme-ico-moon" aria-hidden="true"><?= icon('moon') ?></span>
+        </button>
 
         <div class="notif-wrap" data-notif>
             <button type="button" class="icon-btn" data-notif-toggle aria-haspopup="true" aria-expanded="false" aria-label="<?= __('Notifikasi') ?>" title="<?= __('Notifikasi') ?>">
@@ -156,6 +193,21 @@ $initial = strtoupper(mb_substr((string) ($user['name'] ?? 'S'), 0, 1));
                     <span class="dropdown-item-label"><?= __('Profil & Akses') ?></span>
                 </a>
 
+                <?php $__loc = current_locale(); ?>
+                <div class="dropdown-sep"></div>
+
+                <div class="dropdown-group-title"><?= __('Bahasa') ?></div>
+                <div class="dropdown-lang" role="group" aria-label="<?= e(__('lang.label')) ?>">
+                    <a class="dropdown-lang-opt<?= $__loc === 'id' ? ' is-active' : '' ?>" href="<?= e(locale_url('id')) ?>" hreflang="id" title="<?= e(__('lang.id')) ?>" data-no-progress>
+                        <span class="lang-code">ID</span><span class="lang-name">Indonesia</span>
+                        <span class="dropdown-lang-check" aria-hidden="true"><?= icon('check') ?></span>
+                    </a>
+                    <a class="dropdown-lang-opt<?= $__loc === 'en' ? ' is-active' : '' ?>" href="<?= e(locale_url('en')) ?>" hreflang="en" title="<?= e(__('lang.en')) ?>" data-no-progress>
+                        <span class="lang-code">EN</span><span class="lang-name">English</span>
+                        <span class="dropdown-lang-check" aria-hidden="true"><?= icon('check') ?></span>
+                    </a>
+                </div>
+
                 <div class="dropdown-sep"></div>
 
                 <a class="dropdown-item dropdown-item-danger" href="<?= url('logout') ?>" role="menuitem">
@@ -166,3 +218,42 @@ $initial = strtoupper(mb_substr((string) ($user['name'] ?? 'S'), 0, 1));
         </div>
     </div>
 </header>
+
+<?php if (count($__whs) > 1): ?>
+<!-- ============================ Warehouse Picker Modal (Mobile) ============================ -->
+<div class="wh-modal-backdrop" data-wh-modal-backdrop hidden></div>
+<div class="wh-modal" data-wh-modal-dialog role="dialog" aria-modal="true" aria-label="<?= e(__('Pilih Gudang')) ?>" hidden>
+    <div class="wh-modal-panel">
+        <div class="wh-modal-head">
+            <span class="wh-modal-ico" aria-hidden="true"><?= icon('building') ?></span>
+            <span class="wh-modal-title"><?= __('Pilih Gudang') ?></span>
+            <button type="button" class="wh-modal-close" data-wh-modal-close aria-label="<?= __('Tutup') ?>"><?= icon('x') ?></button>
+        </div>
+        <div class="wh-modal-body">
+            <form method="post" action="<?= url('warehouses/switch') ?>" data-wh-modal-form>
+                <?= csrf_field() ?>
+                <input type="hidden" name="return_to" value="<?= e($_SERVER['REQUEST_URI'] ?? '/dashboard') ?>">
+                <input type="hidden" name="warehouse_id" value="" data-wh-modal-input>
+                <div class="wh-list" role="listbox" aria-label="<?= e(__('Daftar Gudang')) ?>">
+                    <?php if ($__allowAll): ?>
+                    <button type="button" class="wh-opt <?= $__isAll ? 'is-active' : '' ?>" role="option"
+                            aria-selected="<?= $__isAll ? 'true' : 'false' ?>" data-wh-value="all">
+                        <span class="wh-opt-ico" aria-hidden="true"><?= icon('layers') ?></span>
+                        <span class="wh-opt-name"><?= __('Semua Gudang') ?></span>
+                        <span class="wh-opt-check" aria-hidden="true"><?= icon('check') ?></span>
+                    </button>
+                    <?php endif; ?>
+                    <?php foreach ($__whList as $__w): $__sel = (int) \App\Core\Auth::warehouseId() === (int) $__w['id']; ?>
+                    <button type="button" class="wh-opt <?= $__sel ? 'is-active' : '' ?>" role="option"
+                            aria-selected="<?= $__sel ? 'true' : 'false' ?>" data-wh-value="<?= (int) $__w['id'] ?>">
+                        <span class="wh-opt-ico" aria-hidden="true"><?= icon('box') ?></span>
+                        <span class="wh-opt-name"><?= e($__w['name']) ?></span>
+                        <span class="wh-opt-check" aria-hidden="true"><?= icon('check') ?></span>
+                    </button>
+                    <?php endforeach; ?>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<?php endif; ?>

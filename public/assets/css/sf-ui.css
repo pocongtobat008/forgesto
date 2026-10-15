@@ -5192,53 +5192,6 @@ input[type="checkbox"], input[type="radio"] {
     flex-shrink: 0 !important;
 }
 
-.topbar-brand {
-    width: auto !important;
-    height: auto !important;
-    background: transparent !important;
-    box-shadow: none !important;
-    border-radius: 0 !important;
-    display: inline-flex !important;
-    align-items: center !important;
-    gap: .55rem !important;
-    text-decoration: none !important;
-    color: inherit !important;
-    padding-right: .65rem !important;
-    border-right: 1px solid var(--border) !important;
-    flex-shrink: 0 !important;
-}
-.topbar-logo {
-    width: 30px !important;
-    height: 30px !important;
-    display: block !important;
-    border-radius: var(--radius-sm) !important;
-    flex-shrink: 0 !important;
-}
-.topbar-brand-text {
-    display: flex !important;
-    align-items: center !important;
-    gap: .4rem !important;
-    line-height: 1 !important;
-    flex-shrink: 0 !important;
-}
-.topbar-brand-text .tb-name {
-    font-family: var(--font-display, inherit) !important;
-    font-size: 1.05rem !important;
-    font-weight: 700 !important;
-    letter-spacing: -.02em !important;
-    color: var(--text) !important;
-    white-space: nowrap !important;
-}
-.topbar-brand-text .tb-badge {
-    font-size: .62rem !important;
-    font-weight: 800 !important;
-    background: var(--brand-500, #f0b429) !important;
-    color: #1a1108 !important;
-    padding: .15rem .38rem !important;
-    border-radius: 4px !important;
-    letter-spacing: .06em !important;
-    text-transform: uppercase !important;
-}
 
 .topbar-hamburger {
     width: 38px !important;
@@ -5279,16 +5232,8 @@ input[type="checkbox"], input[type="radio"] {
     border-color: var(--color-line-2) !important;
     color: var(--text) !important;
 }
-.topbar-env-pill .env-dot {
-    width: 7px !important;
-    height: 7px !important;
-    border-radius: 50% !important;
-    background: #10b981 !important;
-    display: inline-block !important;
-}
-.topbar-env-pill.is-closed .env-dot {
-    background: #f59e0b !important;
-}
+
+
 .topbar-env-pill .env-text {
     font-weight: 700 !important;
     letter-spacing: .03em !important;
@@ -5649,13 +5594,8 @@ html.sidebar-collapsed .main {
         padding: 0 1rem !important;
         height: 56px !important;
     }
-    .topbar-brand {
-        border-right: none !important;
-        padding-right: 0 !important;
-    }
-    .topbar-brand-text .tb-name {
-        font-size: .95rem !important;
-    }
+    
+    
     .app-body {
         margin-top: 56px !important;
         min-height: calc(100vh - 56px) !important;
@@ -5754,17 +5694,9 @@ html.sidebar-collapsed .main {
         min-width: 0 !important;
         flex: 1 1 auto !important;
     }
-    .topbar-brand-text {
-        display: none !important;
-    }
-    .topbar-brand {
-        border-right: none !important;
-        padding-right: 0 !important;
-    }
-    .topbar-logo {
-        width: 28px !important;
-        height: 28px !important;
-    }
+    
+    
+    
     .wh-switch {
         min-width: 0 !important;
         max-width: 140px !important;
@@ -6343,108 +6275,7 @@ html.sidebar-collapsed .main {
    ===================================================================== */
 
 /* 1. Header Brand & Subtitle Tahun Buku */
-.topbar-brand-wrap {
-    display: inline-flex !important;
-    align-items: center !important;
-    flex-shrink: 0 !important;
-}
-.topbar-brand {
-    display: inline-flex !important;
-    align-items: center !important;
-    gap: 0.65rem !important;
-    text-decoration: none !important;
-    color: inherit !important;
-    padding-right: 0.85rem !important;
-    border-right: 1px solid var(--border) !important;
-    background: transparent !important;
-}
-.topbar-brand-col {
-    display: flex !important;
-    flex-direction: column !important;
-    justify-content: center !important;
-    gap: 2px !important;
-    line-height: 1.1 !important;
-}
-.tb-brand-title {
-    display: flex !important;
-    align-items: center !important;
-    gap: 0.35rem !important;
-}
-.tb-brand-title .tb-name {
-    font-size: 1.05rem !important;
-    font-weight: 750 !important;
-    letter-spacing: -0.02em !important;
-    color: var(--text) !important;
-    line-height: 1 !important;
-}
-.tb-brand-title .tb-badge {
-    font-size: 0.6rem !important;
-    font-weight: 800 !important;
-    background: var(--brand-500, #f0b429) !important;
-    color: #1a1108 !important;
-    padding: 0.12rem 0.38rem !important;
-    border-radius: 4px !important;
-    letter-spacing: 0.05em !important;
-    text-transform: uppercase !important;
-    line-height: 1 !important;
-}
-.tb-period-sub {
-    display: inline-flex !important;
-    align-items: center !important;
-    gap: 0.35rem !important;
-    font-size: 0.7rem !important;
-    font-weight: 550 !important;
-    color: var(--text-muted, #64748b) !important;
-    text-decoration: none !important;
-    padding: 0.08rem 0.45rem 0.08rem 0.35rem !important;
-    background: var(--surface-2, #f8fafc) !important;
-    border: 1px solid var(--border, #e2e8f0) !important;
-    border-radius: 9999px !important;
-    transition: all 0.15s ease !important;
-    max-width: 220px !important;
-}
-.tb-period-sub:hover {
-    color: var(--text) !important;
-    background: var(--surface) !important;
-    border-color: var(--color-line-2, #cbd5e1) !important;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.04) !important;
-}
-.tb-period-sub .env-dot {
-    width: 6px !important;
-    height: 6px !important;
-    border-radius: 50% !important;
-    display: inline-block !important;
-    flex-shrink: 0 !important;
-}
-.tb-period-sub .dot-open {
-    background: #10b981 !important;
-    box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2) !important;
-}
-.tb-period-sub .dot-closed {
-    background: #f59e0b !important;
-    box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.2) !important;
-}
-.tb-period-sub .tb-period-text {
-    white-space: nowrap !important;
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;
-}
-.tb-period-sub .tb-period-tag {
-    font-size: 0.6rem !important;
-    font-weight: 700 !important;
-    padding: 0.04rem 0.25rem !important;
-    border-radius: 3px !important;
-    text-transform: uppercase !important;
-    letter-spacing: 0.03em !important;
-}
-.tb-period-sub.is-open .tb-period-tag {
-    background: rgba(16, 185, 129, 0.12) !important;
-    color: #059669 !important;
-}
-.tb-period-sub.is-closed .tb-period-tag {
-    background: rgba(245, 158, 11, 0.15) !important;
-    color: #d97706 !important;
-}
+
 
 /* 2. Modern SaaS & Startup Sidebar Toggle */
 .topbar-sidebar-toggle {
@@ -6504,65 +6335,8 @@ html.sidebar-collapsed .main {
     flex-direction: column !important;
     gap: 0.75rem !important;
 }
-.sidebar-lang-box {
-    display: flex !important;
-    flex-direction: column !important;
-    gap: 0.35rem !important;
-}
-.sidebar-lang-header {
-    display: flex !important;
-    align-items: center !important;
-    gap: 0.4rem !important;
-    font-size: 0.72rem !important;
-    font-weight: 600 !important;
-    color: var(--text-faint) !important;
-    text-transform: uppercase !important;
-    letter-spacing: 0.05em !important;
-}
-.sidebar-lang-header svg {
-    width: 14px !important;
-    height: 14px !important;
-}
-.sidebar-lang-switch {
-    display: flex !important;
-    background: var(--surface-2, #f1f5f9) !important;
-    padding: 3px !important;
-    border-radius: 8px !important;
-    border: 1px solid var(--border) !important;
-    gap: 2px !important;
-}
-.sidebar-lang-opt {
-    flex: 1 !important;
-    display: inline-flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    gap: 0.35rem !important;
-    padding: 0.35rem 0.5rem !important;
-    border-radius: 6px !important;
-    font-size: 0.76rem !important;
-    font-weight: 600 !important;
-    color: var(--text-muted) !important;
-    text-decoration: none !important;
-    transition: all 0.15s ease !important;
-}
-.sidebar-lang-opt .lang-code {
-    font-weight: 750 !important;
-    font-size: 0.72rem !important;
-}
-.sidebar-lang-opt .lang-name {
-    font-size: 0.7rem !important;
-    font-weight: 500 !important;
-}
-.sidebar-lang-opt:hover {
-    color: var(--text) !important;
-    background: rgba(0, 0, 0, 0.03) !important;
-}
-.sidebar-lang-opt.is-active {
-    background: var(--surface) !important;
-    color: var(--text) !important;
-    border: 1px solid var(--border) !important;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05) !important;
-}
+
+
 .sidebar-role-box {
     display: flex !important;
     flex-direction: column !important;
@@ -6585,21 +6359,8 @@ html.sidebar-collapsed .sidebar-footer {
     padding: 0.65rem 0.4rem !important;
     align-items: center !important;
 }
-html.sidebar-collapsed .sidebar-lang-header {
-    display: none !important;
-}
-html.sidebar-collapsed .sidebar-lang-switch {
-    flex-direction: column !important;
-    padding: 2px !important;
-    width: 100% !important;
-}
-html.sidebar-collapsed .sidebar-lang-opt .lang-name {
-    display: none !important;
-}
-html.sidebar-collapsed .sidebar-lang-opt {
-    padding: 0.3rem 0 !important;
-    justify-content: center !important;
-}
+
+
 html.sidebar-collapsed .sidebar-role-label {
     display: none !important;
 }
@@ -6708,14 +6469,6 @@ html.sidebar-collapsed .sidebar-role-wrap .badge {
 }
 
 /* 6. Mobile & Small Screen Tweaks */
-@media (max-width: 767px) {
-    .tb-period-sub .tb-period-text {
-        max-width: 90px !important;
-    }
-    .tb-brand-title .tb-name {
-        font-size: 0.95rem !important;
-    }
-}
 
 
 /* ==========================================================================
@@ -6949,70 +6702,10 @@ html.sidebar-collapsed .sidebar-role-wrap .badge {
 .notif-all { color: var(--accent, #228be6) !important; }
 
 /* ---------------------------------------------------- Sidebar theme toggle */
-.sidebar-theme-box { display: flex !important; }
-.sidebar-theme-toggle {
-    display: flex !important;
-    align-items: center !important;
-    gap: .5rem !important;
-    width: 100% !important;
-    padding: .42rem .55rem !important;
-    border: 1px solid var(--border, #e2e8f0) !important;
-    border-radius: 9px !important;
-    background: var(--surface-2, #f8fafc) !important;
-    color: var(--text-muted) !important;
-    font: inherit !important;
-    font-size: .76rem !important;
-    font-weight: 600 !important;
-    cursor: pointer !important;
-    transition: background .15s, border-color .15s, color .15s !important;
-    box-sizing: border-box !important;
-}
-.sidebar-theme-toggle:hover {
-    background: var(--surface, #fff) !important;
-    border-color: var(--color-line-2, #cbd5e1) !important;
-    color: var(--text) !important;
-}
-.sidebar-theme-toggle .stt-ico {
-    display: inline-flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    flex: 0 0 auto !important;
-}
-.sidebar-theme-toggle .stt-ico svg { width: 15px !important; height: 15px !important; }
-.sidebar-theme-toggle .stt-ico-moon { display: none !important; }
-html[data-theme="dark"] .sidebar-theme-toggle .stt-ico-sun { display: none !important; }
-html[data-theme="dark"] .sidebar-theme-toggle .stt-ico-moon { display: inline-flex !important; }
-.sidebar-theme-toggle .stt-label { flex: 1 1 auto !important; text-align: left !important; }
-.sidebar-theme-toggle .stt-track {
-    position: relative !important;
-    flex: 0 0 auto !important;
-    width: 34px !important;
-    height: 19px !important;
-    border-radius: 10px !important;
-    background: var(--surface-3, #cbd5e1) !important;
-    transition: background .2s !important;
-}
-.sidebar-theme-toggle .stt-knob {
-    position: absolute !important;
-    top: 2px !important;
-    left: 2px !important;
-    width: 15px !important;
-    height: 15px !important;
-    border-radius: 50% !important;
-    background: #fff !important;
-    box-shadow: 0 1px 3px rgba(15, 23, 42, .25) !important;
-    transition: transform .2s cubic-bezier(.16, 1, .3, 1) !important;
-}
-html[data-theme="dark"] .sidebar-theme-toggle .stt-track { background: var(--accent, #228be6) !important; }
-html[data-theme="dark"] .sidebar-theme-toggle .stt-knob { transform: translateX(15px) !important; }
+
 
 /* Collapsed mini-rail: icon only */
-html.sidebar-collapsed .sidebar-theme-toggle {
-    justify-content: center !important;
-    padding: .42rem 0 !important;
-}
-html.sidebar-collapsed .sidebar-theme-toggle .stt-label,
-html.sidebar-collapsed .sidebar-theme-toggle .stt-track { display: none !important; }
+
 
 /* ---------------------------------------------------- Dropdown danger item */
 .dropdown-logout-form { margin: 0 !important; }
@@ -7053,28 +6746,13 @@ html.sidebar-collapsed .sidebar-theme-toggle .stt-track { display: none !importa
     }
 
     /* Brand: logo + name only, period pill hidden to save space */
-    .topbar-brand {
-        padding-right: 0 !important;
-        border-right: none !important;
-        gap: .4rem !important;
-        min-width: 0 !important;
-    }
-    .topbar-brand .topbar-logo { width: 26px !important; height: 26px !important; }
-    .tb-brand-title .tb-name {
-        font-size: .9rem !important;
-        white-space: nowrap !important;
-        overflow: hidden !important;
-        text-overflow: ellipsis !important;
-        max-width: 42vw !important;
-    }
-    .tb-brand-title .tb-badge { font-size: .55rem !important; padding: .1rem .3rem !important; }
-    .tb-period-sub {
-        max-width: 150px !important;
-        font-size: .64rem !important;
-        padding: .06rem .34rem !important;
-    }
-    .tb-period-sub .tb-period-text { max-width: 62px !important; }
-    .tb-period-sub .tb-period-tag { display: none !important; }
+    
+    
+    
+    
+    
+    
+    
 
     /* Warehouse switcher: icon-triggered compact select */
     .wh-switch { flex: 0 0 auto !important; max-width: none !important; }
@@ -7177,9 +6855,1156 @@ html.sidebar-collapsed .sidebar-theme-toggle .stt-track { display: none !importa
 
 /* Very small phones */
 @media (max-width: 400px) {
-    .tb-brand-title .tb-name { max-width: 30vw !important; font-size: .84rem !important; }
-    .tb-period-sub { display: none !important; }
+    
+    
     .topbar-actions .icon-btn,
     .topbar .icon-btn { width: 34px !important; height: 34px !important; min-width: 34px !important; min-height: 34px !important; }
     .topbar-actions .user-chip .avatar { width: 34px !important; height: 34px !important; min-width: 34px !important; }
+}
+/* ==========================================================================
+   SF UI HOTFIX — v1.4.0
+   1) Warehouse picker modal (mobile)
+   2) Collapsed sidebar mini-rail precision (theme / lang / user)
+   3) Tahun Buku compact pill: Okt'26 + dot-only status (green/red)
+   ========================================================================== */
+
+/* ---------------------------------------------------------------- 3. TB pill */
+
+
+/* status is conveyed by the dot alone — drop the text tag */
+
+
+/* ------------------------------------------------- 2. Collapsed sidebar rail */
+html.sidebar-collapsed .sidebar-footer {
+    padding: 0.55rem 0.5rem 0.85rem !important;
+    gap: 0.5rem !important;
+    align-items: stretch !important;
+}
+
+
+/* Language: ID / EN stacked, perfectly centred, equal width */
+
+
+/* Role / user: show initial-only avatar chip, centred, no overflow */
+html.sidebar-collapsed .sidebar-role-label { display: none !important; }
+html.sidebar-collapsed .sidebar-role-wrap {
+    align-items: center !important;
+    width: 100% !important;
+}
+html.sidebar-collapsed .sidebar-role-wrap .badge {
+    width: 40px !important;
+    height: 40px !important;
+    min-width: 40px !important;
+    padding: 0 !important;
+    border-radius: 11px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-size: 0 !important;
+    line-height: 1 !important;
+    overflow: hidden !important;
+    letter-spacing: 0 !important;
+}
+/* Expanded: only the full role label is shown */
+.sidebar-role-wrap .badge .role-ini { display: none !important; }
+.sidebar-role-wrap .badge .role-full { display: inline !important; }
+/* Collapsed: swap to a 2-letter monogram */
+html.sidebar-collapsed .sidebar-role-wrap .badge .role-full { display: none !important; }
+html.sidebar-collapsed .sidebar-role-wrap .badge .role-ini {
+    display: inline-flex !important;
+    font-size: 0.72rem !important;
+    font-weight: 800 !important;
+    letter-spacing: 0.02em !important;
+    line-height: 1 !important;
+}
+/* Hide the "N group didelegasikan" sub-line inside the rail */
+html.sidebar-collapsed .sidebar-role-wrap .text-xs { display: none !important; }
+
+/* ------------------------------------------------------ 1. Warehouse modal */
+.wh-modal-backdrop {
+    position: fixed !important;
+    inset: 0 !important;
+    background: rgba(15, 23, 42, 0.45) !important;
+    backdrop-filter: blur(2px) !important;
+    z-index: 12000 !important;
+    animation: whFade .16s ease-out !important;
+}
+.wh-modal {
+    position: fixed !important;
+    inset: 0 !important;
+    z-index: 12001 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 1rem !important;
+}
+.wh-modal[hidden],
+.wh-modal-backdrop[hidden] { display: none !important; }
+.wh-modal-panel {
+    width: min(420px, 100%) !important;
+    max-height: min(78vh, 620px) !important;
+    background: var(--surface, #fff) !important;
+    border: 1px solid var(--border, #e2e8f0) !important;
+    border-radius: 16px !important;
+    box-shadow: 0 24px 60px -12px rgba(15, 23, 42, 0.32) !important;
+    display: flex !important;
+    flex-direction: column !important;
+    overflow: hidden !important;
+    animation: whPop .18s cubic-bezier(.16,1,.3,1) !important;
+}
+@keyframes whFade { from { opacity: 0 } to { opacity: 1 } }
+@keyframes whPop {
+    from { opacity: 0; transform: translateY(10px) scale(.98) }
+    to   { opacity: 1; transform: none }
+}
+.wh-modal-head {
+    display: flex !important;
+    align-items: center !important;
+    gap: 0.6rem !important;
+    padding: 0.95rem 1rem !important;
+    border-bottom: 1px solid var(--border, #e2e8f0) !important;
+    background: var(--surface-2, #f8fafc) !important;
+}
+.wh-modal-ico {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 30px !important;
+    height: 30px !important;
+    border-radius: 9px !important;
+    background: rgba(34, 139, 230, 0.12) !important;
+    color: var(--accent, #228be6) !important;
+    flex: 0 0 auto !important;
+}
+.wh-modal-ico svg { width: 16px !important; height: 16px !important; }
+.wh-modal-title {
+    flex: 1 1 auto !important;
+    font-size: 0.95rem !important;
+    font-weight: 750 !important;
+    color: var(--text) !important;
+}
+.wh-modal-close {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 32px !important;
+    height: 32px !important;
+    border-radius: 9px !important;
+    border: 1px solid var(--border, #e2e8f0) !important;
+    background: var(--surface, #fff) !important;
+    color: var(--text-muted) !important;
+    cursor: pointer !important;
+    flex: 0 0 auto !important;
+}
+.wh-modal-close:hover { color: var(--text) !important; background: var(--surface-2, #f1f5f9) !important; }
+.wh-modal-close svg { width: 16px !important; height: 16px !important; }
+.wh-modal-body {
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    padding: 0.6rem !important;
+}
+.wh-list { display: flex !important; flex-direction: column !important; gap: 0.3rem !important; }
+.wh-opt {
+    display: flex !important;
+    align-items: center !important;
+    gap: 0.7rem !important;
+    width: 100% !important;
+    min-height: 50px !important;
+    padding: 0.6rem 0.75rem !important;
+    border: 1px solid var(--border, #e2e8f0) !important;
+    border-radius: 11px !important;
+    background: var(--surface, #fff) !important;
+    color: var(--text) !important;
+    font: inherit !important;
+    font-size: 0.86rem !important;
+    font-weight: 600 !important;
+    text-align: left !important;
+    cursor: pointer !important;
+    transition: background .13s, border-color .13s !important;
+    box-sizing: border-box !important;
+}
+.wh-opt:hover { background: var(--surface-2, #f8fafc) !important; }
+.wh-opt.is-active {
+    border-color: var(--accent, #228be6) !important;
+    background: rgba(34, 139, 230, 0.07) !important;
+}
+.wh-opt-ico {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 30px !important;
+    height: 30px !important;
+    border-radius: 8px !important;
+    background: var(--surface-2, #f1f5f9) !important;
+    color: var(--text-muted) !important;
+    flex: 0 0 auto !important;
+}
+.wh-opt-ico svg { width: 16px !important; height: 16px !important; }
+.wh-opt-name { flex: 1 1 auto !important; }
+.wh-opt-check {
+    display: none !important;
+    color: var(--accent, #228be6) !important;
+    flex: 0 0 auto !important;
+}
+.wh-opt-check svg { width: 17px !important; height: 17px !important; }
+.wh-opt.is-active .wh-opt-check { display: inline-flex !important; }
+.wh-opt.is-active .wh-opt-ico {
+    background: rgba(34, 139, 230, 0.13) !important;
+    color: var(--accent, #228be6) !important;
+}
+
+/* Trigger button: hidden on desktop, visible on mobile */
+.wh-trigger-mob { display: none !important; }
+
+/* -------------------------------------------------- Mobile layout (<=767px) */
+@media (max-width: 767px) {
+    /* Hide the desktop native select, show the mobile trigger */
+    .wh-inner-desk { display: none !important; }
+    .wh-trigger-mob {
+        display: inline-flex !important;
+        align-items: center !important;
+        gap: 0.4rem !important;
+        height: 36px !important;
+        max-width: 44vw !important;
+        padding: 0 0.6rem 0 0.5rem !important;
+        border: 1px solid var(--border, #e2e8f0) !important;
+        border-radius: 10px !important;
+        background: var(--surface-2, #f8fafc) !important;
+        color: var(--text) !important;
+        font: inherit !important;
+        font-size: 0.78rem !important;
+        font-weight: 650 !important;
+        cursor: pointer !important;
+        box-sizing: border-box !important;
+    }
+    .wh-trigger-mob:active { background: var(--surface, #fff) !important; }
+    .wh-trigger-ico { display: inline-flex !important; flex: 0 0 auto !important; color: var(--accent, #228be6) !important; }
+    .wh-trigger-ico svg { width: 15px !important; height: 15px !important; }
+    .wh-trigger-label {
+        flex: 1 1 auto !important;
+        min-width: 0 !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+        white-space: nowrap !important;
+        text-align: left !important;
+    }
+    .wh-trigger-chev { display: inline-flex !important; flex: 0 0 auto !important; color: var(--text-faint) !important; }
+
+    /* Let the TB pill breathe: smaller, non-wrapping */
+    
+    
+
+    /* Modal opens from the bottom on phones — thumb-friendly */
+    .wh-modal { align-items: flex-end !important; padding: 0 !important; }
+    .wh-modal-panel {
+        width: 100% !important;
+        max-height: 82vh !important;
+        border-radius: 18px 18px 0 0 !important;
+        padding-bottom: env(safe-area-inset-bottom, 0) !important;
+    }
+    .wh-opt { min-height: 54px !important; font-size: 0.9rem !important; }
+}
+
+/* Very small phones: keep TB pill visible (dot + short text) */
+
+/* ==========================================================================
+   SF UI HOTFIX — v1.4.1  (Pocong-Tobat UI/UX Max Pro)
+   1) Theme/lang/role in sidebar (esp. collapsed rail) — unreachable + odd
+   2) Tahun Buku badge — hug content, professional, no dead space
+   3) Advanced-search drawer — close (x) button clipped by head
+   4) Mobile header — elements overlapping/colliding at <=767px
+   ========================================================================== */
+
+
+/* ---------------------------------------------------------------------------
+   1) SIDEBAR FOOTER (theme / language / role)
+   Root cause: .sidebar-footer lives INSIDE <nav class="sidebar-nav">, and the
+   nav is the scrolling flex child (overflow-y:auto; flex:1). With a long menu
+   the footer scrolled below the viewport (measured y=1074 on a 900px screen),
+   so Tema / Bahasa / Peran Aktif were unreachable and the collapsed rail
+   looked broken.
+   Fix: pin the footer to the bottom of the sidebar column so it is always
+   visible, and give the nav its own scroll region beneath it.
+   --------------------------------------------------------------------------- */
+.sidebar {
+    display: flex !important;
+    flex-direction: column !important;
+    overflow: hidden !important;          /* sidebar itself never scrolls */
+    height: calc(100vh - var(--topbar-h, 60px)) !important;
+}
+.sidebar-nav {
+    flex: 1 1 auto !important;
+    min-height: 0 !important;             /* required so flex child can shrink */
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    display: flex !important;
+    flex-direction: column !important;
+    padding-bottom: 0.5rem !important;
+}
+/* pull the footer OUT of the scroll flow and pin it */
+.sidebar-footer {
+    flex: 0 0 auto !important;
+    margin-top: auto !important;
+    position: sticky !important;
+    bottom: 0 !important;
+    z-index: 5 !important;
+    background: var(--surface, #fff) !important;
+    border-top: 1px solid var(--border, #e2e8f0) !important;
+    padding: 0.7rem 0.85rem calc(0.9rem + env(safe-area-inset-bottom, 0px)) !important;
+    gap: 0.6rem !important;
+    box-shadow: 0 -6px 14px -12px rgba(15, 23, 42, 0.35) !important;
+}
+
+/* --- Collapsed rail: compact, uniform 40px control stack ---------------- */
+html.sidebar-collapsed .sidebar-footer {
+    padding: 0.6rem 0.35rem calc(0.75rem + env(safe-area-inset-bottom, 0px)) !important;
+    gap: 0.45rem !important;
+    align-items: center !important;
+}
+
+
+/* Theme: 40x40 icon square, perfectly centred */
+
+
+/* Language: ID over EN, one 40px-wide segmented stack */
+
+
+/* Role: 2-letter monogram in a 40x40 chip */
+html.sidebar-collapsed .sidebar-role-label { display: none !important; }
+html.sidebar-collapsed .sidebar-role-wrap {
+    align-items: center !important;
+    width: 100% !important;
+    justify-content: center !important;
+}
+html.sidebar-collapsed .sidebar-role-wrap .badge {
+    width: 40px !important; height: 40px !important; min-width: 40px !important;
+    padding: 0 !important; margin: 0 auto !important;
+    border-radius: 11px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-size: 0 !important; line-height: 1 !important;
+    overflow: hidden !important; letter-spacing: 0 !important;
+}
+.sidebar-role-wrap .badge .role-ini  { display: none !important; }
+.sidebar-role-wrap .badge .role-full { display: inline !important; }
+html.sidebar-collapsed .sidebar-role-wrap .badge .role-full { display: none !important; }
+html.sidebar-collapsed .sidebar-role-wrap .badge .role-ini {
+    display: inline-flex !important;
+    font-size: 0.72rem !important;
+    font-weight: 800 !important;
+    line-height: 1 !important;
+}
+html.sidebar-collapsed .sidebar-role-wrap .text-xs { display: none !important; }
+
+
+/* ---------------------------------------------------------------------------
+   2) TAHUN BUKU BADGE — hug content, tight, professional
+   Root cause: the pill inherited max-width:220px inside .topbar-brand so it
+   stretched, leaving dead space; the status dot had a glow ring that read like
+   a live-status LED next to a *date*.
+   --------------------------------------------------------------------------- */
+
+
+/* one clean axis for the two brand rows (kills the "stair-step" look) */
+
+
+/* ---------------------------------------------------------------------------
+   3) ADVANCED-SEARCH DRAWER HEAD — close button was clipped
+   Root cause: head used align-items:flex-start with a 44px close button whose
+   1.4rem "&times;" glyph collided with the panel's rounded overflow.
+   --------------------------------------------------------------------------- */
+.adv-drawer { overflow: hidden !important; }
+
+.adv-drawer-head {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 0.85rem !important;
+    padding: 0.95rem 0.95rem 0.85rem 1.1rem !important;
+    min-height: 64px !important;
+    border-bottom: 1px solid var(--border, #e2e8f0) !important;
+    flex: 0 0 auto !important;
+}
+.adv-drawer-head > div:first-child {
+    min-width: 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 2px !important;
+}
+.adv-drawer-head strong {
+    display: block !important;
+    font-size: 1rem !important;
+    line-height: 1.2 !important;
+    letter-spacing: -0.01em !important;
+}
+.adv-drawer-head .adv-close,
+.adv-close {
+    flex: 0 0 auto !important;
+    width: 36px !important; height: 36px !important;
+    min-width: 36px !important; min-height: 36px !important;
+    display: grid !important;
+    place-items: center !important;
+    padding: 0 !important; margin: 0 !important;
+    font-size: 22px !important; font-weight: 400 !important;
+    line-height: 1 !important;
+    color: var(--text-2, #475569) !important;
+    background: var(--surface-2, #f8fafc) !important;
+    border: 1px solid var(--border, #e2e8f0) !important;
+    border-radius: 9px !important;
+    cursor: pointer !important;
+    align-self: center !important;
+    overflow: visible !important;
+}
+.adv-drawer-head .adv-close:hover,
+.adv-close:hover {
+    background: #fee2e2 !important;
+    border-color: #fecaca !important;
+    color: #b91c1c !important;
+}
+.adv-drawer-head .adv-close:focus-visible,
+.adv-close:focus-visible {
+    outline: 2px solid var(--accent, #228be6) !important;
+    outline-offset: 2px !important;
+}
+.adv-drawer-body { padding: 0.9rem 1.1rem !important; }
+.adv-drawer-body .adv-row { margin-bottom: 0.5rem !important; }
+
+
+/* ---------------------------------------------------------------------------
+   4) MOBILE HEADER — stop the collision at <=767px
+   Root cause: .topbar is flex/nowrap; both .topbar-left and the brand block
+   competed for width while the wh trigger was allowed 44vw, so the warehouse
+   trigger slid over the brand/TB pill and jammed the bell + avatar.
+   Fix: explicit flex priority — brand shrinks/truncates, wh shrinks first
+   with a hard cap, actions never shrink.
+   --------------------------------------------------------------------------- */
+@media (max-width: 767px) {
+    .topbar {
+        gap: 0.3rem !important;
+        padding: 0 0.5rem !important;
+        overflow: hidden !important;
+    }
+    .topbar-left {
+        flex: 1 1 auto !important;
+        min-width: 0 !important;
+        overflow: hidden !important;
+        gap: 0.35rem !important;
+    }
+    
+    
+    
+    
+    
+
+    .wh-slot {
+        flex: 0 1 auto !important;
+        min-width: 0 !important;
+        display: flex !important;
+        align-items: center !important;
+    }
+    .wh-trigger-mob {
+        max-width: 40vw !important;
+        min-width: 0 !important;
+        flex-shrink: 1 !important;
+        overflow: hidden !important;
+    }
+    .topbar-actions {
+        flex: 0 0 auto !important;
+        flex-shrink: 0 !important;
+        gap: 0.3rem !important;
+        margin-left: auto !important;
+    }
+    .topbar-actions .icon-btn,
+    .topbar .icon-btn,
+    .topbar-actions .user-chip .avatar { flex: 0 0 auto !important; }
+    .notif-wrap { flex: 0 0 auto !important; }
+}
+
+@media (max-width: 480px) {
+    
+    
+    
+    .wh-trigger-mob { max-width: 34vw !important; }
+    .wh-trigger-label { font-size: 0.74rem !important; }
+}
+
+@media (max-width: 400px) {
+    
+    
+    
+    .wh-trigger-mob { max-width: 40vw !important; }
+}
+/* ==========================================================================
+   SF UI HOTFIX — v1.4.1b  (narrow-width collision: topbar brand vs actions)
+   At 320-400px the .tb-period-sub badge (white-space:nowrap) could not shrink,
+   so it overflowed .topbar-left and slid under the calendar/wh trigger.
+   Fix: cap the brand column, allow it to shrink to 0, and drop non-essential
+   badge furniture (dot) + tighten type at the narrowest tier.
+   ========================================================================== */
+
+@media (max-width: 480px) {
+    .topbar-left { flex: 1 1 0% !important; min-width: 0 !important; }
+    
+    
+    
+    
+
+    /* the badge may shrink, must never push past its column */
+    
+    
+}
+
+/* ---- 400px and below: shed the badge's dot, keep type tiny --------------- */
+@media (max-width: 400px) {
+    
+    
+    .wh-trigger-mob { max-width: 36vw !important; }
+}
+
+/* ---- 360px and below: badge becomes the only brand element -------------- */
+@media (max-width: 360px) {
+    
+    .topbar-left { gap: 0.25rem !important; }
+}
+/* ==========================================================================
+   SF UI HOTFIX — v1.4.1c  (collapsed rail "aneh" root-cause fix)
+   Bug: a later collapsed-rail block set
+       html.sidebar-collapsed .sidebar-theme-toggle .stt-ico { display:inline-flex }
+   with NO variant qualifier, so it re-showed .stt-ico-moon that the base rule
+   hides -> both sun AND moon rendered side-by-side = the odd "aneh" look.
+   Fix: re-assert the exclusive sun/moon toggling at the highest specificity,
+   last in the cascade.
+   ========================================================================== */
+
+/* ---- Theme: exactly ONE icon visible, keyed off html[data-theme] -------- */
+
+
+/* ---- Language: identical radius + true vertical centring ---------------- */
+
+
+/* ---- Role chip: identical radius, strip the stray dot, tidy spacing ----- */
+.sidebar-role-wrap { display: flex !important; align-items: center !important; gap: 0 !important; }
+.sidebar-role-wrap .badge,
+html.sidebar-collapsed .sidebar-role-wrap .badge {
+    border-radius: 11px !important;
+    background: var(--brand-soft, #fdf3d7) !important;
+    color: var(--brand-ink, #7c4a03) !important;
+    border: 1px solid var(--brand-line, #f2dfa8) !important;
+    box-shadow: none !important;
+}
+/* kill any decorative dot/pseudo-dot inside the role badge */
+.sidebar-role-wrap .badge::before,
+.sidebar-role-wrap .badge::after,
+.sidebar-role-wrap .badge > i,
+.sidebar-role-wrap .badge > .dot,
+.sidebar-role-wrap .badge .badge-dot { display: none !important; content: none !important; }
+.sidebar-role-wrap .badge .role-ini {
+    font-weight: 800 !important; letter-spacing: 0.01em !important;
+}
+html.sidebar-collapsed .sidebar-role-wrap .badge .role-ini {
+    font-size: 0.72rem !important; line-height: 1 !important;
+}
+/* ==========================================================================
+   SF UI HOTFIX — v1.4.1d  (advanced-search drawer close button clipped)
+   Root cause: .adv-drawer is position:fixed; top:0; z-index:410, while
+   .topbar is z-index:1000 !important. The topbar therefore painted OVER the
+   drawer's header row, clipping the &times; close button ("terpotong header").
+   Fix: lift the drawer above the topbar and start it below the topbar so the
+   whole header (title + X) is fully visible; keep backdrop beneath it.
+   ========================================================================== */
+
+.adv-drawer,
+.adv-drawer.is-open {
+    z-index: 1200 !important;
+    top: var(--topbar-h, 60px) !important;
+    height: auto !important;
+    max-height: calc(100vh - var(--topbar-h, 60px)) !important;
+    border-left: 1px solid var(--border, #e2e8f0) !important;
+    border-top-left-radius: 14px !important;
+    border-bottom-left-radius: 14px !important;
+    overflow: hidden !important;
+    display: flex !important;
+    flex-direction: column !important;
+}
+
+/* keep its own scrim under the panel but over the page */
+.adv-backdrop,
+.adv-overlay { z-index: 1190 !important; }
+
+/* header: reserve room, guarantee the X is never clipped */
+.adv-drawer-head {
+    position: relative !important;
+    z-index: 2 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 0.85rem !important;
+    flex: 0 0 auto !important;
+    min-height: 62px !important;
+    padding: 0.85rem 0.85rem 0.8rem 1.1rem !important;
+    border-bottom: 1px solid var(--border, #e2e8f0) !important;
+    background: var(--surface, #fff) !important;
+    overflow: visible !important;
+}
+.adv-drawer-head .adv-close,
+.adv-close {
+    position: relative !important;
+    z-index: 3 !important;
+    flex: 0 0 auto !important;
+    width: 38px !important; height: 38px !important;
+    min-width: 38px !important; min-height: 38px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    display: grid !important;
+    place-items: center !important;
+    font-size: 21px !important;
+    line-height: 1 !important;
+    border-radius: 9px !important;
+    overflow: visible !important;
+}
+.adv-drawer-head strong { min-width: 0 !important; }
+
+/* mobile: full-height drawer below the topbar, X still fully tappable */
+@media (max-width: 767px) {
+    .adv-drawer,
+    .adv-drawer.is-open {
+        width: 100vw !important;
+        max-width: 100vw !important;
+        top: var(--topbar-h, 56px) !important;
+        max-height: calc(100vh - var(--topbar-h, 56px)) !important;
+        border-radius: 0 !important;
+    }
+    .adv-drawer-head {
+        min-height: 58px !important;
+        padding: 0.75rem 0.75rem 0.7rem 0.95rem !important;
+    }
+    .adv-drawer-head .adv-close,
+    .adv-close { width: 40px !important; height: 40px !important;
+                 min-width: 40px !important; min-height: 40px !important; }
+    .adv-drawer-body { padding: 0.9rem !important; }
+    .adv-drawer-foot {
+        flex: 0 0 auto !important;
+        position: sticky !important; bottom: 0 !important;
+        padding: 0.7rem 0.9rem calc(0.7rem + env(safe-area-inset-bottom,0px)) !important;
+        background: var(--surface, #fff) !important;
+        border-top: 1px solid var(--border, #e2e8f0) !important;
+    }
+}
+/* ==========================================================================
+   SF UI HOTFIX — v1.4.1e  (warehouse trigger crushed on narrow phones)
+   Symptom (user screenshot): a 1-2px pale-yellow sliver between the year pill
+   and the tab filter — the .wh-trigger-mob squeezed by max-width:40vw +
+   flex-shrink until only a crushed icon remained.
+   Measured: @320px -> button 74px, label 14px ("Gudang Depok" unreadable).
+   Fix (progressive disclosure, not more squeezing):
+     768-561px : full button (icon + label + chevron)
+     560-401px : cap width, keep readable label with ellipsis
+     <=400px   : icon-only square (label hidden, aria-label/title retained,
+                 the modal picker still opens on tap) - never a crushed sliver
+   ========================================================================== */
+
+/* --- baseline: never let it crush below a usable tap target --------------- */
+.wh-trigger-mob { min-width: 44px !important; }
+.wh-trigger-mob .wh-trigger-label { min-width: 0 !important; }
+.wh-trigger-mob .wh-trigger-ico,
+.wh-trigger-mob .wh-trigger-chev { flex: 0 0 auto !important; }
+
+/* --- 560px and below: cap width, but stay readable ----------------------- */
+@media (max-width: 560px) {
+    .wh-trigger-mob { max-width: 34vw !important; }
+    .wh-trigger-mob .wh-trigger-label { font-size: 0.75rem !important; }
+}
+
+/* --- 400px and below: switch to ICON-ONLY square (no crushed sliver) ----- */
+@media (max-width: 400px) {
+    /* kill the earlier max-width clamps; use a fixed square */
+    .wh-trigger-mob,
+    .wh-slot .wh-trigger-mob {
+        width: 38px !important;
+        min-width: 38px !important;
+        max-width: 38px !important;
+        height: 38px !important;
+        padding: 0 !important;
+        gap: 0 !important;
+        justify-content: center !important;
+        align-items: center !important;
+        flex: 0 0 38px !important;
+        border-radius: 10px !important;
+    }
+    /* hide the text label; aria-label on the button carries the name */
+    .wh-trigger-mob .wh-trigger-label { display: none !important; }
+    .wh-trigger-mob .wh-trigger-ico { display: inline-flex !important; color: var(--accent,#228be6) !important; }
+    .wh-trigger-mob .wh-trigger-ico svg { width: 17px !important; height: 17px !important; }
+    /* drop the chevron - it adds nothing on an icon button */
+    .wh-trigger-mob .wh-trigger-chev { display: none !important; }
+    .wh-slot { flex: 0 0 auto !important; }
+}
+
+/* --- 360px and below: give the brand back a little room ------------------ */
+@media (max-width: 360px) {
+    .wh-trigger-mob,
+    .wh-slot .wh-trigger-mob { width: 36px !important; min-width: 36px !important; max-width: 36px !important;
+                               flex: 0 0 36px !important; height: 36px !important; }
+}
+/* ==========================================================================
+   SF UI HOTFIX — v1.4.1f  (warehouse control rendered TWICE on every width)
+   Root cause: the desktop and mobile variants are THE SAME ELEMENT —
+       <div class="wh-switch-inner wh-inner-desk"> ... </div>
+   The mobile media rule hid it with `.wh-inner-desk{display:none!important}`
+   (specificity 0,1,0), but line ~5307 has
+       `.topbar .wh-switch-inner{display:inline-flex!important}` (0,2,0).
+   Both !important -> higher specificity wins -> the desktop pill showed at
+   EVERY width, so the warehouse control appeared twice next to the mobile
+   trigger. Fix: raise the hide/swap rules above 0,2,0 and place them last.
+   ========================================================================== */
+
+/* Desktop (>=768px): desktop pill visible, mobile trigger hidden */
+.topbar .wh-switch-inner.wh-inner-desk { display: inline-flex !important; }
+.topbar .wh-slot .wh-trigger.wh-trigger-mob { display: none !important; }
+
+/* Mobile (<=767px): hide desktop pill (out-specifies .topbar .wh-switch-inner),
+   show the picker trigger */
+@media (max-width: 767px) {
+    .topbar .wh-switch-inner.wh-inner-desk,
+    .topbar .wh-switch-inner { display: none !important; }
+
+    .topbar .wh-slot .wh-trigger.wh-trigger-mob,
+    .wh-trigger-mob {
+        display: inline-flex !important;
+        align-items: center !important;
+    }
+}
+
+/* ==========================================================================
+   SF UI HOTFIX — v1.5.0   (Pocong-Tobat, ui-ux-pro-max spacing)
+   1. Header theme toggle (single icon, sun<->moon by theme)
+   2. Language switcher inside user dropdown
+   3. Mobile brand: year pill stacked UNDER "StockForge STO", tuned gaps
+   4. Brand block: eliminate the white-line artifact (kill clipping/overflow)
+   ========================================================================== */
+
+/* ─────────────────────────────────────────────────────────────────────────
+   4. BRAND BLOCK — the "white line" artifact
+   Cause: the original markup nested <a> inside <a> (invalid HTML) and the
+   outer .topbar-brand had padding-right + a right border while the inner
+   column had overflow>hidden with white-space:nowrap, producing a 1px
+   light seam that read as a white line across the pill. Markup is now
+   valid (logo <a> closed, column is a sibling). CSS hardened below so no
+   clipping seam can appear over the pill.
+   ───────────────────────────────────────────────────────────────────────── */
+.topbar-brand-wrap {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 0.65rem !important;              /* logo <-> text column */
+    flex-shrink: 0 !important;
+    min-width: 0 !important;
+}
+.topbar-brand {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 0 !important;
+    padding: 0 !important;                /* no padding seam */
+    border: 0 !important;                 /* no border seam */
+    background: transparent !important;
+}
+.topbar-brand-col {
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+    gap: 3px !important;                  /* title -> pill */
+    line-height: 1.1 !important;
+    min-width: 0 !important;
+    overflow: visible !important;         /* never clip the pill */
+}
+.tb-brand-title {
+    display: flex !important;
+    align-items: center !important;
+    gap: 0.35rem !important;              /* name <-> STO badge */
+    min-width: 0 !important;
+    overflow: visible !important;
+    border: 0 !important;
+    text-decoration: none !important;
+}
+.tb-brand-title .tb-name {
+    font-size: 1.05rem !important;
+    font-weight: 750 !important;
+    letter-spacing: -0.02em !important;
+    color: var(--text) !important;
+    line-height: 1.15 !important;
+    text-decoration: none !important;
+    border: 0 !important;
+    overflow: visible !important;
+}
+.tb-brand-title .tb-badge {
+    font-size: 0.6rem !important;
+    font-weight: 800 !important;
+    background: var(--brand-500, #f0b429) !important;
+    color: #1a1108 !important;
+    padding: 0.14rem 0.4rem !important;
+    border-radius: 5px !important;
+    letter-spacing: 0.05em !important;
+    text-transform: uppercase !important;
+    line-height: 1 !important;
+    flex: 0 0 auto !important;
+}
+/* the year pill: solid pill, no clipping, no seam */
+.tb-period-sub {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 0.34rem !important;              /* dot <-> text */
+    align-self: flex-start !important;    /* hug content, don't stretch */
+    font-size: 0.7rem !important;
+    font-weight: 650 !important;
+    color: var(--text-muted, #64748b) !important;
+    text-decoration: none !important;
+    padding: 0.16rem 0.5rem 0.16rem 0.42rem !important;
+    background: var(--surface-2, #f1f3f5) !important;
+    border: 1px solid var(--border, #dee2e6) !important;
+    border-radius: 9999px !important;
+    line-height: 1 !important;
+    max-width: none !important;
+    overflow: visible !important;         /* no seam/clip artifact */
+    box-shadow: none !important;
+    transition: background .15s, border-color .15s !important;
+}
+.tb-period-sub .tb-period-text {
+    white-space: nowrap !important;
+    overflow: visible !important;
+    text-overflow: clip !important;
+    font-variant-numeric: tabular-nums !important;
+    font-weight: 700 !important;
+    line-height: 1 !important;
+}
+.tb-period-sub .env-dot {
+    width: 7px !important; height: 7px !important;
+    border-radius: 50% !important;
+    flex: 0 0 7px !important;
+    background: #10b981 !important;
+    box-shadow: 0 0 0 2px rgba(16,185,129,.18) !important;
+}
+.tb-period-sub.is-closed .env-dot { background: #ef4444 !important; box-shadow: 0 0 0 2px rgba(239,68,68,.18) !important; }
+.tb-period-sub .tb-period-tag { display: none !important; }
+
+/* ─────────────────────────────────────────────────────────────────────────
+   1. HEADER THEME TOGGLE — single icon that swaps with the theme
+   ───────────────────────────────────────────────────────────────────────── */
+.topbar-actions .theme-btn {
+    position: relative !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+.theme-btn .theme-ico {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    line-height: 0 !important;
+}
+.theme-btn .theme-ico svg { width: 18px !important; height: 18px !important; }
+/* light theme -> show sun */
+.theme-btn .theme-ico-sun  { display: inline-flex !important; }
+.theme-btn .theme-ico-moon { display: none !important; }
+/* dark theme -> show moon */
+html[data-theme="dark"] .theme-btn .theme-ico-sun  { display: none !important; }
+html[data-theme="dark"] .theme-btn .theme-ico-moon { display: inline-flex !important; }
+
+/* ─────────────────────────────────────────────────────────────────────────
+   2. LANGUAGE SWITCHER inside the user dropdown
+   ───────────────────────────────────────────────────────────────────────── */
+.dropdown-lang {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 2px !important;
+    padding: 2px 0 !important;
+}
+.dropdown-lang-opt {
+    display: flex !important;
+    align-items: center !important;
+    gap: 0.55rem !important;
+    padding: 0.5rem 0.65rem !important;
+    border-radius: 8px !important;
+    text-decoration: none !important;
+    color: var(--text) !important;
+    font-size: 0.85rem !important;
+    font-weight: 600 !important;
+    transition: background .13s !important;
+}
+.dropdown-lang-opt:hover { background: var(--surface-2, #f1f3f5) !important; }
+.dropdown-lang-opt .lang-code {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    min-width: 30px !important;
+    height: 22px !important;
+    border-radius: 6px !important;
+    background: var(--surface-2, #f1f3f5) !important;
+    border: 1px solid var(--border, #dee2e6) !important;
+    font-size: 0.68rem !important;
+    font-weight: 800 !important;
+    letter-spacing: .04em !important;
+    color: var(--text-muted, #64748b) !important;
+}
+.dropdown-lang-opt .lang-name { flex: 1 1 auto !important; }
+.dropdown-lang-opt .dropdown-lang-check {
+    display: none !important;
+    color: var(--brand-600, #e8722c) !important;
+    line-height: 0 !important;
+}
+.dropdown-lang-opt .dropdown-lang-check svg { width: 15px !important; height: 15px !important; }
+.dropdown-lang-opt.is-active { background: rgba(240,180,41,.1) !important; }
+.dropdown-lang-opt.is-active .lang-code {
+    background: var(--brand-500, #f0b429) !important;
+    color: #1a1108 !important;
+    border-color: transparent !important;
+}
+.dropdown-lang-opt.is-active .dropdown-lang-check { display: inline-flex !important; }
+
+/* ─────────────────────────────────────────────────────────────────────────
+   3. MOBILE — year pill sits UNDER "StockForge STO" in the same column
+   (the markup already stacks them; these rules guarantee alignment + gaps)
+   ───────────────────────────────────────────────────────────────────────── */
+@media (max-width: 767px) {
+    .topbar-brand-wrap { gap: 0.5rem !important; min-width: 0 !important; }
+    .topbar-brand .topbar-logo { width: 28px !important; height: 28px !important; }
+    .topbar-brand-col { gap: 3px !important; min-width: 0 !important; }
+    .tb-brand-title { gap: 0.3rem !important; }
+    .tb-brand-title .tb-name { font-size: 0.92rem !important; }
+    .tb-brand-title .tb-badge { font-size: 0.55rem !important; padding: 0.1rem 0.3rem !important; }
+    /* pill tucked right under the title */
+    .tb-period-sub {
+        display: inline-flex !important;
+        align-self: flex-start !important;
+        font-size: 0.62rem !important;
+        padding: 0.13rem 0.42rem 0.13rem 0.36rem !important;
+        gap: 0.28rem !important;
+    }
+    .tb-period-sub .env-dot { width: 6px !important; height: 6px !important; flex-basis: 6px !important; }
+    .tb-period-sub .tb-period-text { overflow: visible !important; text-overflow: clip !important; }
+}
+
+/* very small phones: keep the name but let it truncate, pill stays under it */
+@media (max-width: 400px) {
+    .tb-brand-title .tb-name {
+        font-size: 0.86rem !important;
+        max-width: 34vw !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+        white-space: nowrap !important;
+    }
+    .tb-brand-title .tb-badge { display: inline-flex !important; }
+    .tb-period-sub { display: inline-flex !important; font-size: 0.6rem !important; }
+}
+
+/* ============================================================
+   SF UI HOTFIX — v1.5.1  (mobile card mode for Data STO)
+   ROOT CAUSE: `#items-table { min-width:1250px !important }` is
+   TOP-LEVEL, so it beat the `table.data` card-mode rules at every
+   width. On phones the table stayed 1250px wide; the `td::before`
+   labels (38%) landed inside the viewport while the VALUES sat at
+   x≈400–1200px — off-screen. Users reported "nilai tidak terlihat".
+   FIX: below 768px reset the ID-level min-width and let the existing
+   `table.data` card-mode take over.
+   ============================================================ */
+
+@media (max-width: 767px) {
+
+  /* 1. Kill the desktop ID-level width floor so the table can shrink */
+  #items-table {
+    min-width: 0 !important;
+    width: 100% !important;
+    table-layout: auto !important;
+  }
+
+  /* 2. Neutralise the ID-level per-cell min-widths (they are top-level
+        and win over `table.data td { max-width:none }`) */
+  #items-table td,
+  #items-table th,
+  #items-table td[data-label],
+  #items-table th[data-col] {
+    min-width: 0 !important;
+    width: auto !important;
+    max-width: none !important;
+  }
+
+  /* 3. Make sure the scroll wrapper never traps the card layout
+        (cards must stack vertically, not scroll sideways) */
+  .table-wrap:has(#items-table) {
+    overflow-x: visible !important;
+  }
+
+  /* 4. Belt-and-braces: guarantee values are legible dark-on-white even if
+        an inherited/reset color is missing. Labels stay muted grey. */
+  #items-table tbody td {
+    color: var(--text, #212529) !important;
+  }
+  #items-table tbody td[data-label]::before {
+    color: var(--text-faint, #868e96) !important;
+  }
+  #items-table tbody td a,
+  #items-table tbody td .cell-title,
+  #items-table tbody td .cell-title a {
+    color: var(--text, #212529) !important;
+  }
+  /* code chip keeps its own tint */
+  #items-table tbody td .kbd {
+    color: var(--text-2, #495057) !important;
+  }
+}
+
+
+/* ============================================================
+   SF UI HOTFIX — v1.5.2
+   Tahun Buku badge moved INTO the sidebar; header brand text
+   (StockForge + STO) and header period pill hidden on mobile.
+   ============================================================ */
+
+/* --- Sidebar Tahun Buku badge --- */
+.sidebar-header-mobile .sf-year-badge,
+.sf-year-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: .34rem;
+  padding: .16rem .5rem;
+  margin-left: auto;
+  margin-right: .35rem;
+  border-radius: 999px;
+  font-size: .72rem;
+  font-weight: 700;
+  line-height: 1;
+  text-decoration: none;
+  white-space: nowrap;
+  background: color-mix(in srgb, var(--brand-500, #f0b429) 16%, transparent);
+  color: var(--text, #212529);
+  border: 1px solid color-mix(in srgb, var(--brand-500, #f0b429) 42%, transparent);
+  flex: 0 0 auto;
+}
+.sf-year-badge .sf-yb-dot {
+  width: .42rem; height: .42rem; border-radius: 50%;
+  background: #22a06b;
+  flex: 0 0 auto;
+}
+.sf-year-badge.is-closed .sf-yb-dot { background: #e8590c; }
+.sf-year-badge:hover { filter: brightness(.97); }
+
+/* keep the close button after the badge */
+.sidebar-header-mobile .sidebar-close { margin-left: .3rem; }
+
+/* --- Mobile: strip brand text + period pill from the header --- */
+@media (max-width: 767px) {
+  .topbar .tb-brand-title,
+  .topbar .tb-period-sub {
+    display: none !important;
+  }
+  /* the brand column collapses to nothing so the logo can sit tight
+     next to the burger — no empty gap where the text used to be */
+  .topbar .topbar-brand-col { display: none !important; }
+}
+
+/* ==========================================================================
+   HOTFIX v1.5.3 — Mobile header controls dead (user dropdown + notif)
+   --------------------------------------------------------------------------
+   ROOT CAUSE:
+     .sidebar-backdrop is a FULL-VIEWPORT (394x853) fixed overlay with
+     z-index:1150 (sf-ui.css:5589 !important) which sits ABOVE the topbar
+     (z-index:1000). When closed it is opacity:0 + visibility:hidden but
+     still display:block with pointer-events:auto. Real mobile browsers
+     (iOS Safari + Android WebView, aggravated by backdrop-filter GPU
+     compositing) still hit-test this invisible layer, swallowing every tap
+     on the header controls (theme, notif bell, user-chip dropdown).
+     Desktop is unaffected because the backdrop is display:none >=1024px.
+
+   FIX:
+     1. Remove the closed backdrop from hit-testing entirely:
+        pointer-events:none + display:none unless .is-open.
+     2. Only when .is-open -> display:block + pointer-events:auto.
+     3. Keep z-index below the topbar so it can never cover the header.
+   ========================================================================== */
+
+/* --- base (all viewports): closed backdrop is fully inert --- */
+.sidebar-backdrop {
+    pointer-events: none !important;
+    display: none !important;
+}
+
+.sidebar-backdrop.is-open {
+    display: block !important;
+    pointer-events: auto !important;
+}
+
+/* --- phones / tablets: never rise above the topbar (1000) --- */
+@media (max-width: 1023px) {
+    .sidebar-backdrop {
+        z-index: 999 !important;
+        pointer-events: none !important;
+        display: none !important;
+    }
+    .sidebar-backdrop.is-open {
+        z-index: 999 !important;
+        display: block !important;
+        pointer-events: auto !important;
+    }
+}
+
+/* --- desktop: keep the original guard --- */
+@media (min-width: 1024px) {
+    .sidebar-backdrop,
+    .sidebar-backdrop.is-open {
+        display: none !important;
+        pointer-events: none !important;
+    }
+}
+
+/* Defensive: a closed topbar dropdown/notif must never keep a stale
+   open state that visually collides with the header on small screens. */
+@media (max-width: 767px) {
+    .topbar .dropdown-menu,
+    .topbar .notif-panel {
+        pointer-events: auto;
+    }
+}
+
+/* ============================================================
+   HOTFIX v1.5.4 — Mobile: user dropdown & notif must open
+   ------------------------------------------------------------
+   ROOT CAUSE (proven via CDP CSS.getMatchedStylesForNode):
+     sf-ui.css:7286  @media(max-width:767px){ .topbar{overflow:hidden!important} }
+     comes AFTER sf-ui.css:6730 (.topbar{overflow:visible!important}) so it WINS
+     the !important tie. A 56px fixed topbar with overflow:hidden CLIPS the
+     position:absolute .dropdown-menu (top:100%+8 => y~52..368) to nothing.
+     Result: tapping the avatar "opens" the menu but it is clipped -> invisible.
+     The notif panel was unaffected ONLY because it is position:fixed.
+
+   FIX:
+     1. Un-clip the mobile topbar (overflow:visible). Brand overflow is
+        already contained by .topbar-left{overflow:hidden} (L7291).
+     2. Belt & braces: make the topbar dropdown position:fixed on mobile so
+        it escapes ANY clipping ancestor (mirrors the notif-panel approach).
+   ============================================================ */
+@media (max-width: 767px) {
+    .topbar {
+        overflow: visible !important;
+    }
+
+    /* Escape any clipping ancestor: fix the user dropdown to the viewport,
+       right-aligned under the actions cluster, like the notif panel. */
+    .topbar .dropdown-menu {
+        position: fixed !important;
+        top: calc(var(--topbar-h, 56px) + 6px) !important;
+        right: 8px !important;
+        left: auto !important;
+        min-width: 250px !important;
+        max-width: calc(100vw - 16px) !important;
+        max-height: calc(100vh - var(--topbar-h, 56px) - 20px) !important;
+        overflow-y: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+        z-index: 1200 !important;
+        transform: none !important;
+    }
+    /* Keep the reveal transition working with the fixed position */
+    .topbar .dropdown.is-open .dropdown-menu {
+        opacity: 1 !important;
+        visibility: visible !important;
+        transform: none !important;
+    }
 }
