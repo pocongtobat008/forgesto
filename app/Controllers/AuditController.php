@@ -111,6 +111,8 @@ class AuditController extends Controller
             'inbox'         => $isReadOnly ? [] : (new AuditSubmission())->inboxForAuditor((int) Auth::id()),
             'isReadOnly'    => $isReadOnly,
             'currentPeriod' => $currentPeriod,
+            'trail'         => (new ActivityLog())->processTrail($filters, 40),
+            'trailGroupId'  => ! empty($filters['group_id']) ? (int) ((array) $filters['group_id'])[0] : null,
         ]);
     }
 
@@ -138,12 +140,14 @@ class AuditController extends Controller
 
         $batchId = (int) $submission['batch_id'];
         $itemModel = new Item();
-        $groupStats = $itemModel->statsForGroup((int) $submission['group_id']);
         $minPercent = (int) config('app.audit.min_percent', 10);
-        $needed = (int) $groupStats['total'] > 0
-            ? max(1, (int) ceil((int) $groupStats['total'] * $minPercent / 100))
+        // Basis perhitungan konsisten dengan rekomendasi: item terposting yang
+        // wajib diaudit + item UNIK yang sudah diaudit (bukan jumlah baris audit).
+        $base = $itemModel->auditBaseForGroup((int) $submission['group_id']);
+        $needed = $base['total'] > 0
+            ? max(1, (int) ceil($base['total'] * $minPercent / 100))
             : 0;
-        $auditedCount = (new Audit())->countWhere('group_id = ?', [(int) $submission['group_id']]);
+        $auditedCount = $base['audited'];
 
         if ($auditedCount < $needed) {
             return $this->redirectWith(
@@ -220,12 +224,13 @@ class AuditController extends Controller
         $counted = (int) ($item['counted_qty'] ?? 0);
         $isMatch = $auditedQty === $counted;
 
-        // Decide sample membership before recording the new audit.
-        $groupStats = $itemModel->statsForGroup((int) $item['group_id']);
-        $needed = $groupStats['total'] > 0
-            ? max(1, (int) ceil($groupStats['total'] * (int) config('app.audit.min_percent', 10) / 100))
+        // Tentukan keanggotaan sampel sebelum mencatat audit baru (konsisten
+        // dengan rekomendasi: basis item terposting, hitung item unik).
+        $base = $itemModel->auditBaseForGroup((int) $item['group_id']);
+        $needed = $base['total'] > 0
+            ? max(1, (int) ceil($base['total'] * (int) config('app.audit.min_percent', 10) / 100))
             : 0;
-        $alreadyAudited = (new Audit())->countWhere('group_id = ?', [(int) $item['group_id']]);
+        $alreadyAudited = $base['audited'];
 
         (new Audit())->insert([
             'item_id'     => $id,

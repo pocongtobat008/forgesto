@@ -16,7 +16,7 @@ $pageUrl = static fn (int $p): string => url('items/memo/preview') . '?' . $page
 <?php if (! $isPdf): ?>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <?php endif; ?>
-<?= \App\Core\View::partial('items/_memo_styles') ?>
+<?= \App\Core\View::partial('items/_memo_styles', ['standalone' => $isPdf]) ?>
 
 <div class="memo-stage<?= $isPdf ? ' is-pdf' : '' ?>">
 <?php if (! $isPdf): ?>

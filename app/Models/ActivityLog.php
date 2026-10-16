@@ -175,4 +175,82 @@ class ActivityLog extends Model
 
         return $this->query($sql, $bindings);
     }
+
+    /**
+     * Aksi yang dianggap bagian dari ALUR PROSES STO (untuk panel Jejak Proses).
+     * Noise non-proses (update user_rule/menu_rule, login, search) dikecualikan.
+     */
+    public const TRAIL_ACTIONS = [
+        'count', 'posting', 'audit', 'audit_report',
+        'verify', 'recheck', 'recheck_bulk', 'recount', 'sync', 'import',
+    ];
+
+    /**
+     * Jejak proses per group & petugas — dipakai panel "Jejak Proses" yang sama
+     * di menu Data STO, Audit, dan Rekonsiliasi.
+     *
+     * @param array{group_id?:int|null} $filters
+     * @return list<array<string,mixed>>
+     */
+    public function processTrail(array $filters = [], int $limit = 40): array
+    {
+        $clauses = [];
+        $bindings = [];
+
+        [$scope, $scopeBindings] = Auth::groupScope('a.group_id');
+        if ($scope !== '') {
+            $clauses[] = $scope;
+            $bindings = array_merge($bindings, $scopeBindings);
+        }
+
+        if (! empty($filters['group_id'])) {
+            $gids = array_values(array_filter(array_map('intval', (array) $filters['group_id']), static fn (int $v): bool => $v > 0));
+            if ($gids !== []) {
+                $clauses[] = 'a.group_id IN (' . implode(',', array_fill(0, count($gids), '?')) . ')';
+                foreach ($gids as $g) {
+                    $bindings[] = $g;
+                }
+            }
+        }
+
+        $ph = implode(',', array_fill(0, count(self::TRAIL_ACTIONS), '?'));
+        $clauses[] = "a.action IN ({$ph})";
+        foreach (self::TRAIL_ACTIONS as $a) {
+            $bindings[] = $a;
+        }
+
+        $where = ' WHERE ' . implode(' AND ', $clauses);
+        $limit = max(1, min(200, $limit));
+
+        return $this->query(
+            "SELECT a.id, a.action, a.entity, a.entity_id, a.description, a.created_at,
+                    u.name AS user_name, u.role AS user_role,
+                    g.id AS group_id, g.code AS group_code, g.name AS group_name
+             FROM activity_logs a
+             LEFT JOIN users u ON u.id = a.user_id
+             LEFT JOIN `groups` g ON g.id = a.group_id
+             {$where}
+             ORDER BY a.created_at DESC, a.id DESC
+             LIMIT {$limit}",
+            $bindings
+        );
+    }
+
+    /** Label tahap + kelas badge untuk sebuah action trail. */
+    public static function trailStage(string $action): array
+    {
+        return match ($action) {
+            'count'        => ['Hitung',        'badge-warning', 'check-circle'],
+            'posting'      => ['Posting',       'badge-info',    'send'],
+            'audit'        => ['Audit',         'badge-brand',   'clipboard-check'],
+            'audit_report' => ['Lapor audit',   'badge-success', 'clipboard-list'],
+            'verify'       => ['Verifikasi',    'badge-success', 'shield-check'],
+            'recheck'      => ['Cek ulang',     'badge-warn',    'refresh'],
+            'recheck_bulk' => ['Cek ulang',     'badge-warn',    'refresh'],
+            'recount'      => ['Hitung ulang',  'badge-danger',  'refresh'],
+            'sync'         => ['Sinkronisasi',  'badge-info',    'scale'],
+            'import'       => ['Import',        'badge-info',    'upload'],
+            default        => [$action,         '',              'activity'],
+        };
+    }
 }

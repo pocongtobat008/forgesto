@@ -74,6 +74,7 @@ foreach ($__keepKeys as $__k) {
     </div>
 </div>
 
+<?= \App\Core\View::partial('partials/process-trail', ['trail' => $trail ?? [], 'trailGroupId' => $trailGroupId ?? null]) ?>
 <!-- Ringkasan cepat -->
 <div class="grid grid-4 grid-tablet-4">
     <div class="stat is-brand" style="--i:0">

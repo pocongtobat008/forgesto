@@ -1,8 +1,19 @@
 <?php
 /** Gaya Marking Memo bersama: preview, PDF, dan contoh di halaman kelola. */
+// $standalone = true HANYA saat render PDF (View::render dengan layout=null,
+// sehingga tidak ada <head> dari layouts/app yang memuat CSS).
+//
+// PENTING: di halaman app biasa (memo_index, memo preview) CSS sudah dimuat oleh
+// layouts/app dengan urutan tokens -> app -> sf-ui. Memuat ulang app.css DI SINI
+// (setelah sf-ui.css) akan menurunkan kembali aturan !important lama app.css
+// (.sidebar{top:0;z-index:100} + .topbar{z-index:50}) sehingga SIDEBAR MENUTUPI
+// HEADER. Karena itu link di bawah hanya dirender pada mode standalone/PDF.
+$standalone = $standalone ?? false;
 ?>
+<?php if ($standalone): ?>
 <link rel="stylesheet" href="<?= asset_v('css/tokens.css') ?>">
 <link rel="stylesheet" href="<?= asset_v('css/app.css') ?>">
+<?php endif; ?>
 <style>
     .memo-stage{min-height:100vh;background:var(--bg);padding:1rem;box-sizing:border-box;}
     .memo-stage.is-pdf{background:#fff;padding:0;min-height:0;}

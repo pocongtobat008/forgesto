@@ -8300,3 +8300,332 @@ table.data[data-empty="1"] > tbody > tr[style*="display:none"] {
   overflow: hidden !important;
   visibility: hidden !important;
 }
+
+/* ================= FIX-BACKCOL-STICKY (2026-10-16) =================
+   Masalah: kolom paling kanan (Aksi/Status) terletak di luar viewport area
+   scroll tabel, sehingga handle resize-nya tidak bisa dijangkau/digrab —
+   "kolom belakang tidak bisa disesuaikan lebar kolomnya".
+   Solusi: kolom terakhir dibuat sticky menempel ke tepi kanan area tabel
+   (selalu terlihat) sehingga handle resize selalu bisa digrab. Handle
+   diperjelas & diperbesar, dan label header tidak lagi terpotong berlebihan.
+   Hapus blok ini untuk rollback total.
+   ================================================================== */
+
+/* 1) Label header tidak lagi dipotong agresif oleh max-width calc(100% - 24px) */
+table.data thead th.xf-th > .xf-label,
+table thead th.xf-th > .xf-label {
+  max-width: none !important;
+  overflow: visible !important;
+  text-overflow: clip !important;
+}
+
+/* 2) Handle resize: hit-area lebih lebar + garis pembatas lebih terlihat */
+table.data thead th .col-resize,
+table thead th .col-resize {
+  width: 14px !important;
+  right: -1px !important;
+  z-index: 14 !important;
+}
+table.data thead th .col-resize::after,
+table thead th .col-resize::after {
+  background: var(--border-strong, #cbd5e1) !important;
+  opacity: .9 !important;
+  width: 2px !important;
+}
+
+/* 3) Kolom terakhir sticky menempel tepi kanan area tabel (.table-wrap) */
+.table-wrap table.data thead th:last-child,
+.table-wrap table.data tbody td:last-child {
+  position: sticky !important;
+  right: 0 !important;
+}
+.table-wrap table.data thead th:last-child {
+  z-index: 13 !important;
+  background: var(--surface-2, #f9fafb) !important;
+  box-shadow: -10px 0 12px -12px rgba(15, 23, 42, .35);
+}
+.table-wrap table.data tbody td:last-child {
+  z-index: 7 !important;
+  background: var(--surface, #fff) !important;
+  box-shadow: -10px 0 12px -12px rgba(15, 23, 42, .28);
+}
+/* baris hover tetap terbaca pada kolom sticky */
+.table-wrap table.data tbody tr:hover td:last-child {
+  background: var(--surface-2, #f9fafb) !important;
+}
+/* pastikan tombol aksi tidak menempel persis ke tepi */
+.table-wrap table.data tbody td:last-child,
+.table-wrap table.data thead th:last-child {
+  padding-right: 1.15rem !important;
+}
+/* =============== END FIX-BACKCOL-STICKY =============== */
+
+/* =============== FIX-BACKCOL-STICKY v2 (refinement) ===============
+   Divider kiri tegas pada kolom sticky agar batas kolom terakhir jelas,
+   plus sedikit ruang pada kolom kedua-dari-belakang supaya ikon filter
+   tidak tertutup kolom sticky. */
+.table-wrap table.data thead th:last-child {
+  border-left: 1px solid var(--border, #e5e7eb) !important;
+}
+.table-wrap table.data tbody td:last-child {
+  border-left: 1px solid var(--border, #e5e7eb) !important;
+}
+/* kolom sebelum kolom terakhir: beri ruang kanan agar chip filter tak terpotong */
+.table-wrap table.data thead th:nth-last-child(2) {
+  padding-right: 1.5rem !important;
+}
+/* =============== END FIX-BACKCOL-STICKY v2 =============== */
+
+/* ==========================================================================
+   STO-LAYOUT-GUTTER-FIX (v1)  — 2026-10-16
+   Masalah: pada tablet (768–1023px) sidebar adalah off-canvas, tetapi .main
+   tetap diberi `margin-left: var(--sidebar-w) = 260px` oleh rule desktop di
+   app.css (baris ~2051, 2100, 6815). Akibatnya ada gutter kosong ~260px di
+   kiri dan konten (termasuk header memo) terdorong ke kanan / tampak
+   "tertutup" oleh ruang sidebar yang tidak terpakai.
+   Fix: di bawah 1024px, paksa .main margin-left:0 & full width, apa pun
+   status collapsed. Sidebar berperilaku overlay/off-canvas.
+   ========================================================================== */
+@media (max-width: 1023px) {
+    html .main,
+    html:not(.sidebar-collapsed) .main,
+    html.sidebar-collapsed .main,
+    html .app-body .main,
+    html:not(.sidebar-collapsed) .app-body .main,
+    html.sidebar-collapsed .app-body .main,
+    body .app-shell .app-body .main {
+        margin-left: 0 !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        min-width: 0 !important;
+    }
+    /* app-shell block supaya .main tidak collapse di flex */
+    .app-shell { display: block !important; }
+    /* sidebar jadi overlay penuh (di bawah topbar) */
+    .sidebar {
+        top: var(--topbar-h, 60px) !important;
+        height: calc(100vh - var(--topbar-h, 60px)) !important;
+    }
+}
+
+/* ==========================================================================
+   STO-PROCESS-TRAIL — panel "Jejak Proses" (Group & Petugas)
+   Dipakai bersama di /items (Data STO), /audit, /reconciliation.
+   ========================================================================== */
+.process-trail .trail-body { background: var(--surface); }
+.process-trail .trail-list {
+    list-style: none; margin: 0; padding: 0;
+    max-height: 440px; overflow-y: auto; -webkit-overflow-scrolling: touch;
+}
+.process-trail .trail-item {
+    display: flex; gap: .7rem; padding: .6rem .2rem;
+    border-bottom: 1px dashed var(--border, #e5e7eb);
+}
+.process-trail .trail-item:last-child { border-bottom: 0; }
+.process-trail .trail-dot {
+    flex: 0 0 auto; width: 30px; height: 30px; border-radius: 9px;
+    display: inline-flex; align-items: center; justify-content: center;
+    background: var(--surface-2, #f1f5f9); color: var(--text-muted, #64748b);
+}
+.process-trail .trail-dot svg { width: 16px; height: 16px; }
+.process-trail .trail-dot.is-count        { background: rgba(245,158,11,.15); color: #b45309; }
+.process-trail .trail-dot.is-posting      { background: rgba(59,130,246,.15); color: #1d4ed8; }
+.process-trail .trail-dot.is-audit        { background: rgba(139,92,246,.15); color: #6d28d9; }
+.process-trail .trail-dot.is-audit_report { background: rgba(16,185,129,.15); color: #047857; }
+.process-trail .trail-dot.is-verify       { background: rgba(16,185,129,.15); color: #047857; }
+.process-trail .trail-dot.is-recheck,
+.process-trail .trail-dot.is-recheck_bulk { background: rgba(234,179,8,.15);  color: #a16207; }
+.process-trail .trail-dot.is-recount      { background: rgba(239,68,68,.15);  color: #b91c1c; }
+.process-trail .trail-dot.is-sync,
+.process-trail .trail-dot.is-import       { background: rgba(59,130,246,.15); color: #1d4ed8; }
+.process-trail .trail-main { min-width: 0; flex: 1 1 auto; }
+.process-trail .trail-top  { display: flex; align-items: center; gap: .5rem; flex-wrap: wrap; }
+.process-trail .trail-desc { font-size: .85rem; color: var(--text, #0f172a); overflow-wrap: anywhere; }
+.process-trail .trail-meta {
+    display: flex; align-items: center; gap: .35rem; flex-wrap: wrap;
+    font-size: .75rem; color: var(--text-faint, #94a3b8); margin-top: .18rem;
+}
+.process-trail .trail-user  { font-weight: 600; color: var(--text-muted, #64748b); }
+.process-trail .trail-sep   { opacity: .5; }
+@media (max-width: 640px) {
+    .process-trail .trail-list { max-height: 340px; }
+    .process-trail .trail-desc { font-size: .8rem; }
+}
+
+/* ==========================================================================
+   STO-PROCESS-TRAIL — panel "Jejak Proses" (Group & Petugas)
+   Dipakai bersama di /items (Data STO), /audit, /reconciliation.
+   ========================================================================== */
+.process-trail .trail-body { background: var(--surface); }
+.process-trail.mt-2 { margin-top: .85rem; margin-bottom: .85rem; }
+.process-trail .trail-list {
+    list-style: none; margin: 0; padding: 0;
+    max-height: 440px; overflow-y: auto; -webkit-overflow-scrolling: touch;
+}
+.process-trail .trail-item {
+    display: flex; gap: .7rem; padding: .6rem .2rem;
+    border-bottom: 1px dashed var(--border, #e5e7eb);
+}
+.process-trail .trail-item:last-child { border-bottom: 0; }
+.process-trail .trail-dot {
+    flex: 0 0 auto; width: 30px; height: 30px; border-radius: 9px;
+    display: inline-flex; align-items: center; justify-content: center;
+    background: var(--surface-2, #f1f5f9); color: var(--text-muted, #64748b);
+}
+.process-trail .trail-dot svg { width: 16px; height: 16px; }
+.process-trail .trail-dot.is-count        { background: rgba(245,158,11,.15); color: #b45309; }
+.process-trail .trail-dot.is-posting      { background: rgba(59,130,246,.15); color: #1d4ed8; }
+.process-trail .trail-dot.is-audit        { background: rgba(139,92,246,.15); color: #6d28d9; }
+.process-trail .trail-dot.is-audit_report { background: rgba(16,185,129,.15); color: #047857; }
+.process-trail .trail-dot.is-verify       { background: rgba(16,185,129,.15); color: #047857; }
+.process-trail .trail-dot.is-recheck,
+.process-trail .trail-dot.is-recheck_bulk { background: rgba(234,179,8,.15);  color: #a16207; }
+.process-trail .trail-dot.is-recount      { background: rgba(239,68,68,.15);  color: #b91c1c; }
+.process-trail .trail-dot.is-sync,
+.process-trail .trail-dot.is-import       { background: rgba(59,130,246,.15); color: #1d4ed8; }
+.process-trail .trail-main { min-width: 0; flex: 1 1 auto; }
+.process-trail .trail-top  { display: flex; align-items: center; gap: .5rem; flex-wrap: wrap; }
+.process-trail .trail-desc { font-size: .85rem; color: var(--text, #0f172a); overflow-wrap: anywhere; }
+.process-trail .trail-meta {
+    display: flex; align-items: center; gap: .35rem; flex-wrap: wrap;
+    font-size: .75rem; color: var(--text-faint, #94a3b8); margin-top: .18rem;
+}
+.process-trail .trail-user  { font-weight: 600; color: var(--text-muted, #64748b); }
+.process-trail .trail-sep   { opacity: .5; }
+@media (max-width: 640px) {
+    .process-trail .trail-list { max-height: 340px; }
+    .process-trail .trail-desc { font-size: .8rem; }
+}
+
+/* ==========================================================================
+   STO-PROCESS-TRAIL — panel "Jejak Proses" (Group & Petugas)
+   Dipakai bersama di /items (Data STO), /audit, /reconciliation.
+   ========================================================================== */
+.process-trail .trail-body { background: var(--surface); }
+.process-trail.mt-2 { margin-top: .85rem; margin-bottom: .85rem; }
+.process-trail .trail-list {
+    list-style: none; margin: 0; padding: 0;
+    max-height: 440px; overflow-y: auto; -webkit-overflow-scrolling: touch;
+}
+.process-trail .trail-item {
+    display: flex; gap: .7rem; padding: .6rem .2rem;
+    border-bottom: 1px dashed var(--border, #e5e7eb);
+}
+.process-trail .trail-item:last-child { border-bottom: 0; }
+.process-trail .trail-dot {
+    flex: 0 0 auto; width: 30px; height: 30px; border-radius: 9px;
+    display: inline-flex; align-items: center; justify-content: center;
+    background: var(--surface-2, #f1f5f9); color: var(--text-muted, #64748b);
+}
+.process-trail .trail-dot svg { width: 16px; height: 16px; }
+.process-trail .trail-dot.is-count        { background: rgba(245,158,11,.15); color: #b45309; }
+.process-trail .trail-dot.is-posting      { background: rgba(59,130,246,.15); color: #1d4ed8; }
+.process-trail .trail-dot.is-audit        { background: rgba(139,92,246,.15); color: #6d28d9; }
+.process-trail .trail-dot.is-audit_report { background: rgba(16,185,129,.15); color: #047857; }
+.process-trail .trail-dot.is-verify       { background: rgba(16,185,129,.15); color: #047857; }
+.process-trail .trail-dot.is-recheck,
+.process-trail .trail-dot.is-recheck_bulk { background: rgba(234,179,8,.15);  color: #a16207; }
+.process-trail .trail-dot.is-recount      { background: rgba(239,68,68,.15);  color: #b91c1c; }
+.process-trail .trail-dot.is-sync,
+.process-trail .trail-dot.is-import       { background: rgba(59,130,246,.15); color: #1d4ed8; }
+.process-trail .trail-main { min-width: 0; flex: 1 1 auto; }
+.process-trail .trail-top  { display: flex; align-items: center; gap: .5rem; flex-wrap: wrap; }
+.process-trail .trail-desc { font-size: .85rem; color: var(--text, #0f172a); overflow-wrap: anywhere; }
+.process-trail .trail-meta {
+    display: flex; align-items: center; gap: .35rem; flex-wrap: wrap;
+    font-size: .75rem; color: var(--text-faint, #94a3b8); margin-top: .18rem;
+}
+.process-trail .trail-user  { font-weight: 600; color: var(--text-muted, #64748b); }
+.process-trail .trail-sep   { opacity: .5; }
+@media (max-width: 640px) {
+    .process-trail .trail-list { max-height: 340px; }
+    .process-trail .trail-desc { font-size: .8rem; }
+}
+
+/* Polish: toggle trail jadi ghost (bukan kotak ber-border) + spacing header */
+.process-trail #trail-toggle {
+    border: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    color: var(--text-muted, #64748b) !important;
+    width: 34px; height: 34px; min-width: 34px;
+    border-radius: 9px;
+    display: inline-flex; align-items: center; justify-content: center;
+    transition: transform .18s var(--ease-out, ease), background .18s ease;
+}
+.process-trail #trail-toggle:hover { background: var(--surface-2, #f1f5f9) !important; }
+.process-trail #trail-toggle svg { width: 16px; height: 16px; }
+.process-trail .card-toolbar > .btn-ghost.btn-xs { margin-left: .35rem; }
+.process-trail .trail-body { padding-bottom: 1.15rem !important; }
+
+/* ==========================================================================
+   STO-PROCESS-TRAIL — panel "Jejak Proses" (Group & Petugas)
+   Dipakai bersama di /items (Data STO), /audit, /reconciliation.
+   ========================================================================== */
+.process-trail .trail-body { background: var(--surface); }
+.process-trail.mt-2 { margin-top: .85rem; margin-bottom: .85rem; }
+.process-trail .trail-list {
+    list-style: none; margin: 0; padding: 0;
+    max-height: 440px; overflow-y: auto; -webkit-overflow-scrolling: touch;
+}
+.process-trail .trail-item {
+    display: flex; gap: .7rem; padding: .6rem .2rem;
+    border-bottom: 1px dashed var(--border, #e5e7eb);
+}
+.process-trail .trail-item:last-child { border-bottom: 0; }
+.process-trail .trail-dot {
+    flex: 0 0 auto; width: 30px; height: 30px; border-radius: 9px;
+    display: inline-flex; align-items: center; justify-content: center;
+    background: var(--surface-2, #f1f5f9); color: var(--text-muted, #64748b);
+}
+.process-trail .trail-dot svg { width: 16px; height: 16px; }
+.process-trail .trail-dot.is-count        { background: rgba(245,158,11,.15); color: #b45309; }
+.process-trail .trail-dot.is-posting      { background: rgba(59,130,246,.15); color: #1d4ed8; }
+.process-trail .trail-dot.is-audit        { background: rgba(139,92,246,.15); color: #6d28d9; }
+.process-trail .trail-dot.is-audit_report { background: rgba(16,185,129,.15); color: #047857; }
+.process-trail .trail-dot.is-verify       { background: rgba(16,185,129,.15); color: #047857; }
+.process-trail .trail-dot.is-recheck,
+.process-trail .trail-dot.is-recheck_bulk { background: rgba(234,179,8,.15);  color: #a16207; }
+.process-trail .trail-dot.is-recount      { background: rgba(239,68,68,.15);  color: #b91c1c; }
+.process-trail .trail-dot.is-sync,
+.process-trail .trail-dot.is-import       { background: rgba(59,130,246,.15); color: #1d4ed8; }
+.process-trail .trail-main { min-width: 0; flex: 1 1 auto; }
+.process-trail .trail-top  { display: flex; align-items: center; gap: .5rem; flex-wrap: wrap; }
+.process-trail .trail-desc { font-size: .85rem; color: var(--text, #0f172a); overflow-wrap: anywhere; }
+.process-trail .trail-meta {
+    display: flex; align-items: center; gap: .35rem; flex-wrap: wrap;
+    font-size: .75rem; color: var(--text-faint, #94a3b8); margin-top: .18rem;
+}
+.process-trail .trail-user  { font-weight: 600; color: var(--text-muted, #64748b); }
+.process-trail .trail-sep   { opacity: .5; }
+@media (max-width: 640px) {
+    .process-trail .trail-list { max-height: 340px; }
+    .process-trail .trail-desc { font-size: .8rem; }
+}
+
+/* Polish: toggle trail jadi ghost (bukan kotak ber-border) + spacing header */
+.process-trail #trail-toggle {
+    border: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    color: var(--text-muted, #64748b) !important;
+    width: 34px; height: 34px; min-width: 34px;
+    border-radius: 9px;
+    display: inline-flex; align-items: center; justify-content: center;
+    transition: transform .18s var(--ease-out, ease), background .18s ease;
+}
+.process-trail #trail-toggle:hover { background: var(--surface-2, #f1f5f9) !important; }
+.process-trail #trail-toggle svg { width: 16px; height: 16px; }
+.process-trail .card-toolbar > .btn-ghost.btn-xs { margin-left: .35rem; }
+.process-trail .trail-body { padding-bottom: 1.15rem !important; }
+
+/* Meta pakai separator CSS (gap) supaya tidak ada titik orphan saat wrap */
+.process-trail .trail-meta > span + span::before {
+    content: "·"; margin-right: .35rem; opacity: .5;
+}
+.process-trail .trail-meta { gap: .1rem .35rem; }
+/* Header: chip scope jangan dorong judul keluar di layar sempit */
+@media (max-width: 520px) {
+    .process-trail .trail-scope { display: none !important; }
+    .process-trail .card-toolbar h3 { font-size: .95rem !important; }
+}

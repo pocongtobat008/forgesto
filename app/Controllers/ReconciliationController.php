@@ -200,6 +200,8 @@ class ReconciliationController extends Controller
             'perPageOptions' => self::PER_PAGE_OPTIONS,
             'isReadOnly'     => $isReadOnly,
             'currentPeriod'  => $currentPeriod,
+            'trail'          => (new \App\Models\ActivityLog())->processTrail($filters, 40),
+            'trailGroupId'   => ! empty($filters['group_id']) ? (int) $filters['group_id'] : null,
         ]);
     }
 

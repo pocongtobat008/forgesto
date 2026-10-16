@@ -589,20 +589,101 @@ class Item extends Model
 
     /**
      * Items that are posted and still waiting for audit.
+     * Memakai postingList supaya item yang sudah dikelompokkan ke batch
+     * (needs_recount / audit_status='recount') tidak ikut hilang dari antrean.
      *
      * @param array<string, mixed> $filters
      * @return array{items:list<array>,total:int,page:int,per_page:int,last_page:int,from:int,to:int}
      */
     public function auditQueue(array $filters, int $page = 1, int $perPage = 15): array
     {
-        $filters['count_status'] = [self::COUNT_POSTED, 'submitted'];
         $filters['audit_status'] = self::AUDIT_PENDING;
 
-        return $this->listDetailed($filters, $page, $perPage);
+        return $this->postingList($filters, $page, $perPage);
     }
 
     /**
-     * Rekomendasi sampel audit minimal X% per group (hanya yang belum diaudit).
+     * Semua item yang sudah DIPOSTING observer — terlepas dari status audit,
+     * batch, atau flag recount. Menjadi daftar utama tab "Semua diposting" di
+     * menu Audit: begitu observer posting, item otomatis muncul di sini.
+     *
+     * @param array<string, mixed> $filters
+     * @return array{items:list<array>,total:int,page:int,per_page:int,last_page:int,from:int,to:int}
+     */
+    public function postedAll(array $filters, int $page = 1, int $perPage = 15): array
+    {
+        return $this->postingList($filters, $page, $perPage);
+    }
+
+    /**
+     * Query dasar daftar item terposting (count_status ∈ posted/submitted/
+     * audited/reconciled) dengan group-scope, gudang aktif, filter group,
+     * lokasi, status audit, dan pencarian. Tidak memakai buildWhere karena
+     * buildWhere menyisihkan item yang needs_recount=1 / audit_status='recount'.
+     *
+     * @param array<string, mixed> $filters
+     * @return array{items:list<array>,total:int,page:int,per_page:int,last_page:int,from:int,to:int}
+     */
+    public function postingList(array $filters, int $page = 1, int $perPage = 15): array
+    {
+        [$scope, $scopeBindings] = Auth::groupScope('i.group_id');
+        $clauses = ["i.count_status IN ('posted', 'submitted', 'audited', 'reconciled')"];
+        $bindings = [];
+        if ($scope !== '') {
+            $clauses[] = $scope;
+            $bindings = array_merge($bindings, $scopeBindings);
+        }
+        if (! empty($filters['group_id'])) {
+            $clauses[] = $this->inClause('i.group_id', (array) $filters['group_id'], $bindings);
+        }
+        if (! empty($filters['location_id'])) {
+            $clauses[] = $this->inClause('i.location_id', (array) $filters['location_id'], $bindings);
+        }
+        if (! empty($filters['audit_status'])) {
+            $clauses[] = $this->inClause('i.audit_status', (array) $filters['audit_status'], $bindings);
+        }
+        if (! empty($filters['search'])) {
+            $like = '%' . $filters['search'] . '%';
+            $clauses[] = '(i.code LIKE ? OR i.name LIKE ? OR g.name LIKE ?)';
+            array_push($bindings, $like, $like, $like);
+        }
+        $where = implode(' AND ', $clauses);
+
+        $sql = "SELECT i.*, g.code AS group_code, g.name AS group_name,
+                       l.name AS location_name, d.name AS device_name,
+                       cu.name AS counted_by_name, pu.name AS posted_by_name
+                FROM items i
+                JOIN `groups` g ON g.id = i.group_id
+                LEFT JOIN locations l ON l.id = i.location_id
+                LEFT JOIN devices d ON d.id = i.device_id
+                LEFT JOIN users cu ON cu.id = i.counted_by
+                LEFT JOIN users pu ON pu.id = i.posted_by
+                WHERE {$where}
+                ORDER BY g.name ASC, i.code ASC";
+
+        $res = $this->paginate($sql, $bindings, $page, $perPage);
+        if (! can_see_stock_qty()) {
+            foreach ($res['items'] as &$row) {
+                $row['expected_qty'] = null;
+            }
+            unset($row);
+        }
+
+        return $res;
+    }
+
+    /**
+     * Rekomendasi sampel audit minimal X% per group.
+     *
+     * Aturan perhitungan (diperbaiki 2026-10-16):
+     *  - Basis hanya item yang SUDAH DIPOSTING observer (posted/submitted/audited)
+     *    dan tidak dikeluarkan dari alur (needs_recount=0, audit_status <> 'recount').
+     *    Item 'reconciled' (sudah selesai) dan 'pending'/'counted' tidak dihitung.
+     *  - Yang dihitung sebagai "sudah diaudit" adalah JUMLAH ITEM UNIK yang punya
+     *    baris di tabel audits (COUNT(DISTINCT item_id)) — bukan jumlah baris audit,
+     *    supaya audit berulang pada item yang sama tidak menggelembungkan progres.
+     *  - needed = ceil(total_auditable × percent / 100), minimal 1 bila ada item.
+     *  - Sisa rekomendasi = needed − audited (tidak pernah negatif).
      *
      * @return list<array>
      */
@@ -613,23 +694,27 @@ class Item extends Model
 
         $rows = $this->query(
             "SELECT g.id AS group_id, g.code AS group_code, g.name AS group_name,
-                    COUNT(*) AS total_items,
-                    (SELECT COUNT(*) FROM audits a WHERE a.group_id = g.id) AS audited_count
+                    COUNT(*) AS total_auditable,
+                    COUNT(DISTINCT CASE WHEN a.item_id IS NOT NULL THEN a.item_id END) AS audited_count
              FROM items i
              JOIN `groups` g ON g.id = i.group_id
-             WHERE 1=1{$scopeSql}
+             LEFT JOIN audits a ON a.item_id = i.id
+             WHERE i.count_status IN ('posted', 'submitted', 'audited')
+               AND i.needs_recount = 0
+               AND i.audit_status <> 'recount'{$scopeSql}
              GROUP BY g.id, g.code, g.name",
             $scopeBindings
         );
 
         $out = [];
         foreach ($rows as $r) {
-            $total = (int) $r['total_items'];
+            $total = (int) $r['total_auditable'];
             if ($total === 0) {
                 continue;
             }
             $needed = max(1, (int) ceil($total * $percent / 100));
-            $remaining = max(0, $needed - (int) $r['audited_count']);
+            $audited = (int) $r['audited_count'];
+            $remaining = max(0, $needed - $audited);
             if ($remaining === 0) {
                 continue;
             }
@@ -639,7 +724,10 @@ class Item extends Model
                         i.is_locked, i.audit_status, g.name AS group_name, g.code AS group_code
                  FROM items i
                  JOIN `groups` g ON g.id = i.group_id
-                 WHERE i.group_id = ? AND i.count_status = 'posted' AND i.audit_status = 'pending'
+                 WHERE i.group_id = ?
+                   AND i.count_status IN ('posted', 'submitted')
+                   AND i.audit_status = 'pending'
+                   AND i.needs_recount = 0
                  ORDER BY i.is_locked DESC, i.code
                  LIMIT {$remaining}",
                 [(int) $r['group_id']]
@@ -647,7 +735,7 @@ class Item extends Model
 
             foreach ($items as $it) {
                 $it['needed'] = $needed;
-                $it['audited_count'] = (int) $r['audited_count'];
+                $it['audited_count'] = $audited;
                 $it['group_total'] = $total;
                 if (! can_see_stock_qty()) {
                     $it['expected_qty'] = null;
@@ -660,17 +748,26 @@ class Item extends Model
     }
 
     /**
-     * Semua item yang sudah diposting observer (apa pun status auditnya).
+     * Basis audit satu group: total item terposting yang wajib diaudit dan
+     * jumlah item UNIK yang sudah diaudit. Dipakai oleh AuditController
+     * (submit & report) supaya gate "minimal X%" konsisten dengan rekomendasi.
      *
-     * @param array<string, mixed> $filters
-     * @return array{items:list<array>,total:int,page:int,per_page:int,last_page:int,from:int,to:int}
+     * @return array{total:int,audited:int}
      */
-    public function postedAll(array $filters, int $page = 1, int $perPage = 15): array
+    public function auditBaseForGroup(int $groupId): array
     {
-        $filters['count_status'] = [self::COUNT_POSTED, 'submitted'];
-        $filters['audit_status'] = null;
+        $row = $this->first(
+            "SELECT COUNT(*) AS total,
+                    (SELECT COUNT(DISTINCT a.item_id) FROM audits a WHERE a.group_id = ?) AS audited
+             FROM items i
+             WHERE i.group_id = ?
+               AND i.count_status IN ('posted', 'submitted', 'audited')
+               AND i.needs_recount = 0
+               AND i.audit_status <> 'recount'",
+            [$groupId, $groupId]
+        );
 
-        return $this->listDetailed($filters, $page, $perPage);
+        return ['total' => (int) ($row['total'] ?? 0), 'audited' => (int) ($row['audited'] ?? 0)];
     }
 
     /**
@@ -785,13 +882,24 @@ class Item extends Model
         ]);
     }
 
+    /**
+     * Tandai item terposting oleh observer.
+     *
+     * Sekaligus mengembalikan item ke antrean audit: audit_status = 'pending'
+     * dan needs_recount = 0. Tanpa ini, item yang pernah di-recount akan tetap
+     * membawa audit_status='recount' sehingga TIDAK muncul di tab Audit
+     * ("Semua diposting" / "Rekomendasi 10%") walaupun sudah diposting ulang.
+     * Syarat #2 user: setiap item berstatus posting otomatis masuk list Audit.
+     */
     public function markPosted(int $id, int $userId): void
     {
         $this->updateById($id, [
-            'count_status' => self::COUNT_POSTED,
-            'posted_by'    => $userId,
-            'posted_at'    => date('Y-m-d H:i:s'),
-            'is_locked'    => 1,
+            'count_status'  => self::COUNT_POSTED,
+            'audit_status'  => self::AUDIT_PENDING,
+            'needs_recount' => 0,
+            'posted_by'     => $userId,
+            'posted_at'     => date('Y-m-d H:i:s'),
+            'is_locked'     => 1,
         ]);
     }
 

@@ -109,6 +109,7 @@ $isAdminUser     = in_array(\App\Core\Auth::role(), ['poweradmin', 'adminsto'], 
     </div>
 </div>
 
+<?= \App\Core\View::partial('partials/process-trail', ['trail' => $trail ?? [], 'trailGroupId' => $trailGroupId ?? null]) ?>
 <!-- ====================================================================== -->
 <!-- 1. KPI Metric Cards (komponen .stat — satu bahasa visual)               -->
 <!-- ====================================================================== -->

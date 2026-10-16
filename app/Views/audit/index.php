@@ -34,6 +34,7 @@ $groupCount = count($progress);
     <a class="btn btn-outline" href="<?= url('audit/history') ?>"><?= icon('list') ?> Riwayat Audit</a>
 </div>
 
+<?= \App\Core\View::partial('partials/process-trail', ['trail' => $trail ?? [], 'trailGroupId' => $trailGroupId ?? null]) ?>
 <?php
 $cfCol = $filters['col'] ?? [];
 $xfBtn = static fn (string $k, string $lbl): string => '<button type="button" class="xf-btn' . (! empty($cfCol[$k]) ? ' is-active' : '') . '" data-xf="' . $k . '" aria-label="' . e(__('Filter kolom :l', ['l' => __($lbl)])) . '" aria-haspopup="dialog" title="Filter">' . icon('filter') . '</button>';

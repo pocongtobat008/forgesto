@@ -106,6 +106,8 @@ class ItemController extends Controller
             'groupPending'  => $groupPending,
             'isReadOnly'    => $isReadOnly,
             'currentPeriod' => $currentPeriod,
+            'trail'         => (new \App\Models\ActivityLog())->processTrail($filters, 40),
+            'trailGroupId'  => $activeGroup,
         ]);
     }
 

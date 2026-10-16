@@ -136,6 +136,8 @@ class ItemPostingController extends Controller
                     $stmt = $this->pdo->prepare(
                         "UPDATE items
                          SET count_status = 'submitted',
+                             audit_status = 'pending',
+                             needs_recount = 0,
                              is_locked = 1,
                              counted_qty = COALESCE(counted_qty, 0),
                              posted_by = ?,
@@ -277,6 +279,8 @@ class ItemPostingController extends Controller
                     $stmt = $this->pdo->prepare(
                         "UPDATE items
                          SET count_status = 'submitted',
+                             audit_status = 'pending',
+                             needs_recount = 0,
                              is_locked = 1,
                              counted_qty = COALESCE(counted_qty, 0),
                              posted_by = ?,
@@ -429,7 +433,8 @@ class ItemPostingController extends Controller
                 // (belum punya batch_id) ke batch ini.
                 $stmt = $this->pdo->prepare(
                     "UPDATE items
-                     SET count_status = 'submitted', is_locked = 1,
+                     SET count_status = 'submitted', audit_status = 'pending',
+                         needs_recount = 0, is_locked = 1,
                          posted_by = ?, posted_at = NOW(), batch_id = ?
                      WHERE group_id = ?
                        AND (count_status = 'counted'
