@@ -94,10 +94,35 @@
   bottom: var(--fg-ill-bottom, 40px);
   width: var(--fg-ill-w);
   height: calc(var(--fg-ill-w) * .86);
-  background: var(--fg-ill, url("../img/hero-flat.svg")) no-repeat center bottom / contain;
-  animation: none !important;
+  background: var(--fg-ill, url("../img/hero-flat.svg?v=20261017e")) no-repeat center bottom / contain;
+  /* animasi halus: ilustrasi mengambang naik-turun + napas skala sangat kecil */
+  transform-origin: 50% 100%;
+  will-change: transform;
+  animation: sf-ill-float 7.5s ease-in-out infinite alternate !important;
   pointer-events: none;
   z-index: 2;
+}
+
+/* Ilustrasi flat "hidup" — amplitudo kecil supaya tetap tenang, bukan distraktif.
+   Dibuat alternate + ease-in-out agar tidak ada patahan di titik balik. */
+@keyframes sf-ill-float {
+  from { transform: translate3d(0, 0, 0) rotate(0deg) scale(1); }
+  to   { transform: translate3d(0, -7px, 0) rotate(-.7deg) scale(1.015); }
+}
+
+/* Layar kecil: ilustrasi duduk lebih dekat tepi atas, jadi amplitudo dikecilkan
+   supaya tidak terpotong oleh overflow:hidden header. */
+@media (max-width: 749px) {
+  @keyframes sf-ill-float-sm {
+    from { transform: translate3d(0, 0, 0) scale(1); }
+    to   { transform: translate3d(0, -3px, 0) scale(1.008); }
+  }
+  .content > .sf-hero::after { animation-name: sf-ill-float-sm !important; }
+}
+
+/* Hormati preferensi sistem: matikan total bila pengguna minta gerak minimal */
+@media (prefers-reduced-motion: reduce) {
+  .content > .sf-hero::after { animation: none !important; transform: none !important; }
 }
 
 /* --- Wave berlapis di kaki header (menyatu dengan kanvas) --- */

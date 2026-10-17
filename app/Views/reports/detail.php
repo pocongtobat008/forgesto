@@ -28,6 +28,7 @@ $tone = static fn ($n): string => (float) $n < 0 ? 'var(--danger-text)' : ((floa
 $closed = (string) ($period['status'] ?? 'open') === 'closed';
 $source = (string) ($metrics['source'] ?? 'empty');
 $canExport = function_exists('can') ? can('export_data') : false;
+$canQty    = can_see_stock_qty();
 
 $countedPct = (float) ($metrics['counted_pct'] ?? 0);
 $auditPct   = (float) ($metrics['audit_pct'] ?? 0);
@@ -151,6 +152,17 @@ $statusTone = static function (string $s): string {
     </div>
 </section>
 
+<?php if (! $canQty): ?>
+<section class="card">
+    <div class="card-body" style="padding:1.6rem;">
+        <div class="empty-state">
+            <div class="empty-icon"><?= icon('lock') ?></div>
+            <h3><?= __('Akses terbatas') ?></h3>
+            <p><?= __('Qty sistem dan nilai selisih hanya dapat dilihat oleh Admin STO / Power Admin.') ?></p>
+        </div>
+    </div>
+</section>
+<?php else: ?>
 <!-- ========================= SELISIH / GROUP ========================= -->
 <section class="card" style="margin-bottom:1rem;">
     <div class="card-header">
@@ -238,3 +250,4 @@ $statusTone = static function (string $s): string {
         </table>
     </div>
 </section>
+<?php endif; ?>

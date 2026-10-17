@@ -31,10 +31,10 @@ $counted = (int) ($item['counted_qty'] ?? $discrepancy['counted_qty']);
             </div>
             <div class="card-body">
                 <div class="grid grid-4">
-                    <div><div class="stat-label"><?= __('Sistem') ?></div><div class="stat-value"><?= can_see_stock_qty() ? (int) $discrepancy['expected_qty'] : '<span class="faint">***</span>' ?></div></div>
+                    <?php if (can_see_stock_qty()): ?><div><div class="stat-label"><?= __('Sistem') ?></div><div class="stat-value"><?= (int) $discrepancy['expected_qty'] ?></div></div><?php endif; ?>
                     <div><div class="stat-label"><?= __('Hasil hitung') ?></div><div class="stat-value"><?= (int) $discrepancy['counted_qty'] ?></div></div>
                     <div><div class="stat-label"><?= __('Hasil audit') ?></div><div class="stat-value"><?= $discrepancy['audited_qty'] === null ? '—' : (int) $discrepancy['audited_qty'] ?></div></div>
-                    <div><div class="stat-label"><?= __('Selisih') ?></div><div class="stat-value" style="color:var(--danger)"><?= can_see_stock_qty() && $discrepancy['difference'] !== null ? (int) $discrepancy['difference'] : '<span class="faint">***</span>' ?></div></div>
+                    <?php if (can_see_stock_qty()): ?><div><div class="stat-label"><?= __('Selisih') ?></div><div class="stat-value" style="color:var(--danger)"><?= $discrepancy['difference'] === null ? '—' : (int) $discrepancy['difference'] ?></div></div><?php endif; ?>
                 </div>
 
                 <div class="divider"></div>

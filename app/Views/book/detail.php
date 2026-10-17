@@ -17,6 +17,18 @@ $tgl = static function (string $d) use ($bulan): string {
     $t = strtotime($d);
     return $t === false ? $d : (int) date('j', $t) . ' ' . mb_substr($bulan[(int) date('n', $t)], 0, 3) . ' ' . date('Y', $t);
 };
+
+/* Blind count: halaman ini seluruhnya berisi qty sistem & selisih. */
+if (! can_see_stock_qty()) {
+    echo '<div class="page-head"><div><h1>Tutup buku ' . e($labelBulan((string) ($period['audit_month'] ?? ''))) . '</h1>'
+        . '<p>Periode: ' . e($tgl((string) ($period['audit_start'] ?? ''))) . ' – ' . e($tgl((string) ($period['audit_end'] ?? ''))) . '</p></div>'
+        . '<div class="spacer"></div><a class="btn btn-outline" href="' . url('tahun-buku') . '">' . icon('arrow-left') . ' Tahun Buku</a></div>'
+        . '<section class="card"><div class="card-body">'
+        . '<p class="muted" style="margin:0;">Ringkasan selisih per group hanya dapat dilihat oleh admin. '
+        . 'Status periode: <strong>' . ($isClosed ? 'ditutup' : 'belum ditutup') . '</strong>.</p>'
+        . '</div></section>';
+    return;
+}
 ?>
 <div class="page-head">
     <div>

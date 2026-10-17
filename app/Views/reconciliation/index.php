@@ -115,27 +115,27 @@ $isAdminUser     = in_array(\App\Core\Auth::role(), ['poweradmin', 'adminsto'], 
 <!-- 1. KPI Metric Cards (komponen .stat — satu bahasa visual)               -->
 <!-- ====================================================================== -->
 <div class="kpi-grid">
-    <?php $netNeg = (float) $totals['net_diff_amount'] < 0; $netPos = (float) $totals['net_diff_amount'] > 0; ?>
+    <?php $netNeg = $canSeeStockQty && (float) $totals['net_diff_amount'] < 0; $netPos = $canSeeStockQty && (float) $totals['net_diff_amount'] > 0; ?>
     <div class="stat is-brand" style="--i:0">
         <div class="stat-icon"><?= icon('chart') ?></div>
         <span class="stat-label"><?= __('Net Selisih Nilai') ?></span>
-        <div class="stat-value kpi-amt <?= $netNeg ? 'is-neg' : ($netPos ? 'is-pos' : '') ?>" title="<?= e(format_rupiah((float) $totals['net_diff_amount'], true)) ?>">
-            <?= format_rupiah_compact((float) $totals['net_diff_amount'], true) ?>
+        <div class="stat-value kpi-amt <?= $netNeg ? 'is-neg' : ($netPos ? 'is-pos' : '') ?>" title="<?= $canSeeStockQty ? e(format_rupiah((float) $totals['net_diff_amount'], true)) : '***' ?>">
+            <?= $canSeeStockQty ? format_rupiah_compact((float) $totals['net_diff_amount'], true) : '***' ?>
         </div>
-        <div class="stat-meta">Selisih Qty: <strong class="mono"><?= (int) $totals['total_diff_qty'] > 0 ? '+' : '' ?><?= (int) $totals['total_diff_qty'] ?> pcs</strong></div>
+        <div class="stat-meta"><?php if ($canSeeStockQty): ?>Selisih Qty: <strong class="mono"><?= (int) $totals['total_diff_qty'] > 0 ? '+' : '' ?><?= (int) $totals['total_diff_qty'] ?> pcs</strong><?php else: ?>&nbsp;<?php endif; ?></div>
     </div>
 
     <div class="stat is-success" style="--i:1">
         <div class="stat-icon"><?= icon('trending-up') ?></div>
         <span class="stat-label"><?= __('Surplus / Plus (+)') ?></span>
-        <div class="stat-value kpi-amt" title="<?= e(format_rupiah((float) $totals['total_plus_amount'], true)) ?>"><?= format_rupiah_compact((float) $totals['total_plus_amount'], true) ?></div>
+        <div class="stat-value kpi-amt" title="<?= $canSeeStockQty ? e(format_rupiah((float) $totals['total_plus_amount'], true)) : '***' ?>"><?= $canSeeStockQty ? format_rupiah_compact((float) $totals['total_plus_amount'], true) : '***' ?></div>
         <div class="stat-meta"><?= (int) $totals['plus_items'] ?> item dengan fisik lebih dari stok buku</div>
     </div>
 
     <div class="stat is-danger" style="--i:2">
         <div class="stat-icon"><?= icon('trending-down') ?></div>
         <span class="stat-label"><?= __('Defisit / Minus (-)') ?></span>
-        <div class="stat-value kpi-amt" title="<?= e(format_rupiah((float) $totals['total_minus_amount'], true)) ?>"><?= format_rupiah_compact((float) $totals['total_minus_amount'], true) ?></div>
+        <div class="stat-value kpi-amt" title="<?= $canSeeStockQty ? e(format_rupiah((float) $totals['total_minus_amount'], true)) : '***' ?>"><?= $canSeeStockQty ? format_rupiah_compact((float) $totals['total_minus_amount'], true) : '***' ?></div>
         <div class="stat-meta"><?= (int) $totals['minus_items'] ?> item dengan fisik kurang dari stok buku</div>
     </div>
 
@@ -369,11 +369,11 @@ $gtCond = $gt['diff_qty'] > 0 ? 'plus' : ($gt['diff_qty'] < 0 ? 'minus' : 'match
             <div class="group-total-left">
                 <span class="text-xs uppercase font-bold tracking-wider muted"><?= __('Total Keseluruhan') ?></span>
                 <strong class="mono" style="font-size:1.2rem;color:var(--text);">
-                    <?= format_rupiah($gt['diff_amt'], true) ?>
+                    <?= $canSeeStockQty ? format_rupiah($gt['diff_amt'], true) : '***' ?>
                 </strong>
                 <span class="text-xs muted">
                     <?= (int)$gt['items'] ?> item &bull; <?= $canSeeStockQty ? 'stok ' . (int)$gt['stock'] . ' &rarr; ' : '' ?>hitung <?= (int)$gt['counted'] ?>
-                    (<?= $gt['diff_qty'] > 0 ? '+' : '' ?><?= (int)$gt['diff_qty'] ?>)
+                    (<?= $canSeeStockQty ? (($gt['diff_qty'] > 0 ? '+' : '') . (int)$gt['diff_qty']) : '***' ?>)
                 </span>
             </div>
             <div class="group-total-right">
@@ -410,10 +410,10 @@ $gtCond = $gt['diff_qty'] > 0 ? 'plus' : ($gt['diff_qty'] < 0 ? 'minus' : 'match
                    data-group-name="<?= strtolower(e($sg['group_name'])) ?>">
                     <div class="group-card-top">
                         <span class="group-card-title" title="<?= e($sg['group_name']) ?>"><?= e($sg['group_name']) ?></span>
-                        <span class="badge <?= $dirBadge($gCondition) ?>"><?= $dirLabel($gCondition) ?></span>
+                        <?php if ($canSeeStockQty): ?><span class="badge <?= $dirBadge($gCondition) ?>"><?= $dirLabel($gCondition) ?></span><?php endif; ?>
                     </div>
-                    <div class="group-card-amt <?= $gDiffAmt < 0 ? 'text-danger' : ($gDiffAmt > 0 ? 'text-success' : 'muted') ?>">
-                        <?= format_rupiah($gDiffAmt, true) ?>
+                    <div class="group-card-amt <?= $canSeeStockQty ? ($gDiffAmt < 0 ? 'text-danger' : ($gDiffAmt > 0 ? 'text-success' : 'muted')) : 'muted' ?>">
+                        <?= $canSeeStockQty ? format_rupiah($gDiffAmt, true) : '***' ?>
                     </div>
                     <div class="group-card-meta">
                         <span class="group-card-itemcount"><?= $gItems ?> item</span>

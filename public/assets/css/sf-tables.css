@@ -1,0 +1,533 @@
+/* =====================================================================
+   StockForge · UNIFIED TABLE DESIGN  (all menus)
+   Satu bahasa desain tabel untuk seluruh menu: Data STO, Audit, Tahun
+   Buku, Report, Selisih, Rekonsiliasi, Progress, Data Master, User,
+   Aktivitas, Export, Import, Memo, dst.
+
+   Ciri: header sticky + uppercase kecil, garis baris halus, hover tint
+   + aksen kiri, angka tabular, sudut 14px, dan kartu tabel yang menyatu
+   dengan halaman. Dimuat PALING AKHIR supaya menang atas patch lama.
+   ===================================================================== */
+
+:root {
+    --sf-tbl-radius: 14px;
+    --sf-th-bg: #f1f5f9;
+    --sf-th-ink: #334155;
+    --sf-line: #e7ecf2;
+    --sf-row-hover: #f8fafc;
+    --sf-accent: #228be6;
+    --sf-cell-y: 13px;
+    --sf-cell-x: 16px;
+    --sf-th-size: 11.5px;
+}
+
+[data-theme="dark"] {
+    --sf-th-bg: #23262b;
+    --sf-th-ink: #c1c2c5;
+    --sf-line: #2c2e33;
+    --sf-row-hover: #202226;
+    --sf-accent: #4dabf7;
+}
+
+/* ---------------------------------------------------------------------
+   1. KARTU TABEL  (satu wadah untuk semua menu)
+   --------------------------------------------------------------------- */
+.table-wrap,
+.recon-table-wrap,
+.data-table-wrapper {
+    padding: 0 !important;
+    background: var(--surface) !important;
+    border: 1px solid var(--border) !important;
+    border-radius: var(--sf-tbl-radius) !important;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, .05) !important;
+    overflow: auto !important;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+}
+
+/* Kalau tabel sudah di dalam .card, jangan bikin bingkai ganda */
+.card > .table-wrap,
+.card > .recon-table-wrap,
+.card > .data-table-wrapper,
+.card-body > .table-wrap {
+    border: 0 !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+}
+
+.table-wrap > table,
+.table-wrap > .data,
+.recon-table-wrap > table {
+    margin: 0 !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    width: 100%;
+}
+
+/* Tabel yang berdiri sendiri (tanpa .table-wrap) tetap tampil sebagai kartu */
+table.sf-summary-table,
+table.prg-d-table,
+#table-user-rules {
+    border: 1px solid var(--border) !important;
+    border-radius: var(--sf-tbl-radius) !important;
+    overflow: hidden;
+    background: var(--surface) !important;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, .05);
+}
+
+/* ---------------------------------------------------------------------
+   2. HEADER TABEL  (identik di semua menu)
+   Catatan: daftar ID dipakai supaya menang dari aturan per-halaman yang
+   memakai selector #id (specificity lebih tinggi dari class).
+   --------------------------------------------------------------------- */
+table.data thead th,
+table.sf-summary-table thead th,
+table.prg-d-table thead th,
+#table-user-rules thead th,
+.table-wrap table thead th,
+.table thead th,
+:is(#items-table, #book-table, #audit-coverage-table, #audit-sample-table,
+    #audit-posted-table, #audit-recheck-table, #devices-table,
+    #discrepancies-table, #exports-table, #groups-table, #locations-table,
+    #master-table, #recon-table, #audit-table, #users-table, #wh-table,
+    #activity-table, #table-user-rules, #sf-summary-table,
+    #audit-history-table) thead th {
+    position: sticky !important;
+    top: 0;
+    z-index: 3;
+    background: var(--sf-th-bg) !important;
+    color: var(--sf-th-ink) !important;
+    font-family: var(--font-sans) !important;
+    font-size: var(--sf-th-size) !important;
+    font-weight: 600 !important;
+    line-height: 1.25 !important;
+    letter-spacing: .07em !important;
+    text-transform: uppercase !important;
+    text-align: left;
+    padding: 12px var(--sf-cell-x) !important;
+    border-bottom: 1px solid var(--border) !important;
+    border-top: 0 !important;
+    white-space: nowrap;
+    vertical-align: middle;
+}
+
+/* kolom dengan tombol filter: tombol tetap menempel di kanan (Excel style) */
+table.data thead th.xf-th,
+table thead th.xf-th,
+:is(#items-table, #book-table, #audit-coverage-table, #audit-sample-table,
+    #audit-posted-table, #audit-recheck-table, #devices-table,
+    #discrepancies-table, #exports-table, #groups-table, #locations-table,
+    #master-table, #recon-table, #audit-table, #users-table, #wh-table,
+    #activity-table, #table-user-rules, #sf-summary-table) thead th.xf-th {
+    position: sticky !important;
+    top: 0;
+    padding-right: 36px !important;
+    padding-left: var(--sf-cell-x) !important;
+}
+
+table.data thead th.t-center,
+table.sf-summary-table thead th.t-center,
+.table thead th.t-center { text-align: center; }
+
+table.data thead th.t-right,
+table.sf-summary-table thead th.t-right,
+.table thead th.t-right { text-align: right; }
+
+/* header kolom numerik tetap pakai warna teks utama supaya terbaca */
+table.data thead th.mono,
+table.data thead th.t-center.mono,
+table.data thead th.t-right.mono { color: var(--sf-th-ink) !important; }
+
+/* ---------------------------------------------------------------------
+   3. SEL TABEL
+   --------------------------------------------------------------------- */
+table.data tbody td,
+table.sf-summary-table tbody td,
+table.prg-d-table tbody td,
+#table-user-rules tbody td,
+.table-wrap table tbody td,
+.table tbody td,
+:is(#items-table, #book-table, #audit-coverage-table, #audit-sample-table,
+    #audit-posted-table, #audit-recheck-table, #devices-table,
+    #discrepancies-table, #exports-table, #groups-table, #locations-table,
+    #master-table, #recon-table, #audit-table, #users-table, #wh-table,
+    #activity-table, #table-user-rules, #sf-summary-table,
+    #audit-history-table) tbody td {
+    padding: var(--sf-cell-y) var(--sf-cell-x) !important;
+    border-bottom: 1px solid var(--sf-line) !important;
+    font-size: var(--text-sm);
+    color: var(--text);
+    vertical-align: middle;
+}
+
+/* padding tepi konsisten (matikan patch 0.5rem / 1.15rem lama) */
+table.data td:first-child,
+table.data th:first-child,
+:is(#items-table, #book-table, #devices-table, #discrepancies-table,
+    #exports-table, #groups-table, #locations-table, #master-table,
+    #recon-table, #audit-table, #users-table, #wh-table, #activity-table,
+    #table-user-rules, #sf-summary-table) td:first-child {
+    padding-left: var(--sf-cell-x) !important;
+}
+
+table.data td:last-child,
+table.data th:last-child,
+:is(#items-table, #book-table, #devices-table, #discrepancies-table,
+    #exports-table, #groups-table, #locations-table, #master-table,
+    #recon-table, #audit-table, #users-table, #wh-table, #activity-table,
+    #table-user-rules, #sf-summary-table) td:last-child {
+    padding-right: var(--sf-cell-x) !important;
+}
+
+/* garis terakhir jangan dobel dengan tepi kartu */
+table.data tbody tr:last-child td,
+table.sf-summary-table tbody tr:last-child td,
+table.prg-d-table tbody tr:last-child td,
+#table-user-rules tbody tr:last-child td,
+.table tbody tr:last-child td {
+    border-bottom: 0 !important;
+}
+
+/* ---------------------------------------------------------------------
+   4. HOVER + AKSEN KIRI
+   --------------------------------------------------------------------- */
+table.data tbody tr,
+table.sf-summary-table tbody tr,
+table.prg-d-table tbody tr,
+#table-user-rules tbody tr,
+.table tbody tr {
+    transition: background var(--dur-1) var(--ease-out);
+}
+
+table.data tbody tr:hover,
+table.sf-summary-table tbody tr:hover,
+table.prg-d-table tbody tr:hover,
+#table-user-rules tbody tr:hover,
+.table tbody tr:hover {
+    background: var(--sf-row-hover) !important;
+}
+
+table.data tbody tr:hover td:first-child,
+table.sf-summary-table tbody tr:hover td:first-child,
+#table-user-rules tbody tr:hover td:first-child,
+.table tbody tr:hover td:first-child {
+    box-shadow: inset 3px 0 0 var(--sf-accent);
+}
+
+/* ---------------------------------------------------------------------
+   5. ANGKA & ALIGNMENT
+   --------------------------------------------------------------------- */
+table.data .mono,
+table.data .tabular,
+table.sf-summary-table .mono,
+table.prg-d-table .mono,
+.table-wrap .mono {
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum" 1;
+}
+
+table.data .t-center,
+.table .t-center { text-align: center; }
+table.data .t-right,
+.table .t-right { text-align: right; }
+
+/* ---------------------------------------------------------------------
+   6. BARIS KOSONG / EMPTY STATE
+   --------------------------------------------------------------------- */
+table.data tbody td[colspan],
+table.sf-summary-table tbody td[colspan],
+#table-user-rules tbody td[colspan],
+.table tbody td[colspan] {
+    padding: 2.25rem 1rem !important;
+    text-align: center;
+    color: var(--text-3);
+    border-bottom: 0 !important;
+}
+
+table.data tbody td[colspan] .empty-state,
+.table tbody td[colspan] .empty-state { padding: 0; }
+
+/* ---------------------------------------------------------------------
+   7. AKSI / TOMBOL DALAM TABEL
+   --------------------------------------------------------------------- */
+table.data .row-actions,
+.table-wrap .row-actions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: nowrap;
+}
+
+table.data .row-actions .btn,
+table.data .row-actions .btn-sm,
+.table-wrap .row-actions .btn,
+.table-wrap .row-actions .btn-sm {
+    height: 30px;
+    padding: 0 10px;
+    font-size: 12px;
+    font-weight: 600;
+    border-radius: 7px;
+    line-height: 1;
+    white-space: nowrap;
+}
+
+/* ---------------------------------------------------------------------
+   8. BADGE / PILL DI DALAM SEL  (seragam)
+   --------------------------------------------------------------------- */
+table.data .badge,
+table.sf-summary-table .badge,
+.table-wrap .badge {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: .01em;
+    padding: 3px 9px;
+    border-radius: 999px;
+    line-height: 1.4;
+    white-space: nowrap;
+}
+
+/* ---------------------------------------------------------------------
+   9. TABEL DALAM MODAL / PANEL KECIL  (tanpa sticky)
+   --------------------------------------------------------------------- */
+.sf-modal table.data thead th,
+.sf-modal table thead th,
+.sf-modal table.data tbody td {
+    position: static !important;
+}
+
+/* ---------------------------------------------------------------------
+   10. MOBILE
+   --------------------------------------------------------------------- */
+@media (max-width: 760px) {
+    .table-wrap,
+    .recon-table-wrap,
+    .data-table-wrapper {
+        border-radius: 12px !important;
+        border-left: 0 !important;
+        border-right: 0 !important;
+    }
+
+    table.data thead th,
+    table.sf-summary-table thead th,
+    table.prg-d-table thead th,
+    #table-user-rules thead th,
+    .table thead th,
+    :is(#items-table, #book-table, #devices-table, #discrepancies-table,
+        #exports-table, #groups-table, #locations-table, #master-table,
+        #recon-table, #audit-table, #users-table, #wh-table, #activity-table,
+        #table-user-rules, #sf-summary-table) thead th {
+        font-size: 11px !important;
+        letter-spacing: .05em !important;
+        padding: 10px 12px !important;
+    }
+
+    table.data tbody td,
+    table.sf-summary-table tbody td,
+    table.prg-d-table tbody td,
+    #table-user-rules tbody td,
+    .table tbody td,
+    :is(#items-table, #book-table, #devices-table, #discrepancies-table,
+        #exports-table, #groups-table, #locations-table, #master-table,
+        #recon-table, #audit-table, #users-table, #wh-table, #activity-table,
+        #table-user-rules, #sf-summary-table) tbody td {
+        padding: 10px 12px !important;
+    }
+}
+
+/* ---------------------------------------------------------------------
+   11. CETAK  (berita acara / memo) — jangan diubah
+   --------------------------------------------------------------------- */
+@media print {
+    table.ba-table,
+    table.ba-meta { all: revert; }
+}
+
+
+/* ---------------------------------------------------------------------
+   12. PENYEMPURNAAN: tabel tanpa ID (Tahun Buku, Report, Import, Memo)
+       dan tabel Rekonsiliasi yang punya aturan #id sendiri.
+   --------------------------------------------------------------------- */
+.table-wrap table.data thead th,
+.table-wrap table.data th {
+    padding: 12px var(--sf-cell-x) !important;
+}
+
+/* kolom ber-filter tetap menyisakan ruang tombol di kanan */
+.table-wrap table.data thead th.xf-th,
+.table-wrap table.data th.xf-th {
+    padding-right: 36px !important;
+}
+
+.table-wrap table.data tbody td,
+.table-wrap table.data td {
+    padding: var(--sf-cell-y) var(--sf-cell-x) !important;
+}
+
+.table-wrap table.data th:first-child,
+.table-wrap table.data td:first-child {
+    padding-left: var(--sf-cell-x) !important;
+}
+
+.table-wrap table.data th:last-child,
+.table-wrap table.data td:last-child {
+    padding-right: var(--sf-cell-x) !important;
+}
+
+/* Rekonsiliasi: header jangan 10.48px & padding 12px sempit */
+#recon-table.data th {
+    padding: 12px var(--sf-cell-x) !important;
+    font-size: var(--sf-th-size) !important;
+    letter-spacing: .07em !important;
+    position: sticky !important;
+    top: 0;
+}
+
+#recon-table.data th.xf-th {
+    padding-right: 36px !important;
+}
+
+#recon-table.data td {
+    padding: var(--sf-cell-y) var(--sf-cell-x) !important;
+}
+
+#recon-table.data th:first-child,
+#recon-table.data td:first-child {
+    padding-left: var(--sf-cell-x) !important;
+}
+
+#recon-table.data th:last-child,
+#recon-table.data td:last-child {
+    padding-right: var(--sf-cell-x) !important;
+}
+
+
+/* Data STO: aturan #items-table sendiri paling kuat, samakan */
+#items-table.data thead th,
+#items-table thead th {
+    padding: 12px var(--sf-cell-x) !important;
+}
+
+#items-table.data thead th.xf-th,
+#items-table thead th.xf-th {
+    padding-right: 36px !important;
+}
+
+#items-table.data tbody td,
+#items-table tbody td {
+    padding: var(--sf-cell-y) var(--sf-cell-x) !important;
+}
+
+#items-table.data tbody td:first-child,
+#items-table tbody td:first-child {
+    padding-left: var(--sf-cell-x) !important;
+}
+
+#items-table.data tbody td:last-child,
+#items-table tbody td:last-child {
+    padding-right: var(--sf-cell-x) !important;
+}
+
+
+/* Header wajib OPAQUE (jangan tembus pandang saat baris bergulir di bawah) */
+.table-wrap table.data thead th,
+.table-wrap table.data th,
+.table-wrap table thead th,
+#recon-table.data th,
+#items-table.data thead th,
+#items-table thead th {
+    background: var(--sf-th-bg) !important;
+    background-image: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+}
+
+
+/* Paksa header OPAQUE juga pada tema terang (ada var glass --sf-g-head) */
+:root:not([data-theme="dark"]) table.data thead th,
+:root:not([data-theme="dark"]) table.sf-summary-table thead th,
+:root:not([data-theme="dark"]) table.prg-d-table thead th,
+:root:not([data-theme="dark"]) #table-user-rules thead th,
+:root:not([data-theme="dark"]) .table thead th,
+:root:not([data-theme="dark"]) .table-wrap table.data thead th,
+:root:not([data-theme="dark"]) .table-wrap table thead th,
+:root[data-theme="dark"] table.data thead th,
+:root[data-theme="dark"] .table-wrap table.data thead th,
+:root[data-theme="dark"] .table-wrap table thead th {
+    background: var(--sf-th-bg) !important;
+    background-image: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+}
+
+
+/* ---------------------------------------------------------------------
+   13. EXPAND / COLLAPSE + DETAIL BARIS  (semua menu, gaya sama dgn Data STO)
+   --------------------------------------------------------------------- */
+table[data-xrd] tbody tr.rd-xrow,
+table[data-xrd] tbody tr.rd-xrow > td {
+    background: transparent !important;
+    border: 0 !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+}
+
+table[data-xrd] tbody tr.rd-xrow > td {
+    background: var(--surface-2, #f8fafc) !important;
+    border-bottom: 1px solid var(--sf-line) !important;
+}
+
+table[data-xrd] tbody tr.rd-xrow > td::before { content: none !important; display: none !important; }
+
+table[data-xrd] tbody tr.rd-xrow .rd-xpanel { margin: 0 0 10px; }
+
+table[data-xrd] tbody tr.is-expanded > td { background: #f2f6fd !important; }
+table[data-xrd] tbody tr.is-active-row > td { background: #eef4ff !important; }
+[data-theme="dark"] table[data-xrd] tbody tr.is-expanded > td { background: #17243a !important; }
+[data-theme="dark"] table[data-xrd] tbody tr.is-active-row > td { background: #17243a !important; }
+
+/* chevron di dalam sel pertama tetap sejajar dengan teks */
+table[data-xrd] tbody td .rd-toggle {
+    flex: 0 0 auto;
+    vertical-align: middle;
+}
+
+/* di tampilan kartu (mobile) panel tetap rapi */
+@media (max-width: 760px) {
+    table[data-xrd] tbody tr.rd-xrow .rd-xpanel { margin: 0 0 8px; padding: 12px 12px 14px; }
+    table[data-xrd] tbody tr.rd-xrow .rd-xgrid { grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); }
+}
+
+
+/* --- Posisi chevron konsisten di SEMUA tabel -----------------------------
+   Chevron selalu jadi elemen pertama kolom konten pertama: rata kiri,
+   sejajar tengah dengan isi sel, jarak 8px, di semua menu. */
+table[data-xrd] tbody td.rd-host {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    text-align: left;
+}
+
+table[data-xrd] tbody td.rd-host > .rd-hostmain {
+    display: block;
+    min-width: 0;
+    flex: 1 1 auto;
+    text-align: left;
+}
+
+/* tombol = replika Data STO: 30x24, margin-right 7px + gap 8px (efektif 15px),
+   selalu sejajar tengah dengan isi sel */
+table[data-xrd] tbody td.rd-host > .rd-toggle {
+    margin: 0 7px 0 0;
+    flex: 0 0 auto;
+    align-self: center;
+}
+
+/* mobile: tetap sebaris dengan isi (tanpa float), persis seperti Data STO */
+@media (max-width: 760px) {
+    table[data-xrd] tbody td.rd-host { display: flex; align-items: center; text-align: left; }
+    table[data-xrd] tbody td.rd-host > .rd-toggle { float: none; margin: 0 7px 0 0; }
+    table[data-xrd] tbody td.rd-host > .rd-hostmain { display: block; min-width: 0; flex: 1 1 auto; }
+}

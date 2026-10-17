@@ -599,15 +599,16 @@
                 m.querySelector('#disc-modal-ctx').textContent = btn.getAttribute('data-group');
                 m.querySelector('#disc-modal-kind').value = kind;
                 // context: system / counted / audit / delta (blind-safe)
+                var CAN_QTY = (document.body.getAttribute('data-can-see-qty') || '1') !== '0';
                 var exp = btn.getAttribute('data-expected'), cnt = btn.getAttribute('data-counted'), aud = btn.getAttribute('data-audited');
                 var cmp = m.querySelector('#disc-modal-compare');
-                if (cmp) cmp.hidden = exp === null;
+                if (cmp) cmp.hidden = exp === null || !CAN_QTY;
                 var setv = function (sel, val) { var e = m.querySelector(sel); if (e) e.textContent = (val === null || val === '' || val === '—') ? '—' : val; };
                 setv('#disc-modal-expected', exp); setv('#disc-modal-counted', cnt);
                 var dEl = m.querySelector('#disc-modal-delta');
                 if (dEl) {
                     var dv = parseInt(btn.getAttribute('data-diff'), 10);
-                    if (isNaN(dv)) { dEl.hidden = true; } else {
+                    if (isNaN(dv) || !CAN_QTY) { dEl.hidden = true; } else {
                         dEl.hidden = false;
                         dEl.textContent = 'Selisih: ' + (dv > 0 ? '+' : '') + dv + ' unit' + (aud ? ' · hasil audit: ' + aud : '');
                         dEl.className = 'sf-delta-chip ' + (dv === 0 ? 'is-zero' : (dv > 0 ? 'is-pos' : 'is-neg'));

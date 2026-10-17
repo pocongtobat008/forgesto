@@ -318,7 +318,13 @@ class Item extends Model
         $sql = "SELECT i.*,
                        g.code AS group_code, g.name AS group_name,
                        l.name AS location_name, d.name AS device_name,
-                       cu.name AS counted_by_name, pu.name AS posted_by_name
+                       cu.name AS counted_by_name, pu.name AS posted_by_name,
+                       (SELECT GROUP_CONCAT(uo.name ORDER BY uo.name SEPARATOR ', ')
+                          FROM user_groups ugo JOIN users uo ON uo.id = ugo.user_id
+                         WHERE ugo.group_id = i.group_id AND uo.role = 'observer' AND uo.is_active = 1) AS observers,
+                       (SELECT GROUP_CONCAT(ua.name ORDER BY ua.name SEPARATOR ', ')
+                          FROM user_groups uga JOIN users ua ON ua.id = uga.user_id
+                         WHERE uga.group_id = i.group_id AND ua.role = 'audit' AND ua.is_active = 1) AS auditors
                 FROM items i
                 JOIN `groups` g ON g.id = i.group_id
                 LEFT JOIN locations l ON l.id = i.location_id
@@ -436,7 +442,13 @@ class Item extends Model
         $row = $this->first(
             'SELECT i.*, g.code AS group_code, g.name AS group_name,
                     l.name AS location_name, d.name AS device_name,
-                    cu.name AS counted_by_name, pu.name AS posted_by_name
+                    cu.name AS counted_by_name, pu.name AS posted_by_name,
+                    (SELECT GROUP_CONCAT(uo.name ORDER BY uo.name SEPARATOR \', \')
+                       FROM user_groups ugo JOIN users uo ON uo.id = ugo.user_id
+                      WHERE ugo.group_id = i.group_id AND uo.role = \'observer\' AND uo.is_active = 1) AS observers,
+                    (SELECT GROUP_CONCAT(ua.name ORDER BY ua.name SEPARATOR \', \')
+                       FROM user_groups uga JOIN users ua ON ua.id = uga.user_id
+                      WHERE uga.group_id = i.group_id AND ua.role = \'audit\' AND ua.is_active = 1) AS auditors
              FROM items i
              JOIN `groups` g ON g.id = i.group_id
              LEFT JOIN locations l ON l.id = i.location_id
@@ -687,7 +699,13 @@ class Item extends Model
 
         $sql = "SELECT i.*, g.code AS group_code, g.name AS group_name,
                        l.name AS location_name, d.name AS device_name,
-                       cu.name AS counted_by_name, pu.name AS posted_by_name
+                       cu.name AS counted_by_name, pu.name AS posted_by_name,
+                       (SELECT GROUP_CONCAT(uo.name ORDER BY uo.name SEPARATOR ', ')
+                          FROM user_groups ugo JOIN users uo ON uo.id = ugo.user_id
+                         WHERE ugo.group_id = i.group_id AND uo.role = 'observer' AND uo.is_active = 1) AS observers,
+                       (SELECT GROUP_CONCAT(ua.name ORDER BY ua.name SEPARATOR ', ')
+                          FROM user_groups uga JOIN users ua ON ua.id = uga.user_id
+                         WHERE uga.group_id = i.group_id AND ua.role = 'audit' AND ua.is_active = 1) AS auditors
                 FROM items i
                 JOIN `groups` g ON g.id = i.group_id
                 LEFT JOIN locations l ON l.id = i.location_id
@@ -757,9 +775,23 @@ class Item extends Model
 
             $items = $this->query(
                 "SELECT i.id, i.code, i.name, i.unit, i.expected_qty, i.counted_qty,
-                        i.is_locked, i.audit_status, g.name AS group_name, g.code AS group_code
+                        i.is_locked, i.audit_status, i.count_status, i.category, i.unit_price,
+                        i.counted_at, i.posted_at,
+                        g.name AS group_name, g.code AS group_code,
+                        l.name AS location_name, d.name AS device_name,
+                        cu.name AS counted_by_name, pu.name AS posted_by_name,
+                        (SELECT GROUP_CONCAT(uo.name ORDER BY uo.name SEPARATOR ', ')
+                           FROM user_groups ugo JOIN users uo ON uo.id = ugo.user_id
+                          WHERE ugo.group_id = i.group_id AND uo.role = 'observer' AND uo.is_active = 1) AS observers,
+                        (SELECT GROUP_CONCAT(ua.name ORDER BY ua.name SEPARATOR ', ')
+                           FROM user_groups uga JOIN users ua ON ua.id = uga.user_id
+                          WHERE uga.group_id = i.group_id AND ua.role = 'audit' AND ua.is_active = 1) AS auditors
                  FROM items i
                  JOIN `groups` g ON g.id = i.group_id
+                 LEFT JOIN locations l ON l.id = i.location_id
+                 LEFT JOIN devices d ON d.id = i.device_id
+                 LEFT JOIN users cu ON cu.id = i.counted_by
+                 LEFT JOIN users pu ON pu.id = i.posted_by
                  WHERE i.group_id = ?
                    AND i.count_status IN ('posted', 'submitted')
                    AND i.audit_status = 'pending'

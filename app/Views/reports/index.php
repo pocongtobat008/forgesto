@@ -81,6 +81,17 @@ $baseY = $top + $plotH;
             </p>
         </div>
     </section>
+<?php elseif (! can_see_stock_qty()): ?>
+<section class="card">
+    <div class="card-body" style="padding:1.6rem;">
+        <div class="empty-state">
+            <div class="empty-icon"><?= icon('lock') ?></div>
+            <h3><?= __('Akses terbatas') ?></h3>
+            <p><?= __('Qty sistem dan nilai selisih hanya dapat dilihat oleh Admin STO / Power Admin.') ?></p>
+        </div>
+    </div>
+</section>
+
 <?php else: ?>
 
 <!-- ============================ KPI ============================ -->

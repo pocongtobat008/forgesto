@@ -47,7 +47,7 @@ use App\Core\View;
 <?php $cfCol = $filters['col'] ?? []; $xfBtn = static fn (string $k, string $lbl): string => '<button type="button" class="xf-btn' . (! empty($cfCol[$k]) ? ' is-active' : '') . '" data-xf="' . $k . '" aria-label="' . e(__('Filter kolom :l', ['l' => __($lbl)])) . '" aria-haspopup="dialog" title="Filter">' . icon('filter') . '</button>'; ?>
                     <th data-col="item" class="xf-th"><span class="xf-label"><?= __('Item') ?></span><?= $xfBtn('item', 'Item') ?></th>
                     <th data-col="group" class="xf-th"><span class="xf-label"><?= __('Group') ?></span><?= $xfBtn('group', 'Group') ?></th>
-                    <th data-col="expected" class="t-center xf-th"><span class="xf-label"><?= __('Sistem') ?></span><?= can_see_stock_qty() ? $xfBtn('expected', 'Sistem') : '' ?></th>
+                    <?php if (can_see_stock_qty()): ?><th data-col="expected" class="t-center xf-th"><span class="xf-label"><?= __('Sistem') ?></span><?= $xfBtn('expected', 'Sistem') ?></th><?php endif; ?>
                     <th data-col="counted" class="t-center xf-th"><span class="xf-label"><?= __('Hitung') ?></span><?= $xfBtn('counted', 'Hitung') ?></th>
                     <th data-col="audited" class="t-center xf-th"><span class="xf-label"><?= __('Audit') ?></span><?= $xfBtn('audited', 'Audit') ?></th>
                     <th data-col="result" class="t-center xf-th"><span class="xf-label"><?= __('Hasil') ?></span><?= $xfBtn('result', 'Hasil') ?></th>
@@ -57,7 +57,7 @@ use App\Core\View;
             </thead>
             <tbody>
                 <?php if ($audits['items'] === []): ?>
-                    <tr><td colspan="8" class="text-center faint" style="padding:1.5rem;"><?= __('Belum ada riwayat audit.') ?></td></tr>
+                    <tr><td colspan="<?= can_see_stock_qty() ? 8 : 7 ?>" class="text-center faint" style="padding:1.5rem;"><?= __('Belum ada riwayat audit.') ?></td></tr>
                 <?php else: ?>
                     <?php foreach ($audits['items'] as $audit): ?>
                         <tr>
@@ -66,7 +66,7 @@ use App\Core\View;
                                 <div class="cell-sub"><?= e($audit['item_name']) ?></div>
                             </td>
                             <td><?= e($audit['group_name']) ?></td>
-                            <td class="t-center mono tabular"><?= can_see_stock_qty() ? (int) $audit['expected_qty'] : '<span class="faint">***</span>' ?></td>
+                            <?php if (can_see_stock_qty()): ?><td class="t-center mono tabular"><?= (int) $audit['expected_qty'] ?></td><?php endif; ?>
                             <td class="t-center mono tabular"><?= (int) $audit['counted_qty'] ?></td>
                             <td class="t-center mono tabular"><?= (int) $audit['audited_qty'] ?></td>
                             <td class="t-center">

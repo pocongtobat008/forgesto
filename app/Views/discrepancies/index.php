@@ -92,10 +92,14 @@ $__disHasFilter = ! empty($filters['search']) || ! empty($filters['col']) || ! e
 <?php $cfCol = $filters['col'] ?? []; $xfBtn = static fn (string $k, string $lbl): string => '<button type="button" class="xf-btn' . (! empty($cfCol[$k]) ? ' is-active' : '') . '" data-xf="' . $k . '" aria-label="' . e(__('Filter kolom :l', ['l' => __($lbl)])) . '" aria-haspopup="dialog" title="Filter">' . icon('filter') . '</button>'; ?>
                     <th data-col="item" class="xf-th"><span class="xf-label"><?= __('Item') ?></span><?= $xfBtn('item', 'Item') ?></th>
                     <th data-col="group" class="xf-th"><span class="xf-label"><?= __('Group') ?></span><?= $xfBtn('group', 'Group') ?></th>
-                    <th data-col="expected" class="col-hide-tablet t-center xf-th"><span class="xf-label"><?= __('Sistem') ?></span><?= can_see_stock_qty() ? $xfBtn('expected', 'Sistem') : '' ?></th>
+                    <?php if (can_see_stock_qty()): ?>
+                    <th data-col="expected" class="col-hide-tablet t-center xf-th"><span class="xf-label"><?= __('Sistem') ?></span><?= $xfBtn('expected', 'Sistem') ?></th>
+                    <?php endif; ?>
                     <th data-col="counted" class="col-hide-tablet t-center xf-th"><span class="xf-label"><?= __('Hitung') ?></span><?= $xfBtn('counted', 'Hitung') ?></th>
                     <th data-col="audited" class="t-center xf-th"><span class="xf-label"><?= __('Audit') ?></span><?= $xfBtn('audited', 'Audit') ?></th>
-                    <th data-col="difference" class="t-center xf-th"><span class="xf-label"><?= __('Selisih') ?></span><?= can_see_stock_qty() ? $xfBtn('difference', 'Selisih') : '' ?></th>
+                    <?php if (can_see_stock_qty()): ?>
+                    <th data-col="difference" class="t-center xf-th"><span class="xf-label"><?= __('Selisih') ?></span><?= $xfBtn('difference', 'Selisih') ?></th>
+                    <?php endif; ?>
                     <th data-col="status" class="col-hide-tablet t-center xf-th"><span class="xf-label"><?= __('Status') ?></span><?= $xfBtn('status', 'Status') ?></th>
                     <th data-col="reported" class="xf-th"><span class="xf-label"><?= __('Dilaporkan') ?></span><?= $xfBtn('reported', 'Dilaporkan') ?></th>
                     <th data-col="aksi" class="t-right"><?= __('Aksi') ?></th>
@@ -104,7 +108,7 @@ $__disHasFilter = ! empty($filters['search']) || ! empty($filters['col']) || ! e
             <tbody>
                 <?php if ($discrepancies['items'] === []): ?>
                     <tr>
-                        <td colspan="9">
+                        <td colspan="<?= can_see_stock_qty() ? 9 : 7 ?>">
                             <div class="empty-state">
                                 <div class="empty-icon"><?= icon('check') ?></div>
                                 <h3><?= __('Tidak ada selisih') ?></h3>
@@ -127,14 +131,18 @@ $__disHasFilter = ! empty($filters['search']) || ! empty($filters['col']) || ! e
                                 <div class="cell-sub"><?= e($row['item_name']) ?></div>
                             </td>
                             <td data-col="group" data-label="<?= __('Group') ?>"><?= e($row['group_name']) ?></td>
-                            <td data-col="expected" data-label="<?= __('Sistem') ?>" class="col-hide-tablet t-center mono tabular"><?= can_see_stock_qty() ? (int) $row['expected_qty'] : '<span class="faint">***</span>' ?></td>
+                            <?php if (can_see_stock_qty()): ?>
+                            <td data-col="expected" data-label="<?= __('Sistem') ?>" class="col-hide-tablet t-center mono tabular"><?= (int) $row['expected_qty'] ?></td>
+                            <?php endif; ?>
                             <td data-col="counted" data-label="<?= __('Hitung') ?>" class="col-hide-tablet t-center mono tabular"><?= (int) $row['counted_qty'] ?></td>
                             <td data-col="audited" data-label="<?= __('Audit') ?>" class="t-center mono tabular"><?= $row['audited_qty'] === null ? '—' : (int) $row['audited_qty'] ?></td>
+                            <?php if (can_see_stock_qty()): ?>
                             <td data-col="difference" data-label="<?= __('Selisih') ?>" class="t-center">
-                                <span class="diff-pill <?= can_see_stock_qty() && $row['difference'] !== null ? $dClass : 'is-neg' ?>">
-                                    <?= can_see_stock_qty() && $row['difference'] !== null ? (($d > 0 ? '+' : '') . $d) : __('Selisih') ?>
+                                <span class="diff-pill <?= $row['difference'] !== null ? $dClass : 'is-neg' ?>">
+                                    <?= $row['difference'] !== null ? (($d > 0 ? '+' : '') . $d) : '—' ?>
                                 </span>
                             </td>
+                            <?php endif; ?>
                             <td data-col="status" data-label="<?= __('Status') ?>" class="col-hide-tablet t-center"><span class="badge <?= $statusBadge((string) $row['status']) ?>"><?= e($statusLabel((string) $row['status'])) ?></span></td>
                             <td data-col="reported" data-label="<?= __('Dilaporkan') ?>" class="text-sm faint nowrap">
                                 <?= e($row['created_by_name'] ?: '-') ?><br>
@@ -201,7 +209,9 @@ $__disHasFilter = ! empty($filters['search']) || ! empty($filters['col']) || ! e
                 <div class="sf-ctx"><span>Item: <strong id="disc-modal-item">—</strong></span><span id="disc-modal-ctx">—</span></div>
 
                 <div class="sf-compare" id="disc-modal-compare" hidden>
+                    <?php if (can_see_stock_qty()): ?>
                     <div><div class="k"><?= __('Qty Sistem') ?></div><div class="v" id="disc-modal-expected">—</div></div>
+                    <?php endif; ?>
                     <div><div class="k"><?= __('Hasil Hitung') ?></div><div class="v" id="disc-modal-counted">—</div></div>
                 </div>
                 <div class="sf-delta-chip" id="disc-modal-delta" hidden>—</div>
@@ -263,6 +273,7 @@ $__disHasFilter = ! empty($filters['search']) || ! empty($filters['col']) || ! e
 </script>
 <?php
 $cfLabels = ['item' => __('Item'), 'group' => __('Group'), 'status' => __('Status'), 'expected' => __('Sistem'), 'counted' => __('Hitung'), 'audited' => __('Audit'), 'difference' => __('Selisih'), 'reported' => __('Dilaporkan')];
+if (! can_see_stock_qty()) { unset($cfLabels['expected'], $cfLabels['difference']); }
 $cfDisplay = ['open' => 'Terbuka', 'searching' => 'Dicari', 'resolved' => 'Selesai'];
 $cfForm = 'dis-filter';
 $cfDistinct = url('discrepancies/distinct');

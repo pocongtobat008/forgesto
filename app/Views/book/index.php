@@ -83,7 +83,7 @@ $statusClass = $active === null ? '' : ($isClosed ? 'badge-danger' : 'badge-succ
     <?php endif; ?>
 </div></section>
 
-<?php if ($lastClosed !== null): ?>
+<?php if ($lastClosed !== null && can_see_stock_qty()): ?>
 <section class="card" aria-labelledby="book-last-title" style="margin-bottom:1rem;">
     <div class="card-header">
         <div>
@@ -162,9 +162,11 @@ $statusClass = $active === null ? '' : ($isClosed ? 'badge-danger' : 'badge-succ
                                 </form>
                             <?php endif; ?>
 
+                            <?php if (can_see_stock_qty()): ?>
                             <a class="btn btn-outline btn-xs" href="<?= url('tahun-buku/' . (int) $p['id']) ?>" style="min-height:36px;display:inline-flex;align-items:center;gap:.35rem;" title="<?= __('Lihat ringkasan selisih per group') ?>">
                                 <?= icon('scale') ?> Selisih
                             </a>
+                            <?php endif; ?>
                         </div>
                     </td>
                 </tr>

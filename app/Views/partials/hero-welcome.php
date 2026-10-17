@@ -153,19 +153,10 @@ if ($hHasWh) {
         <?php endif; ?>
     </div>
 
-    <?php if ($hActions !== [] || $hProgress !== null): ?>
+    <?php /* Tombol aksi di header DIHAPUS untuk semua menu (permintaan 17 Okt 2026).
+             Yang tersisa hanya progress bar (bila ada), karena itu indikator, bukan tombol. */ ?>
+    <?php if ($hProgress !== null): ?>
     <div class="sf-hero-actions">
-        <?php foreach ($hActions as $a):
-            $href = (string) $a['url'];
-            if (! preg_match('~^(https?:)?//~', $href) && $href !== '' && $href[0] !== '/') {
-                $href = url($href);
-            }
-        ?>
-            <a class="sf-hero-action" href="<?= e($href) ?>">
-                <?= icon($a['icon'] ?? 'chev-right') ?> <span><?= e($a['label']) ?></span>
-            </a>
-        <?php endforeach; ?>
-
         <?php if ($hProgress !== null): ?>
             <span class="sf-hero-progress" role="progressbar" aria-valuenow="<?= (int) $hProgress['pct'] ?>" aria-valuemin="0" aria-valuemax="100"
                   aria-label="<?= e(__('Progres penghitungan')) ?>">

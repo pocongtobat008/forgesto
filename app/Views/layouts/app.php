@@ -55,6 +55,8 @@ $pageTitle = $title ?? 'Dashboard';
     <link rel="stylesheet" href="<?= asset_v('css/sf-viewmode.css') ?>">
     <link rel="stylesheet" href="<?= asset_v('css/money-fit.css') ?>">
     <link rel="stylesheet" href="<?= asset_v('css/sf-usermenu.css') ?>">
+    <link rel="stylesheet" href="<?= asset_v('css/sf-rowdetail.css') ?>">
+    <link rel="stylesheet" href="<?= asset_v('css/sf-tables.css') ?>">
     <script>try{var __v=localStorage.getItem('sf:viewmode'),__q=new URLSearchParams(location.search).get('view');if(__q==='cards'||__q==='table'||__q==='auto')__v=__q;if(__v==='cards'||__v==='table')document.documentElement.setAttribute('data-view',__v);}catch(e){}</script>
     <?= $headExtra ?? '' ?>
 
@@ -194,6 +196,8 @@ $pageTitle = $title ?? 'Dashboard';
     <script src="<?= asset_v('js/money-fit.js') ?>" defer></script>
     <script src="<?= asset_v('js/table-colmgr.js') ?>"></script>
     <script src="<?= asset_v('js/sf-viewmode.js') ?>" defer></script>
+    <!-- Expand/collapse + detail baris untuk semua tabel data -->
+    <script src="<?= asset_v('js/sf-tables-expand.js') ?>" defer></script>
     <?= $bodyExtra ?? '' ?>
 </body>
 </html>

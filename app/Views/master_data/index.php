@@ -16,7 +16,7 @@
 
 $countBadge = static fn (string $status): string => match ($status) {
     'pending'    => 'badge-danger',
-    'counted'    => 'badge-warning',
+    'counted'    => 'badge-success',
     'posted'     => 'badge-info',
     'submitted'  => 'badge-purple',
     'audited'    => 'badge-cyan',
@@ -35,7 +35,7 @@ $countLabel = static fn (string $status): string => match ($status) {
 };
 
 $auditBadge = static fn (string $status): string => match ($status) {
-    'pending'     => '',
+    'pending'     => 'badge-danger',
     'audited'     => 'badge-success',
     'discrepancy' => 'badge-danger',
     'resolved'    => 'badge-brand',

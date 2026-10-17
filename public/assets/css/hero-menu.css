@@ -24,13 +24,13 @@
 .sf-hero[data-tone="gold"]    { --fg-grad: linear-gradient(100deg, rgba(26,16,0,.42) 0%, rgba(26,16,0,.14) 56%, rgba(26,16,0,0) 100%), linear-gradient(125deg, #a16207 0%, #78350f 48%, #eab308 100%); }
 
 /* ---------- 2 · Ilustrasi flat per menu ---------- */
-.sf-hero[data-art="dashboard"]      { --fg-ill: url("../img/hero-flat.svg"); }
-.sf-hero[data-art="items"]          { --fg-ill: url("../img/hero-items.svg"); }
+.sf-hero[data-art="dashboard"]      { --fg-ill: url("../img/hero-flat.svg?v=20261017e"); }
+.sf-hero[data-art="items"]          { --fg-ill: url("../img/hero-items.svg?v=20261017e"); }
 .sf-hero[data-art="groups"]         { --fg-ill: url("../img/hero-groups.svg"); }
-.sf-hero[data-art="audit"]          { --fg-ill: url("../img/hero-audit.svg"); }
+.sf-hero[data-art="audit"]          { --fg-ill: url("../img/hero-audit.svg?v=20261017e"); }
 .sf-hero[data-art="discrepancies"]  { --fg-ill: url("../img/hero-discrepancies.svg"); }
 .sf-hero[data-art="reconciliation"] { --fg-ill: url("../img/hero-reconciliation.svg"); }
-.sf-hero[data-art="progress"]       { --fg-ill: url("../img/hero-progress.svg"); }
+.sf-hero[data-art="progress"]       { --fg-ill: url("../img/hero-progress.svg?v=20261017e"); }
 .sf-hero[data-art="devices"]        { --fg-ill: url("../img/hero-devices.svg"); }
 .sf-hero[data-art="users"]          { --fg-ill: url("../img/hero-users.svg"); }
 .sf-hero[data-art="masterdata"]     { --fg-ill: url("../img/hero-masterdata.svg"); }
@@ -55,6 +55,16 @@
   margin-top: 2px;
   margin-bottom: 14px;
 }
+/* Tombol header sudah dihapus: baris .page-head tinggal berisi aksi halaman.
+   Jangan digambar sebagai kartu putih — kalau tidak, tersisa pita kosong. */
+.page-head.has-hero {
+  background: transparent !important;
+  box-shadow: none !important;
+  border: 0 !important;
+  padding: 0 !important;
+  min-height: 0 !important;
+}
+
 /* Kalau setelah judul disembunyikan tidak ada tombol apa pun, buang barisnya. */
 .page-head.has-hero:not(:has(.btn-group, form, .search-select, .spacer, button, a)) { display: none; }
 

@@ -127,7 +127,7 @@ class ItemController extends Controller
         }
 
         $code = trim((string) ($_GET['code'] ?? ''));
-        if ($code === '') {
+        if ($code === '' && (int) ($_GET['id'] ?? 0) <= 0) {
             header('Content-Type: application/json; charset=utf-8');
             http_response_code(400);
             echo json_encode(['found' => false, 'message' => 'Kode kosong.']);
@@ -135,7 +135,8 @@ class ItemController extends Controller
         }
 
         $itemModel = new Item();
-        $item = $itemModel->findByCode($code);
+        $itemId = (int) ($_GET['id'] ?? 0);
+        $item = $itemId > 0 ? $itemModel->findDetailed($itemId) : $itemModel->findByCode($code);
 
         header('Content-Type: application/json; charset=utf-8');
         header('Cache-Control: no-store');
@@ -143,13 +144,20 @@ class ItemController extends Controller
         if ($item === null) {
             echo json_encode([
                 'found'   => false,
-                'message' => 'Barang dengan kode "' . $code . '" tidak ditemukan' . (Auth::allGroups() ? '.' : ' pada gudang/group Anda.'),
+                'message' => 'Barang "' . ($code !== '' ? $code : ('#' . (int) ($_GET['id'] ?? 0))) . '" tidak ditemukan' . (Auth::allGroups() ? '.' : ' pada gudang/group Anda.'),
             ], JSON_UNESCAPED_UNICODE);
             exit;
         }
 
         $isLocked = (int) $item['is_locked'] === 1;
         $canCount = Auth::can('count_data') && (! $isLocked || Auth::can('unlock_data'));
+
+        /* Baris detail (harga, observer, auditor, riwayat hitung/posting) —
+           supaya panel detail di menu lain selengkap Data STO. */
+        $detail = isset($item['counted_by_name']) || isset($item['observers'])
+            ? $item
+            : $itemModel->findDetailed((int) $item['id']);
+        $detail = $detail ?: [];
 
         echo json_encode([
             'found' => true,
@@ -172,6 +180,19 @@ class ItemController extends Controller
                 'is_locked'     => $isLocked,
                 'needs_recount' => (int) ($item['needs_recount'] ?? 0) === 1,
                 'condition_note'=> $item['condition_note'] ?? '',
+                /* --- tambahan detail --- */
+                'price'         => isset($detail['unit_price']) ? (float) $detail['unit_price'] : null,
+                'id_barang'     => $detail['id_barang'] ?? '',
+                'serial'        => $detail['serial'] ?? '',
+                'business_unit' => $detail['business_unit'] ?? '',
+                'observers'     => $detail['observers'] ?? '',
+                'auditors'      => $detail['auditors'] ?? '',
+                'counted_by'    => $detail['counted_by_name'] ?? '',
+                'counted_at'    => $detail['counted_at'] ?? '',
+                'submitted_at'  => $detail['submitted_at'] ?? '',
+                'posted_by'     => $detail['posted_by_name'] ?? '',
+                'posted_at'     => $detail['posted_at'] ?? '',
+                'updated_at'    => $detail['updated_at'] ?? '',
             ],
             'can_count' => $canCount,
         ], JSON_UNESCAPED_UNICODE);

@@ -17,7 +17,7 @@ $activeCount = count($filters['col'] ?? []) + count($filters['adv'] ?? []) + (em
 
 $countBadge = static fn (string $status): string => match ($status) {
     'pending' => 'badge-danger',
-    'counted' => 'badge-warning',
+    'counted' => 'badge-success',
     'posted'  => 'badge-info',
     default   => '',
 };
@@ -28,7 +28,7 @@ $countLabel = static fn (string $status): string => match ($status) {
     default   => $status,
 };
 $auditBadge = static fn (string $status): string => match ($status) {
-    'pending'     => '',
+    'pending'     => 'badge-danger',
     'audited'     => 'badge-success',
     'discrepancy' => 'badge-danger',
     'resolved'    => 'badge-brand',
@@ -285,7 +285,7 @@ foreach ($__keepKeys as $__k) {
     </div>
     </div><!-- /.sf-tabtoolbar -->
     <div class="table-wrap">
-        <table class="data" id="items-table" data-colmgr-key="items-v1" data-colmgr-prefix="items">
+        <table class="data" id="items-table" data-rowdetail data-colmgr-key="items-v1" data-colmgr-prefix="items">
             <thead>
                 <tr>
                     <th data-col="select" style="width:44px" class="t-center th-select-all" title="<?= __('Pilih semua item tampil') ?>">
@@ -297,6 +297,7 @@ foreach ($__keepKeys as $__k) {
                     <?php
                     // REORDERED: Aksi + Status Hitung di kiri, HAPUS Sistem & Selisih (petugas tidak boleh lihat qty sistem)
                     $XF_COLS = [
+                      ['count','Status Hitung',' t-center'],
                       ['code','Kode',''], ['name','Nama',''], ['group','Group',''], ['location','Lokasi',''],
                       ['device','Device',' col-hide-tablet'], 
                       ['counted','Hitung',' col-hide-tablet t-center'], ['unit','Satuan',' col-hide-tablet t-center'],
@@ -322,7 +323,7 @@ foreach ($__keepKeys as $__k) {
             <tbody>
                 <?php if ($items['items'] === []): ?>
                     <tr>
-                        <td colspan="12">
+                        <td colspan="13">
                             <div class="empty-state">
                                 <div class="empty-icon"><?= icon('package') ?></div>
                                 <h3><?= __('Tidak ada data') ?></h3>
@@ -335,8 +336,36 @@ foreach ($__keepKeys as $__k) {
                         <?php
                         $isLocked = (int) ($item['is_locked'] ?? 0) === 1 || ! empty($isReadOnly);
                         $canCount = empty($isReadOnly) && can('count_data') && (! $isLocked || can('unlock_data'));
+                        $__rd = [
+                            'id'           => (int) $item['id'],
+                            'code'         => (string) $item['code'],
+                            'name'         => (string) $item['name'],
+                            'category'     => (string) ($item['category'] ?? ''),
+                            'unit'         => (string) ($item['unit'] ?? ''),
+                            'group'        => (string) ($item['group_name'] ?? ''),
+                            'group_code'   => (string) ($item['group_code'] ?? ''),
+                            'location'     => (string) ($item['location_name'] ?? ''),
+                            'device'       => (string) ($item['device_name'] ?? ''),
+                            'price'        => $item['unit_price'] === null ? null : (float) $item['unit_price'],
+                            'counted'      => $item['counted_qty'] === null ? null : (int) $item['counted_qty'],
+                            'count_status' => (string) $item['count_status'],
+                            'audit_status' => (string) $item['audit_status'],
+                            'locked'       => (bool) $isLocked,
+                            'counted_by'   => (string) ($item['counted_by_name'] ?? ''),
+                            'counted_at'   => (string) ($item['counted_at'] ?? ''),
+                            'posted_by'    => (string) ($item['posted_by_name'] ?? ''),
+                            'posted_at'    => (string) ($item['posted_at'] ?? ''),
+                            'note'         => (string) ($item['condition_note'] ?? ''),
+                            'observers'    => trim((string) ($item['observers'] ?? '')),
+                            'auditors'     => trim((string) ($item['auditors'] ?? '')),
+                            'url'          => url('items/' . (int) $item['id']),
+                        ];
+                        if (function_exists('can_see_stock_qty') && can_see_stock_qty()) {
+                            $__rd['expected'] = $item['expected_qty'] === null ? null : (int) $item['expected_qty'];
+                        }
                         ?>
-                        <tr data-item-id="<?= (int) $item['id'] ?>"
+                        <tr data-rd="<?= e(json_encode($__rd, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP)) ?>"
+                            data-item-id="<?= (int) $item['id'] ?>"
                             data-item-code="<?= e($item['code']) ?>"
                             data-item-name="<?= e($item['name']) ?>"
                             data-group-id="<?= (int) ($item['group_id'] ?? 0) ?>"
@@ -363,6 +392,11 @@ foreach ($__keepKeys as $__k) {
                                     <a class="btn btn-outline btn-xs" href="<?= url('items/' . (int) $item['id']) ?>"><?= icon('eye') ?> Detail</a>
                                 <?php endif; ?>
                             </td>
+                            <?php if (! is_col_hidden('items', 'count')): ?>
+                            <td data-label="<?= __('Status Hitung') ?>" class="t-center">
+                                <span class="badge <?= $countBadge((string) $item['count_status']) ?>"><?= e($countLabel((string) $item['count_status'])) ?></span>
+                            </td>
+                            <?php endif; ?>
                             <td data-label="<?= __('Kode') ?>">
                                 <div class="code-cell">
                                     <span class="kbd"><?= e($item['code']) ?></span>
@@ -679,3 +713,4 @@ foreach ($__keepKeys as $__k) {
 <script src="<?= asset_v('js/items-barcode-posting.js') ?>"></script>
 <script src="<?= asset_v('js/items-dragdrop-columns.js') ?>"></script>
 <script src="<?= asset_v('js/items-recount-button.js') ?>"></script>
+<script src="<?= asset_v('js/sf-rowdetail.js') ?>" defer></script>

@@ -21,6 +21,74 @@ foreach ($progress as $r) {
     if ((int) $r['needed'] > 0 && (int) $r['audited'] >= (int) $r['needed']) { $groupsOk++; }
 }
 $groupCount = count($progress);
+
+/* ---- payload detail kaya (dibaca drawer detail generik sf-tables-expand.js) ---- */
+$__xrdGroup = static function (array $row, int $audited, int $needed, int $pct, bool $ok, int $minPercent): string {
+    $f = [
+        ['k' => 'Kode Group', 'v' => (string) $row['code']],
+        ['k' => 'Total Item', 'v' => (string) (int) $row['total']],
+        ['k' => 'Terposting', 'v' => (string) (int) $row['posted']],
+        ['k' => 'Sudah Diaudit', 'v' => (string) $audited],
+        ['k' => 'Target minimal (' . $minPercent . '%)', 'v' => (string) $needed],
+        ['k' => 'Sisa belum diaudit', 'v' => (string) max(0, $needed - $audited)],
+        ['k' => 'Progres', 'v' => $pct . '%'],
+        ['k' => 'Status target', 'v' => $ok ? 'Target tercapai' : 'Belum capai target'],
+        ['k' => 'Belum dihitung', 'v' => (string) (int) ($row['not_counted'] ?? 0)],
+        ['k' => 'Menunggu audit', 'v' => (string) (int) ($row['not_audited'] ?? 0)],
+        ['k' => 'Perlu cek ulang', 'v' => (string) (int) ($row['recount_count'] ?? 0)],
+    ];
+
+    return (string) json_encode([
+        'title'  => (string) $row['name'],
+        'code'   => (string) $row['code'],
+        'url'    => url('items?group_id=' . (int) $row['id']),
+        'note'   => sprintf('%s · %d item · target minimal %d%% (%d item)', $row['name'], (int) $row['total'], $minPercent, $needed),
+        'fields' => $f,
+    ], JSON_UNESCAPED_UNICODE);
+};
+
+$__xrdItem = static function (array $it, bool $recon = false): string {
+    $f = [
+        ['k' => 'Kode', 'v' => (string) ($it['code'] ?? '')],
+        ['k' => 'Group', 'v' => (string) ($it['group_name'] ?? '')],
+        ['k' => 'Kategori', 'v' => (string) ($it['category'] ?? '')],
+        ['k' => 'Lokasi', 'v' => (string) ($it['location_name'] ?? '')],
+        ['k' => 'Device', 'v' => (string) ($it['device_name'] ?? '')],
+        ['k' => 'Satuan', 'v' => (string) ($it['unit'] ?? '')],
+        ['k' => 'Harga Satuan', 'v' => isset($it['unit_price']) ? 'Rp ' . number_format((float) $it['unit_price'], 0, ',', '.') : ''],
+    ];
+
+    if (can_see_stock_qty() && array_key_exists('expected_qty', $it)) {
+        $f[] = ['k' => 'Qty Sistem', 'v' => $it['expected_qty'] === null ? '—' : (string) (int) $it['expected_qty']];
+    }
+
+    $counted = $recon ? ($it['recon_counted'] ?? null) : ($it['counted_qty'] ?? null);
+    $f[] = ['k' => $recon ? 'Hitung Cek Ulang' : 'Hasil Hitung', 'v' => $counted === null ? '—' : (string) (int) $counted];
+
+    if ($recon) {
+        $st = (string) ($it['recon_status'] ?? '');
+        $f[] = ['k' => 'Status Cek Ulang', 'v' => ['draft' => 'Draft', 'pending_verify' => 'Menunggu verifikasi', 'verified' => 'Terverifikasi', 'rejected' => 'Ditolak'][$st] ?? $st];
+    } else {
+        $f[] = ['k' => 'Status Audit', 'v' => (string) ($it['audit_status'] ?? '')];
+    }
+
+    $f[] = ['k' => 'Dihitung Oleh', 'v' => (string) ($it['counted_by_name'] ?? '')];
+    $f[] = ['k' => 'Waktu Hitung', 'v' => ! empty($it['counted_at']) ? (string) $it['counted_at'] : ''];
+    $f[] = ['k' => 'Diposting Oleh', 'v' => (string) ($it['posted_by_name'] ?? '')];
+    $f[] = ['k' => 'Waktu Posting', 'v' => ! empty($it['posted_at']) ? (string) $it['posted_at'] : ''];
+    $f[] = ['k' => 'Observer', 'v' => (string) ($it['observers'] ?? '')];
+    $f[] = ['k' => 'Auditor', 'v' => (string) ($it['auditors'] ?? '')];
+
+    $f = array_values(array_filter($f, static fn (array $x): bool => trim((string) $x['v']) !== ''));
+
+    return (string) json_encode([
+        'title'  => (string) ($it['name'] ?? ''),
+        'code'   => (string) ($it['code'] ?? ''),
+        'url'    => url('items/' . (int) ($it['id'] ?? 0)),
+        'fields' => $f,
+    ], JSON_UNESCAPED_UNICODE);
+};
+
 ?>
 <?= page_hero() ?>
 <div class="page-head has-hero">
@@ -52,17 +120,6 @@ $__recCount  = count($recommendation);
 $__postCount = (int) $postedAll['total'];
 $__rechCount = (int) $recheck['total'];
 ?>
-<div class="sf-tabs audit-tabs" role="tablist" aria-label="<?= __('Kelompok audit') ?>">
-    <a class="tab-pill<?= $__at === 'sample' ? ' is-active' : '' ?>" role="tab" aria-selected="<?= $__at === 'sample' ? 'true' : 'false' ?>" href="<?= e($__tabLink('sample')) ?>">
-        <?= icon('info') ?> Rekomendasi <?= (int) $minPercent ?>% <span class="tab-count"><?= $__recCount ?></span>
-    </a>
-    <a class="tab-pill<?= $__at === 'posted' ? ' is-active' : '' ?>" role="tab" aria-selected="<?= $__at === 'posted' ? 'true' : 'false' ?>" href="<?= e($__tabLink('posted')) ?>">
-        <?= icon('send') ?> Semua diposting <span class="tab-count"><?= $__postCount ?></span>
-    </a>
-    <a class="tab-pill<?= $__at === 'recheck' ? ' is-active' : '' ?>" role="tab" aria-selected="<?= $__at === 'recheck' ? 'true' : 'false' ?>" href="<?= e($__tabLink('recheck')) ?>">
-        <?= icon('refresh') ?> Cek ulang Admin STO <span class="tab-count"><?= $__rechCount ?></span>
-    </a>
-</div>
 
 <div class="grid grid-4 grid-tablet-4">
     <div class="stat is-brand" style="--i:0">
@@ -120,8 +177,9 @@ $__rechCount = (int) $recheck['total'];
                         $audited = (int) $row['audited'];
                         $ok = $audited >= $needed && $needed > 0;
                         $pct = $needed > 0 ? min(100, (int) round($audited / $needed * 100)) : 0;
+                        $__json = $__xrdGroup($row, $audited, $needed, $pct, $ok, (int) $minPercent);
                         ?>
-                        <tr>
+                        <tr data-xrd-json="<?= e($__json) ?>">
                             <td data-label="<?= __('Group') ?>">
                                 <div class="cell-title"><?= e($row['name']) ?></div>
                                 <div class="cell-sub"><?= e($row['code']) ?></div>
@@ -149,6 +207,18 @@ $__rechCount = (int) $recheck['total'];
     </div>
 </div>
 
+<div class="sf-tabs audit-tabs" style="margin:1.25rem 0 .75rem;" role="tablist" aria-label="<?= __('Kelompok audit') ?>">
+    <a class="tab-pill<?= $__at === 'sample' ? ' is-active' : '' ?>" role="tab" aria-selected="<?= $__at === 'sample' ? 'true' : 'false' ?>" href="<?= e($__tabLink('sample')) ?>">
+        <?= icon('info') ?> Rekomendasi <?= (int) $minPercent ?>% <span class="tab-count"><?= $__recCount ?></span>
+    </a>
+    <a class="tab-pill<?= $__at === 'posted' ? ' is-active' : '' ?>" role="tab" aria-selected="<?= $__at === 'posted' ? 'true' : 'false' ?>" href="<?= e($__tabLink('posted')) ?>">
+        <?= icon('send') ?> Semua diposting <span class="tab-count"><?= $__postCount ?></span>
+    </a>
+    <a class="tab-pill<?= $__at === 'recheck' ? ' is-active' : '' ?>" role="tab" aria-selected="<?= $__at === 'recheck' ? 'true' : 'false' ?>" href="<?= e($__tabLink('recheck')) ?>">
+        <?= icon('refresh') ?> Cek ulang Admin STO <span class="tab-count"><?= $__rechCount ?></span>
+    </a>
+</div>
+
 <?php if ($__at === 'sample'): ?>
 <!-- ====================================================================== -->
 <!-- Tab 1: Rekomendasi sampel 10%                                          -->
@@ -170,7 +240,7 @@ $__rechCount = (int) $recheck['total'];
             <a class="btn btn-ghost btn-sm" href="<?= url('audit?tab=' . e($__at)) ?>"><?= icon('x') ?> Reset</a>
         </form>
         <div class="table-toolbar" style="margin-left:auto;">
-            <span class="badge badge-warn"><?= (int) $__recCount ?> item disarankan</span>
+            <span class="badge badge-warning"><?= (int) $__recCount ?> item disarankan</span>
         </div>
     </div>
 
@@ -181,21 +251,22 @@ $__rechCount = (int) $recheck['total'];
                     <th data-col="code" class="xf-th"><span class="xf-label"><?= __('Kode') ?></span><?= $xfBtn('code', 'Kode') ?></th>
                     <th data-col="name" class="col-hide-tablet xf-th"><span class="xf-label"><?= __('Nama') ?></span><?= $xfBtn('name', 'Nama') ?></th>
                     <th data-col="group" class="col-hide-tablet xf-th"><span class="xf-label"><?= __('Group') ?></span><?= $xfBtn('group', 'Group') ?></th>
-                    <th data-col="expected" class="col-hide-tablet t-center xf-th"><span class="xf-label"><?= __('Sistem') ?></span><?= can_see_stock_qty() ? $xfBtn('expected', 'Sistem') : '' ?></th>
+                    <?php if (can_see_stock_qty()): ?><th data-col="expected" class="col-hide-tablet t-center xf-th"><span class="xf-label"><?= __('Sistem') ?></span><?= can_see_stock_qty() ? $xfBtn('expected', 'Sistem') : '' ?></th><?php endif; ?>
                     <th data-col="counted" class="col-hide-tablet t-center xf-th"><span class="xf-label"><?= __('Hasil hitung') ?></span><?= $xfBtn('counted', 'Hasil hitung') ?></th>
                     <th data-col="aksi" class="t-right"><?= __('Aksi') ?></th>
                 </tr>
             </thead>
             <tbody>
                 <?php if ($__recCount === 0): ?>
-                    <tr><td colspan="6"><div class="empty-state"><div class="empty-icon"><?= icon('check') ?></div><h3><?= __('Tidak ada rekomendasi') ?></h3><p>Semua group sudah memenuhi target <?= (int) $minPercent ?>% audit.</p></div></td></tr>
+                    <tr><td colspan="<?= can_see_stock_qty() ? 6 : 5 ?>"><div class="empty-state"><div class="empty-icon"><?= icon('check') ?></div><h3><?= __('Tidak ada rekomendasi') ?></h3><p>Semua group sudah memenuhi target <?= (int) $minPercent ?>% audit.</p></div></td></tr>
                 <?php else: ?>
                     <?php foreach ($recommendation as $item): ?>
-                        <tr>
+                        <?php $__json = $__xrdItem($item); ?>
+                        <tr data-xrd-json="<?= e($__json) ?>">
                             <td data-label="<?= __('Kode') ?>"><?= e($item['code']) ?></td>
                             <td data-label="<?= __('Nama') ?>" class="cell-title"><?= e($item['name']) ?></td>
                             <td data-label="<?= __('Group') ?>" class="col-hide-tablet"><?= e($item['group_name']) ?></td>
-                            <td data-label="<?= __('Sistem') ?>" class="col-hide-tablet t-center mono tabular"><?= can_see_stock_qty() ? (int) $item['expected_qty'] : '<span class="faint">***</span>' ?></td>
+                            <?php if (can_see_stock_qty()): ?><td data-label="<?= __('Sistem') ?>" class="col-hide-tablet t-center mono tabular"><?= can_see_stock_qty() ? (int) $item['expected_qty'] : '<span class="faint">***</span>' ?></td><?php endif; ?>
                             <td data-label="<?= __('Hasil hitung') ?>" class="col-hide-tablet t-center mono tabular"><?= $item['counted_qty'] === null ? '—' : (int) $item['counted_qty'] ?></td>
                             <td data-label="" class="t-right">
                                 <?php if (empty($isReadOnly)): ?>
@@ -250,7 +321,7 @@ $__rechCount = (int) $recheck['total'];
                     <th data-col="code" class="xf-th"><span class="xf-label"><?= __('Kode') ?></span><?= $xfBtn('code', 'Kode') ?></th>
                     <th data-col="name" class="col-hide-tablet xf-th"><span class="xf-label"><?= __('Nama') ?></span><?= $xfBtn('name', 'Nama') ?></th>
                     <th data-col="group" class="col-hide-tablet xf-th"><span class="xf-label"><?= __('Group') ?></span><?= $xfBtn('group', 'Group') ?></th>
-                    <th data-col="expected" class="col-hide-tablet t-center xf-th"><span class="xf-label"><?= __('Sistem') ?></span><?= can_see_stock_qty() ? $xfBtn('expected', 'Sistem') : '' ?></th>
+                    <?php if (can_see_stock_qty()): ?><th data-col="expected" class="col-hide-tablet t-center xf-th"><span class="xf-label"><?= __('Sistem') ?></span><?= can_see_stock_qty() ? $xfBtn('expected', 'Sistem') : '' ?></th><?php endif; ?>
                     <th data-col="counted" class="col-hide-tablet t-center xf-th"><span class="xf-label"><?= __('Hasil hitung') ?></span><?= $xfBtn('counted', 'Hasil hitung') ?></th>
                     <th data-col="audit" class="t-center xf-th"><span class="xf-label"><?= __('Status audit') ?></span><?= $xfBtn('audit', 'Status audit') ?></th>
                     <th data-col="aksi" class="t-right"><?= __('Aksi') ?></th>
@@ -258,18 +329,19 @@ $__rechCount = (int) $recheck['total'];
             </thead>
             <tbody>
                 <?php if ($postedAll['items'] === []): ?>
-                    <tr><td colspan="7" class="text-center faint" style="padding:1.4rem;"><?= __('Belum ada item diposting.') ?></td></tr>
+                    <tr><td colspan="<?= can_see_stock_qty() ? 7 : 6 ?>" class="text-center faint" style="padding:1.4rem;"><?= __('Belum ada item diposting.') ?></td></tr>
                 <?php else: ?>
                     <?php foreach ($postedAll['items'] as $item): ?>
                         <?php $__as = (string) $item['audit_status']; ?>
-                        <tr>
+                        <?php $__json = $__xrdItem($item); ?>
+                        <tr data-xrd-json="<?= e($__json) ?>">
                             <td data-label="<?= __('Kode') ?>"><?= e($item['code']) ?></td>
                             <td data-label="<?= __('Nama') ?>" class="cell-title"><?= e($item['name']) ?></td>
                             <td data-label="<?= __('Group') ?>" class="col-hide-tablet"><?= e($item['group_name']) ?></td>
-                            <td data-label="<?= __('Sistem') ?>" class="col-hide-tablet t-center mono tabular"><?= can_see_stock_qty() ? (int) $item['expected_qty'] : '<span class="faint">***</span>' ?></td>
+                            <?php if (can_see_stock_qty()): ?><td data-label="<?= __('Sistem') ?>" class="col-hide-tablet t-center mono tabular"><?= can_see_stock_qty() ? (int) $item['expected_qty'] : '<span class="faint">***</span>' ?></td><?php endif; ?>
                             <td data-label="<?= __('Hasil hitung') ?>" class="col-hide-tablet t-center mono tabular"><?= $item['counted_qty'] === null ? '—' : (int) $item['counted_qty'] ?></td>
                             <td data-label="<?= __('Status audit') ?>" class="t-center">
-                                <span class="badge <?= $__as === 'audited' ? 'badge-success' : ($__as === 'discrepancy' ? 'badge-danger' : ($__as === 'resolved' ? 'badge-info' : 'badge-warn')) ?>">
+                                <span class="badge <?= $__as === 'audited' ? 'badge-success' : ($__as === 'discrepancy' ? 'badge-danger' : ($__as === 'resolved' ? 'badge-info' : 'badge-danger')) ?>">
                                     <?= e(['pending' => __('Belum diaudit'), 'audited' => __('Sesuai'), 'discrepancy' => __('Selisih'), 'resolved' => __('Selesai')][$__as] ?? $__as) ?>
                                 </span>
                             </td>
@@ -317,7 +389,7 @@ $__rechCount = (int) $recheck['total'];
             <a class="btn btn-ghost btn-sm" href="<?= url('audit?tab=' . e($__at)) ?>"><?= icon('x') ?> Reset</a>
         </form>
         <div class="table-toolbar" style="margin-left:auto;">
-            <span class="badge badge-warn"><?= $__rechCount ?> item</span>
+            <span class="badge badge-warning"><?= $__rechCount ?> item</span>
         </div>
     </div>
     <div class="table-wrap">
@@ -328,7 +400,7 @@ $__rechCount = (int) $recheck['total'];
                     <th data-col="name" class="col-hide-tablet xf-th"><span class="xf-label"><?= __('Nama') ?></span><?= $xfBtn('name', 'Nama') ?></th>
                     <th data-col="group" class="col-hide-tablet xf-th"><span class="xf-label"><?= __('Group') ?></span><?= $xfBtn('group', 'Group') ?></th>
                     <th data-col="location" class="col-hide-tablet xf-th"><span class="xf-label"><?= __('Lokasi') ?></span><?= $xfBtn('location', 'Lokasi') ?></th>
-                    <th data-col="expected" class="col-hide-tablet t-center xf-th"><span class="xf-label"><?= __('Sistem') ?></span><?= can_see_stock_qty() ? $xfBtn('expected', 'Sistem') : '' ?></th>
+                    <?php if (can_see_stock_qty()): ?><th data-col="expected" class="col-hide-tablet t-center xf-th"><span class="xf-label"><?= __('Sistem') ?></span><?= can_see_stock_qty() ? $xfBtn('expected', 'Sistem') : '' ?></th><?php endif; ?>
                     <th data-col="counted" class="col-hide-tablet t-center xf-th"><span class="xf-label"><?= __('Hitung') ?></span><?= $xfBtn('counted', 'Hitung') ?></th>
                     <th data-col="status" class="t-center xf-th"><span class="xf-label"><?= __('Status') ?></span><?= $xfBtn('status', 'Status') ?></th>
                     <th data-col="aksi" class="t-right"><?= __('Aksi') ?></th>
@@ -336,19 +408,20 @@ $__rechCount = (int) $recheck['total'];
             </thead>
             <tbody>
                 <?php if ($recheck['items'] === []): ?>
-                    <tr><td colspan="8"><div class="empty-state"><div class="empty-icon"><?= icon('check') ?></div><h3><?= __('Tidak ada permintaan cek ulang') ?></h3><p><?= __('Belum ada item yang diminta dicek ulang oleh Admin STO.') ?></p></div></td></tr>
+                    <tr><td colspan="<?= can_see_stock_qty() ? 8 : 7 ?>"><div class="empty-state"><div class="empty-icon"><?= icon('check') ?></div><h3><?= __('Tidak ada permintaan cek ulang') ?></h3><p><?= __('Belum ada item yang diminta dicek ulang oleh Admin STO.') ?></p></div></td></tr>
                 <?php else: ?>
                     <?php foreach ($recheck['items'] as $item): ?>
                         <?php $__rs = (string) $item['recon_status']; ?>
-                        <tr>
+                        <?php $__json = $__xrdItem($item, true); ?>
+                        <tr data-xrd-json="<?= e($__json) ?>">
                             <td data-label="<?= __('Kode') ?>"><?= e($item['code']) ?></td>
                             <td data-label="<?= __('Nama') ?>" class="cell-title"><?= e($item['name']) ?></td>
                             <td data-label="<?= __('Group') ?>" class="col-hide-tablet"><?= e($item['group_name']) ?></td>
                             <td data-label="<?= __('Lokasi') ?>" class="col-hide-tablet"><?= e($item['location_name'] ?: '-') ?></td>
-                            <td data-label="<?= __('Sistem') ?>" class="col-hide-tablet t-center mono tabular"><?= can_see_stock_qty() ? (int) $item['expected_qty'] : '<span class="faint">***</span>' ?></td>
+                            <?php if (can_see_stock_qty()): ?><td data-label="<?= __('Sistem') ?>" class="col-hide-tablet t-center mono tabular"><?= can_see_stock_qty() ? (int) $item['expected_qty'] : '<span class="faint">***</span>' ?></td><?php endif; ?>
                             <td data-label="<?= __('Hitung') ?>" class="col-hide-tablet t-center mono tabular"><?= $item['recon_counted'] === null ? '—' : (int) $item['recon_counted'] ?></td>
                             <td data-label="<?= __('Status') ?>" class="t-center">
-                                <span class="badge <?= $__rs === 'verified' ? 'badge-success' : ($__rs === 'rejected' ? 'badge-danger' : 'badge-warn') ?>">
+                                <span class="badge <?= $__rs === 'verified' ? 'badge-success' : ($__rs === 'rejected' ? 'badge-danger' : 'badge-warning') ?>">
                                     <?= e(['draft' => 'Draft', 'pending_verify' => 'Menunggu verifikasi', 'verified' => 'Terverifikasi', 'rejected' => 'Ditolak'][$__rs] ?? $__rs) ?>
                                 </span>
                             </td>

@@ -27,7 +27,9 @@ foreach ($rows as $r) {
 }
 $groupCount = count($rows);
 ?>
-<div class="grid grid-4" style="margin-bottom:1rem;">
+<?php $canQty = can_see_stock_qty(); ?>
+<div class="grid <?= $canQty ? 'grid-4' : 'grid-2' ?>" style="margin-bottom:1rem;">
+    <?php if ($canQty): ?>
     <div class="stat is-warning" style="--i:0">
         <span class="stat-label"><?= __('Selisih qty') ?></span>
         <div class="stat-value" style="color:<?= $tone($tot['diff_qty']) ?>;"><?= $signed($tot['diff_qty']) ?></div>
@@ -38,15 +40,16 @@ $groupCount = count($rows);
         <div class="stat-value" style="font-size:1.3rem;color:<?= $tone($tot['diff_value']) ?>;"><?= $rpS($tot['diff_value']) ?></div>
         <div class="stat-meta"><?= __('dihitung dari harga satuan') ?></div>
     </div>
+    <?php endif; ?>
     <div class="stat is-brand" style="--i:2">
         <span class="stat-label"><?= __('Item berselisih') ?></span>
         <div class="stat-value"><?= $num($tot['diff_items']) ?></div>
-        <div class="stat-meta">dari <?= $num($tot['items']) ?> item tercatat</div>
+        <div class="stat-meta"><?= __('dari') ?> <?= $num($tot['items']) ?> <?= __('item tercatat') ?></div>
     </div>
     <div class="stat is-success" style="--i:3">
         <span class="stat-label"><?= __('Group berselisih') ?></span>
         <div class="stat-value"><?= $groupsDiff ?></div>
-        <div class="stat-meta">dari <?= $groupCount ?> group</div>
+        <div class="stat-meta"><?= __('dari') ?> <?= $groupCount ?> <?= __('group') ?></div>
     </div>
 </div>
 
@@ -56,16 +59,18 @@ $groupCount = count($rows);
             <tr>
                 <th><?= __('Group') ?></th>
                 <th class="col-hide-tablet t-center"><?= __('Item') ?></th>
+                <?php if ($canQty): ?>
                 <th class="col-hide-tablet t-center"><?= __('Sistem') ?></th>
                 <th class="col-hide-tablet t-center"><?= __('Hitung') ?></th>
                 <th class="t-center"><?= __('Selisih qty') ?></th>
                 <th class="t-right"><?= __('Selisih nilai') ?></th>
+                <?php endif; ?>
                 <th class="col-hide-tablet t-center"><?= __('Belum hitung') ?></th>
             </tr>
         </thead>
         <tbody>
         <?php if ($rows === []): ?>
-            <tr><td colspan="7" class="text-center faint" style="padding:1.2rem;"><?= __('Belum ada data snapshot.') ?></td></tr>
+            <tr><td colspan="<?= $canQty ? 7 : 3 ?>" class="text-center faint" style="padding:1.2rem;"><?= __('Belum ada data snapshot.') ?></td></tr>
         <?php else: ?>
             <?php foreach ($rows as $r): ?>
             <tr>
@@ -76,10 +81,12 @@ $groupCount = count($rows);
                     <?php endif; ?>
                 </td>
                 <td data-label="<?= __('Item') ?>" class="col-hide-tablet t-center mono tabular"><?= $num($r['items']) ?></td>
+                <?php if ($canQty): ?>
                 <td data-label="<?= __('Sistem') ?>" class="col-hide-tablet t-center mono tabular"><?= $num($r['expected']) ?></td>
                 <td data-label="<?= __('Hitung') ?>" class="col-hide-tablet t-center mono tabular"><?= $num($r['counted']) ?></td>
                 <td data-label="<?= __('Selisih qty') ?>" class="t-center mono tabular" style="color:<?= $tone($r['diff_qty']) ?>;font-weight:700;"><?= $signed($r['diff_qty']) ?></td>
                 <td data-label="<?= __('Selisih nilai') ?>" class="t-right mono tabular" style="color:<?= $tone($r['diff_value']) ?>;"><?= $rpS($r['diff_value']) ?></td>
+                <?php endif; ?>
                 <td data-label="<?= __('Belum hitung') ?>" class="col-hide-tablet t-center mono tabular"><?= $num($r['not_counted']) ?></td>
             </tr>
             <?php endforeach; ?>
@@ -90,10 +97,12 @@ $groupCount = count($rows);
             <tr>
                 <th><?= __('Total') ?></th>
                 <th class="col-hide-tablet t-center mono tabular"><?= $num($tot['items']) ?></th>
+                <?php if ($canQty): ?>
                 <th class="col-hide-tablet t-center mono tabular"><?= $num($tot['expected']) ?></th>
                 <th class="col-hide-tablet t-center mono tabular"><?= $num($tot['counted']) ?></th>
                 <th class="t-center mono tabular" style="color:<?= $tone($tot['diff_qty']) ?>;"><?= $signed($tot['diff_qty']) ?></th>
                 <th class="t-right mono tabular" style="color:<?= $tone($tot['diff_value']) ?>;"><?= $rpS($tot['diff_value']) ?></th>
+                <?php endif; ?>
                 <th class="col-hide-tablet t-center mono tabular"><?= $num($tot['not_counted']) ?></th>
             </tr>
         </tfoot>

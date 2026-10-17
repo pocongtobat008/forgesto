@@ -1,0 +1,85 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 260 220" aria-hidden="true" focusable="false">
+  <!-- aura -->
+  <circle cx="130" cy="108" r="94" fill="#ffffff" opacity=".10"/>
+  <circle cx="130" cy="108" r="64" fill="#ffffff" opacity=".07"/>
+  <ellipse cx="130" cy="199" rx="54" ry="8" fill="#1b1030" opacity=".16"/>
+
+  <!-- ============ CELANA FORMAL ============ -->
+  <rect x="113" y="122" width="15" height="64" rx="5" fill="#2b3550"/>
+  <rect x="132" y="122" width="15" height="64" rx="5" fill="#2b3550"/>
+  <path d="M120.5 132v46M139.5 132v46" stroke="#3c4a6b" stroke-width="1.6" stroke-linecap="round"/>
+  <!-- sepatu formal -->
+  <path d="M104 184h26c2 0 3 1.4 3 3v3c0 3-2 5-5 5h-24c-3 0-5-2-5-5v-2c0-2.2 1.6-4 4-4z" fill="#1b1030"/>
+  <path d="M130 184h26c2.4 0 4 1.8 4 4v2c0 3-2 5-5 5h-24c-3 0-5-2-5-5v-3c0-1.6 1-3 3-3z" fill="#1b1030"/>
+  <path d="M104 189h26M130 189h26" stroke="#39415e" stroke-width="1.4" stroke-linecap="round"/>
+
+  <!-- ============ IKAT PINGGANG ============ -->
+  <rect x="105" y="116" width="50" height="9" rx="4" fill="#1b1030"/>
+  <rect x="123" y="117.4" width="14" height="6.2" rx="2" fill="#ffd166"/>
+
+  <!-- ============ KEMEJA FORMAL ============ -->
+  <path d="M103 118V104c0-8 7-14 15-14h24c8 0 15 6 15 14v14z" fill="#ffffff"/>
+  <!-- kerah -->
+  <path d="M121 90l9 10 9-10-9-7z" fill="#e6ebf7"/>
+  <!-- dasi -->
+  <path d="M126 91h8l1 6h-10z" fill="#3f4a86"/>
+  <path d="M127 97h6l2 21-5 8-5-8z" fill="#3f4a86"/>
+  <!-- saku + garis kemeja -->
+  <path d="M143 102h10v9" stroke="#dbe3f3" stroke-width="1.7" fill="none" stroke-linecap="round"/>
+  <path d="M107 104h11v8h-11z" fill="#ffd166" opacity=".95"/>
+  <path d="M109 107h7M109 109.6h5" stroke="#b98b1f" stroke-width="1.3" stroke-linecap="round" opacity=".85"/>
+  <circle cx="136" cy="110" r="1.5" fill="#c9d4ea"/>
+  <circle cx="136" cy="116" r="1.5" fill="#c9d4ea"/>
+
+  <!-- ============ LENGAN ============ -->
+  <rect x="88" y="98" width="14" height="44" rx="7" fill="#ffffff"/>
+  <rect x="88" y="136" width="14" height="7" rx="3.5" fill="#eef2fb"/>
+  <circle cx="95" cy="147" r="6.4" fill="#ffd0ab"/>
+  <rect x="158" y="98" width="14" height="44" rx="7" fill="#ffffff"/>
+  <rect x="158" y="136" width="14" height="7" rx="3.5" fill="#eef2fb"/>
+  <circle cx="165" cy="147" r="6.4" fill="#ffd0ab"/>
+
+  <!-- ============ KEPALA ============ -->
+  <rect x="122" y="82" width="16" height="14" rx="3" fill="#f0b98d"/>
+  <circle cx="108" cy="77" r="4" fill="#ffd0ab"/>
+  <circle cx="152" cy="77" r="4" fill="#ffd0ab"/>
+  <circle cx="130" cy="74" r="21" fill="#ffd0ab"/>
+  <!-- rambut samping -->
+  <path d="M110 68c-2 4-2 9 0 12l3.5-1.4c-1.2-3.6-1.2-7 0-10.6z" fill="#3b2a55"/>
+  <path d="M150 68c2 4 2 9 0 12l-3.5-1.4c1.2-3.6 1.2-7 0-10.6z" fill="#3b2a55"/>
+  <!-- wajah -->
+  <path d="M117.5 79.5c1.6-1.4 4-1.4 5.6 0M137 79.5c1.6-1.4 4-1.4 5.6 0" stroke="#3b2a55" stroke-width="1.8" stroke-linecap="round" fill="none"/>
+  <circle cx="120.5" cy="83" r="2.3" fill="#3b2a55"/>
+  <circle cx="139.5" cy="83" r="2.3" fill="#3b2a55"/>
+  <path d="M125 89.5c3 3 8 3 11 0" stroke="#3b2a55" stroke-width="2.2" stroke-linecap="round" fill="none"/>
+  <circle cx="114" cy="87" r="3.6" fill="#ff9db3" opacity=".38"/>
+  <circle cx="146" cy="87" r="3.6" fill="#ff9db3" opacity=".38"/>
+
+  <!-- ============ TOPI PET FORMAL ============ -->
+  <path d="M107 59c0-15 10-26 23-26s23 11 23 26z" fill="#26314f"/>
+  <path d="M114 58c0-11 7-19 16-19s16 8 16 19z" fill="#313e63"/>
+  <rect x="105" y="55" width="50" height="9" rx="4.5" fill="#1a233c"/>
+  <path d="M100 63h60c2.2 0 3.7 2.2 2.7 4.2C158.5 74 145.5 78 130 78s-28.5-4-32.7-10.8c-1-2 .5-4.2 2.7-4.2z" fill="#141c31"/>
+  <path d="M106 66.5h48" stroke="#2b3654" stroke-width="1.4" stroke-linecap="round" opacity=".9"/>
+  <circle cx="130" cy="48" r="5.2" fill="#ffd166"/>
+  <circle cx="130" cy="48" r="2.1" fill="#b98b1f" opacity=".6"/>
+
+  <!-- ============ PROP PENDUKUNG ============ -->
+  <g opacity=".95">
+    <rect x="8" y="70" width="62" height="58" rx="9" fill="#ffffff" opacity=".93"/>
+    <rect x="16" y="80" width="30" height="6" rx="3" fill="#7c3aed" opacity=".55"/>
+    <rect x="16" y="91" width="46" height="5" rx="2.5" fill="#7c3aed" opacity=".28"/>
+    <rect x="16" y="100" width="38" height="5" rx="2.5" fill="#7c3aed" opacity=".28"/>
+    <rect x="16" y="109" width="22" height="5" rx="2.5" fill="#7c3aed" opacity=".28"/>
+  </g>
+  <g opacity=".95">
+    <rect x="196" y="52" width="56" height="44" rx="8" fill="#ffffff" opacity=".93"/>
+    <rect x="204" y="62" width="26" height="6" rx="3" fill="#7c3aed" opacity=".5"/>
+    <rect x="204" y="73" width="40" height="5" rx="2.5" fill="#7c3aed" opacity=".26"/>
+    <rect x="204" y="82" width="18" height="5" rx="2.5" fill="#7c3aed" opacity=".26"/>
+    <circle cx="243" cy="60" r="6" fill="#ffd166"/>
+  </g>
+  <path d="M52 40l3.4 7.6 7.6 3.4-7.6 3.4L52 62l-3.4-7.6L41 51l7.6-3.4z" fill="#ffffff" opacity=".45"/>
+  <circle cx="216" cy="128" r="4" fill="#ffffff" opacity=".34"/>
+  <circle cx="186" cy="36" r="5" fill="#ffd166" opacity=".85"/>
+</svg>

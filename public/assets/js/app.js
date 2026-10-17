@@ -346,7 +346,7 @@
             return;
         }
         if (e.key === '/' && !typing && paletteBackdrop) { e.preventDefault(); openPalette(); return; }
-        if (e.key === 'Escape') { closePalette(); closeSidebar(); }
+        if (e.key === 'Escape') { closePalette(); if (typeof closeMobileDrawer === 'function') closeMobileDrawer(); }
     });
 
     /* ==================================================== searchable select */

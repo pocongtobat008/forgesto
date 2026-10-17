@@ -21,21 +21,23 @@ $diffClass = $diff === 0 ? 'is-zero' : ($diff > 0 ? 'is-pos' : 'is-neg');
     <div class="card-header"><h2><?= icon('audit') ?> <?= __('Input Hasil Pengecekan') ?></h2></div>
     <div class="card-body">
         <div class="compare">
+            <?php if (can_see_stock_qty()): ?>
             <div class="compare-card">
                 <div class="cc-label"><?= __('Qty sistem') ?></div>
-                <div class="cc-value"><?= can_see_stock_qty() ? $expected : '<span class="badge badge-brand">***</span>' ?></div>
+                <div class="cc-value"><?= (int) $expected ?></div>
             </div>
+            <?php endif; ?>
             <div class="compare-card">
                 <div class="cc-label"><?= __('Hasil hitung observer') ?></div>
                 <div class="cc-value"><?= $counted ?></div>
             </div>
+            <?php if (can_see_stock_qty()): ?>
             <div class="compare-card is-accent">
                 <div class="cc-label"><?= __('Selisih hitung') ?></div>
-                <div class="cc-value"><?= can_see_stock_qty() ? (($diff > 0 ? '+' : '') . $diff) : '<span class="badge badge-brand">***</span>' ?></div>
-                <?php if (can_see_stock_qty()): ?>
-                    <div class="mt-1"><span class="diff-pill <?= $diffClass ?>"><?= $diff === 0 ? 'cocok' : ($diff > 0 ? 'lebih' : 'kurang') ?></span></div>
-                <?php endif; ?>
+                <div class="cc-value"><?= ($diff > 0 ? '+' : '') . (int) $diff ?></div>
+                <div class="mt-1"><span class="diff-pill <?= $diffClass ?>"><?= $diff === 0 ? 'cocok' : ($diff > 0 ? 'lebih' : 'kurang') ?></span></div>
             </div>
+            <?php endif; ?>
         </div>
 
         <?php if (! empty($item['unit'])): ?>

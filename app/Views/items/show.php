@@ -11,13 +11,13 @@ $difference = $counted === null ? null : $counted - $expected;
 $diffClass = $difference === null || $difference === 0 ? 'is-zero' : ($difference > 0 ? 'is-pos' : 'is-neg');
 
 $countBadge = match ((string) $item['count_status']) {
-    'pending' => 'badge-danger', 'counted' => 'badge-warning', 'posted' => 'badge-info', default => '',
+    'pending' => 'badge-danger', 'counted' => 'badge-success', 'posted' => 'badge-info', default => '',
 };
 $countLabel = match ((string) $item['count_status']) {
     'pending' => 'Belum dihitung', 'counted' => 'Sudah dihitung', 'posted' => 'Terposting', default => $item['count_status'],
 };
 $auditBadge = match ((string) $item['audit_status']) {
-    'pending' => '', 'audited' => 'badge-success', 'discrepancy' => 'badge-danger', 'resolved' => 'badge-brand', default => '',
+    'pending' => 'badge-danger', 'audited' => 'badge-success', 'discrepancy' => 'badge-danger', 'resolved' => 'badge-brand', default => '',
 };
 $auditLabel = match ((string) $item['audit_status']) {
     'pending' => 'Belum diaudit', 'audited' => 'Sudah diaudit', 'discrepancy' => 'Selisih', 'resolved' => 'Selesai', default => $item['audit_status'],
@@ -55,23 +55,27 @@ $auditLabel = match ((string) $item['audit_status']) {
             </div>
             <div class="card-body">
                 <div class="compare">
+                    <?php if (can_see_stock_qty()): ?>
                     <div class="compare-card">
                         <div class="cc-label"><?= __('Qty sistem') ?></div>
-                        <div class="cc-value"><?= can_see_stock_qty() ? $expected : '<span class="badge badge-brand">***</span>' ?></div>
+                        <div class="cc-value"><?= (int) $expected ?></div>
                     </div>
+                    <?php endif; ?>
                     <div class="compare-card">
                         <div class="cc-label"><?= __('Hasil hitung') ?></div>
-                        <div class="cc-value"><?= $counted === null ? '—' : $counted ?></div>
+                        <div class="cc-value"><?= $counted === null ? '—' : (int) $counted ?></div>
                     </div>
+                    <?php if (can_see_stock_qty()): ?>
                     <div class="compare-card">
                         <div class="cc-label"><?= __('Selisih') ?></div>
                         <div class="cc-value">
-                            <?= can_see_stock_qty() ? ($difference === null ? '—' : (($difference > 0 ? '+' : '') . $difference)) : '<span class="badge badge-brand">***</span>' ?>
+                            <?= $difference === null ? '—' : (($difference > 0 ? '+' : '') . (int) $difference) ?>
                         </div>
-                        <?php if (can_see_stock_qty() && $difference !== null): ?>
+                        <?php if ($difference !== null): ?>
                             <div class="mt-1"><span class="diff-pill <?= $diffClass ?>"><?= $difference === 0 ? 'cocok' : ($difference > 0 ? 'lebih' : 'kurang') ?></span></div>
                         <?php endif; ?>
                     </div>
+                    <?php endif; ?>
                 </div>
 
                 <div class="divider"></div>
@@ -80,6 +84,8 @@ $auditLabel = match ((string) $item['audit_status']) {
                     <div><span class="faint"><?= __('Kategori:') ?></span> <?= e($item['category'] ?: '-') ?></div>
                     <div><span class="faint"><?= __('Satuan:') ?></span> <?= e($item['unit'] ?: '-') ?></div>
                     <div><span class="faint"><?= __('Device:') ?></span> <?= e($item['device_name'] ?: '-') ?></div>
+                    <div><span class="faint"><?= __('Observer:') ?></span> <?= e(trim((string) ($item['observers'] ?? '')) !== '' ? $item['observers'] : '-') ?></div>
+                    <div><span class="faint"><?= __('Auditor:') ?></span> <?= e(trim((string) ($item['auditors'] ?? '')) !== '' ? $item['auditors'] : '-') ?></div>
                     <div><span class="faint"><?= __('Dihitung oleh:') ?></span> <?= e($item['counted_by_name'] ?: '-') ?></div>
                     <div><span class="faint"><?= __('Waktu hitung:') ?></span> <?= e(format_date($item['counted_at'])) ?></div>
                     <div><span class="faint"><?= __('Diposting oleh:') ?></span> <?= e($item['posted_by_name'] ?: '-') ?></div>
@@ -191,7 +197,7 @@ $auditLabel = match ((string) $item['audit_status']) {
             </div>
         </div>
 
-        <?php if ($discrepancy !== null): ?>
+        <?php if ($discrepancy !== null && can_see_stock_qty()): ?>
             <div class="card">
                 <div class="card-header"><h3 style="color:var(--danger-text)"><?= icon('alert') ?> Selisih</h3></div>
                 <div class="card-body text-sm">

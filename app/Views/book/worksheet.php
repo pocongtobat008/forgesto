@@ -148,7 +148,7 @@ $isSto   = $tab === 'sto';
                             <td data-label="<?= __('Selisih') ?>" class="t-center mono tabular"><span class="diff-pill <?= $cls ?>"><?= $diff > 0 ? '+' : '' ?><?= $diff ?></span></td>
                             <td data-label="<?= __('Nilai selisih') ?>" class="col-hide-tablet t-right mono tabular">Rp <?= number_format($amt, 0, ',', '.') ?></td>
                             <td data-label="<?= __('Status') ?>" class="t-center">
-                                <span class="badge <?= (string) $r['audit_status'] === 'audited' ? 'badge-success' : ((string) $r['audit_status'] === 'discrepancy' ? 'badge-danger' : 'badge-warn') ?>">
+                                <span class="badge <?= (string) $r['audit_status'] === 'audited' ? 'badge-success' : ((string) $r['audit_status'] === 'discrepancy' ? 'badge-danger' : 'badge-warning') ?>">
                                     <?= e(['pending' => 'Belum', 'audited' => 'Sesuai', 'discrepancy' => 'Selisih', 'resolved' => 'Selesai'][(string) $r['audit_status']] ?? (string) $r['audit_status']) ?>
                                 </span>
                             </td>
