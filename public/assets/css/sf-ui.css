@@ -8632,3 +8632,16 @@ table thead th .col-resize::after {
     .process-trail .trail-scope { display: none !important; }
     .process-trail .card-toolbar h3 { font-size: .95rem !important; }
 }
+
+/* ============================================================
+   RUANG KOSONG — kartu tidak dipaksa sama tinggi
+   Kartu pendek di samping kartu tinggi sebelumnya ikut melar
+   (align-items: stretch) sehingga menyisakan blok kosong besar
+   di dalam kartu. Biarkan tiap kartu setinggi isinya.
+   ============================================================ */
+.sf-side-grid { align-items: start !important; }
+.sf-side-grid > .card { height: auto !important; }
+
+/* Detail item: daftar label/nilai berjumlah ganjil -> item terakhir melebar
+   penuh supaya tidak ada slot kosong di kolom kanan */
+.grid-2.text-sm > :last-child:nth-child(odd) { grid-column: 1 / -1; }
