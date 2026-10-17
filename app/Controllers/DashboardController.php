@@ -33,6 +33,7 @@ class DashboardController extends Controller
             $progress = $itemModel->groupProgress($filters);
         }
         $groups = (new Group())->forActiveUser();
+        $trend = $itemModel->activityTrend(30);
 
         $chart = [
             'labels'      => array_map(static fn (array $row): string => (string) $row['name'], $progress),
@@ -47,6 +48,7 @@ class DashboardController extends Controller
             'summary'          => $summary,
             'progress'         => $progress,
             'chart'            => $chart,
+            'trend'            => $trend,
             'filters'          => $filters,
             'groups'           => $groups,
             'selectedGroup'    => $filters['group_id'],

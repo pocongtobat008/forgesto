@@ -26,7 +26,8 @@ $openCount = 0;
 foreach ($discrepancies['items'] as $r) { if (($r['status'] ?? '') !== 'resolved') { $openCount++; } }
 $__disHasFilter = ! empty($filters['search']) || ! empty($filters['col']) || ! empty($filters['adv']) || ! empty($filters['group_id']) || ! empty($filters['status']);
 ?>
-<div class="page-head">
+<?= page_hero() ?>
+<div class="page-head has-hero">
     <div>
         <nav class="breadcrumb" aria-label="<?= __('Navigasi') ?>">
             <a href="<?= url('dashboard') ?>"><?= __('Beranda') ?></a>

@@ -3,7 +3,8 @@
  * @var array $warehouses
  */
 ?>
-<div class="page-head">
+<?= page_hero() ?>
+<div class="page-head has-hero">
     <div>
         <h1><?= __('Gudang / Situs') ?></h1>
         <p>Gudang adalah induk dari Group. Ganti gudang aktif di header untuk berpindah lokasi kerja (workspace).</p>

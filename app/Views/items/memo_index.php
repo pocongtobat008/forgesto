@@ -23,7 +23,8 @@ $__tabLink = static function (string $f) use ($__base): string {
 ?>
 <?= \App\Core\View::partial('items/_memo_styles') ?>
 
-<div class="page-head">
+<?= page_hero() ?>
+<div class="page-head has-hero">
     <div>
         <h1><?= __('Marking Memo') ?></h1>
         <p><?= __('Cetak memo QR per item. Daftar tampil 50 item per halaman.') ?></p>

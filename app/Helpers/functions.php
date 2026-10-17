@@ -297,12 +297,12 @@ if (! function_exists('format_rupiah')) {
 if (! function_exists('can_see_stock_qty')) {
     function can_see_stock_qty(string $menuKey = 'items'): bool
     {
-        if (\App\Core\Auth::role() === 'poweradmin') {
-            return true;
+        // Rule penting: qty stock (qty sistem) & selisih hanya untuk admin/poweradmin.
+        // Petugas (observer/audit) tidak pernah melihatnya, apa pun user rule-nya.
+        if (! \App\Core\Auth::check()) {
+            return false;
         }
-        if (class_exists(\App\Models\UserRule::class)) {
-            return ! \App\Models\UserRule::isColumnHidden($menuKey, 'expected');
-        }
+
         return in_array(\App\Core\Auth::role(), ['poweradmin', 'adminsto'], true);
     }
 }
@@ -477,3 +477,225 @@ if (! function_exists('current_menu_name')) {
         return ucwords(str_replace(['-', '_', '/'], ' ', $key));
     }
 }
+
+if (! function_exists('page_hero')) {
+    /**
+     * Banner header (hero) untuk menu aktif.
+     *
+     * Setiap menu punya gradient (tone) dan ilustrasi flat (art) sendiri,
+     * sehingga header terasa satu keluarga tapi tidak monoton.
+     *
+     * Pemakaian di view:  <?= page_hero() ?>
+     * Override sebagian:  <?= page_hero(['title' => 'Custom', 'chips' => [...]]) ?>
+     */
+    function page_hero(array $opts = []): string
+    {
+        static $map = null;
+
+        if ($map === null) {
+            $map = [
+                'dashboard' => [
+                    'title' => 'Dashboard', 'tone' => 'violet', 'art' => 'dashboard',
+                    'actions' => [
+                        ['icon' => 'package', 'label' => 'Buka Data STO', 'url' => 'items'],
+                        ['icon' => 'clipboard-check', 'label' => 'Mulai Audit', 'url' => 'audit', 'can' => 'audit_data'],
+                        ['icon' => 'trending-up', 'label' => 'Lihat Selisih', 'url' => 'discrepancies'],
+                    ],
+                ],
+                'items' => [
+                    'title' => 'Data STO', 'tone' => 'blue', 'art' => 'items',
+                    'actions' => [
+                        ['icon' => 'clipboard-check', 'label' => 'Mulai Audit', 'url' => 'audit', 'can' => 'audit_data'],
+                        ['icon' => 'trending-up', 'label' => 'Lihat Selisih', 'url' => 'discrepancies'],
+                        ['icon' => 'download', 'label' => 'Export', 'url' => 'exports', 'can' => 'import_data'],
+                    ],
+                ],
+                'audit' => [
+                    'title' => 'Audit', 'tone' => 'amber', 'art' => 'audit',
+                    'actions' => [
+                        ['icon' => 'package', 'label' => 'Data STO', 'url' => 'items'],
+                        ['icon' => 'trending-up', 'label' => 'Lihat Selisih', 'url' => 'discrepancies'],
+                        ['icon' => 'clipboard-list', 'label' => 'Rekonsiliasi', 'url' => 'reconciliation', 'can' => 'view_all_groups'],
+                    ],
+                ],
+                'discrepancies' => [
+                    'title' => 'Selisih & Temuan', 'tone' => 'rose', 'art' => 'discrepancies',
+                    'actions' => [
+                        ['icon' => 'package', 'label' => 'Data STO', 'url' => 'items'],
+                        ['icon' => 'clipboard-check', 'label' => 'Audit', 'url' => 'audit', 'can' => 'audit_data'],
+                        ['icon' => 'clipboard-list', 'label' => 'Rekonsiliasi', 'url' => 'reconciliation', 'can' => 'view_all_groups'],
+                    ],
+                ],
+                'reconciliation' => [
+                    'title' => 'Rekonsiliasi', 'tone' => 'indigo', 'art' => 'reconciliation',
+                    'actions' => [
+                        ['icon' => 'trending-up', 'label' => 'Lihat Selisih', 'url' => 'discrepancies'],
+                        ['icon' => 'package', 'label' => 'Data STO', 'url' => 'items'],
+                        ['icon' => 'download', 'label' => 'Export', 'url' => 'exports', 'can' => 'import_data'],
+                    ],
+                ],
+                'reconciliation/audit' => [
+                    'title' => 'Rekonsiliasi Audit', 'tone' => 'indigo', 'art' => 'reconciliation',
+                    'actions' => [
+                        ['icon' => 'clipboard-list', 'label' => 'Rekonsiliasi', 'url' => 'reconciliation'],
+                        ['icon' => 'trending-up', 'label' => 'Lihat Selisih', 'url' => 'discrepancies'],
+                    ],
+                ],
+                'items/memo' => [
+                    'title' => 'Memo STO', 'tone' => 'cyan', 'art' => 'memo',
+                    'actions' => [
+                        ['icon' => 'package', 'label' => 'Data STO', 'url' => 'items'],
+                        ['icon' => 'printer', 'label' => 'Marking Memo', 'url' => 'items/memo_index'],
+                        ['icon' => 'download', 'label' => 'Export', 'url' => 'exports', 'can' => 'import_data'],
+                    ],
+                ],
+                'progress' => [
+                    'title' => 'Progress', 'tone' => 'emerald', 'art' => 'progress',
+                    'actions' => [
+                        ['icon' => 'package', 'label' => 'Data STO', 'url' => 'items'],
+                        ['icon' => 'clipboard-check', 'label' => 'Audit', 'url' => 'audit', 'can' => 'audit_data'],
+                        ['icon' => 'trending-up', 'label' => 'Lihat Selisih', 'url' => 'discrepancies'],
+                    ],
+                ],
+                'groups' => [
+                    'title' => 'Group', 'tone' => 'teal', 'art' => 'groups',
+                    'actions' => [
+                        ['icon' => 'package', 'label' => 'Data STO', 'url' => 'items'],
+                        ['icon' => 'pin', 'label' => 'Lokasi', 'url' => 'locations'],
+                        ['icon' => 'layers', 'label' => 'Master Item', 'url' => 'master-data'],
+                    ],
+                ],
+                'master-data' => [
+                    'title' => 'Master Item', 'tone' => 'cyan', 'art' => 'masterdata',
+                    'actions' => [
+                        ['icon' => 'layers', 'label' => 'Group', 'url' => 'groups'],
+                        ['icon' => 'upload', 'label' => 'Import', 'url' => 'import', 'can' => 'import_data'],
+                        ['icon' => 'download', 'label' => 'Export', 'url' => 'exports', 'can' => 'import_data'],
+                    ],
+                ],
+                'warehouses' => [
+                    'title' => 'Gudang / Situs', 'tone' => 'brown', 'art' => 'warehouses',
+                    'actions' => [
+                        ['icon' => 'pin', 'label' => 'Lokasi', 'url' => 'locations'],
+                        ['icon' => 'layers', 'label' => 'Group', 'url' => 'groups'],
+                        ['icon' => 'package', 'label' => 'Data STO', 'url' => 'items'],
+                    ],
+                ],
+                'locations' => [
+                    'title' => 'Lokasi', 'tone' => 'teal', 'art' => 'locations',
+                    'actions' => [
+                        ['icon' => 'building', 'label' => 'Gudang', 'url' => 'warehouses'],
+                        ['icon' => 'layers', 'label' => 'Group', 'url' => 'groups'],
+                        ['icon' => 'package', 'label' => 'Data STO', 'url' => 'items'],
+                    ],
+                ],
+                'devices' => [
+                    'title' => 'Device', 'tone' => 'steel', 'art' => 'devices',
+                    'actions' => [
+                        ['icon' => 'pin', 'label' => 'Lokasi', 'url' => 'locations'],
+                        ['icon' => 'users', 'label' => 'Pengguna', 'url' => 'users', 'can' => 'manage_users'],
+                        ['icon' => 'package', 'label' => 'Data STO', 'url' => 'items'],
+                    ],
+                ],
+                'users' => [
+                    'title' => 'User & Role', 'tone' => 'pink', 'art' => 'users',
+                    'actions' => [
+                        ['icon' => 'shield', 'label' => 'Rules User', 'url' => 'user-rules'],
+                        ['icon' => 'activity', 'label' => 'Aktivitas', 'url' => 'activity', 'can' => 'view_activity'],
+                        ['icon' => 'user-circle', 'label' => 'Profil', 'url' => 'profile'],
+                    ],
+                ],
+                'user-rules' => [
+                    'title' => 'Rules Hak Akses', 'tone' => 'steel', 'art' => 'rules',
+                    'actions' => [
+                        ['icon' => 'users', 'label' => 'Pengguna', 'url' => 'users'],
+                        ['icon' => 'activity', 'label' => 'Aktivitas', 'url' => 'activity', 'can' => 'view_activity'],
+                        ['icon' => 'user-circle', 'label' => 'Profil', 'url' => 'profile'],
+                    ],
+                ],
+                'exports' => [
+                    'title' => 'Riwayat Export', 'tone' => 'lime', 'art' => 'exports',
+                    'actions' => [
+                        ['icon' => 'upload', 'label' => 'Import', 'url' => 'import', 'can' => 'import_data'],
+                        ['icon' => 'package', 'label' => 'Data STO', 'url' => 'items'],
+                        ['icon' => 'clipboard-list', 'label' => 'Rekonsiliasi', 'url' => 'reconciliation', 'can' => 'view_all_groups'],
+                    ],
+                ],
+                'import' => [
+                    'title' => 'Import Data', 'tone' => 'blue', 'art' => 'import',
+                    'actions' => [
+                        ['icon' => 'download', 'label' => 'Riwayat Export', 'url' => 'exports', 'can' => 'import_data'],
+                        ['icon' => 'package', 'label' => 'Data STO', 'url' => 'items'],
+                        ['icon' => 'layers', 'label' => 'Master Item', 'url' => 'master-data'],
+                    ],
+                ],
+                'activity' => [
+                    'title' => 'Aktivitas', 'tone' => 'orange', 'art' => 'activity',
+                    'actions' => [
+                        ['icon' => 'users', 'label' => 'Pengguna', 'url' => 'users', 'can' => 'manage_users'],
+                        ['icon' => 'package', 'label' => 'Data STO', 'url' => 'items'],
+                        ['icon' => 'user-circle', 'label' => 'Profil', 'url' => 'profile'],
+                    ],
+                ],
+                'notifications' => [
+                    'title' => 'Notifikasi', 'tone' => 'sky', 'art' => 'notifications',
+                    'actions' => [
+                        ['icon' => 'trending-up', 'label' => 'Lihat Selisih', 'url' => 'discrepancies'],
+                        ['icon' => 'package', 'label' => 'Data STO', 'url' => 'items'],
+                        ['icon' => 'user-circle', 'label' => 'Profil', 'url' => 'profile'],
+                    ],
+                ],
+                'profile' => [
+                    'title' => 'Profil & Akses', 'tone' => 'plum', 'art' => 'profile',
+                    'actions' => [
+                        ['icon' => 'activity', 'label' => 'Aktivitas', 'url' => 'activity', 'can' => 'view_activity'],
+                        ['icon' => 'bell', 'label' => 'Notifikasi', 'url' => 'notifications'],
+                        ['icon' => 'dashboard', 'label' => 'Dashboard', 'url' => 'dashboard'],
+                    ],
+                ],
+                'tahun-buku' => [
+                    'title' => 'Tahun Buku', 'tone' => 'gold', 'art' => 'book',
+                    'actions' => [
+                        ['icon' => 'package', 'label' => 'Data STO', 'url' => 'items'],
+                        ['icon' => 'trending-up', 'label' => 'Progress', 'url' => 'progress'],
+                        ['icon' => 'download', 'label' => 'Export', 'url' => 'exports', 'can' => 'import_data'],
+                    ],
+                ],
+                'reports' => [
+                    'title' => 'Report', 'tone' => 'emerald', 'art' => 'progress',
+                    'actions' => [
+                        ['icon' => 'archive', 'label' => 'Tahun Buku', 'url' => 'tahun-buku'],
+                        ['icon' => 'package', 'label' => 'Data STO', 'url' => 'items'],
+                        ['icon' => 'trending-up', 'label' => 'Lihat Selisih', 'url' => 'discrepancies'],
+                    ],
+                ],
+            ];
+        }
+
+        $key = function_exists('current_menu_key') ? current_menu_key() : 'dashboard';
+        $def = $map[$key] ?? [
+            'title' => function_exists('current_menu_name') ? current_menu_name() : 'Dashboard',
+            'tone'  => 'violet',
+            'art'   => 'dashboard',
+            'actions' => [
+                ['icon' => 'package', 'label' => 'Data STO', 'url' => 'items'],
+                ['icon' => 'dashboard', 'label' => 'Dashboard', 'url' => 'dashboard'],
+            ],
+        ];
+
+        $opts = array_merge($def, $opts);
+
+        // Judul & label diterjemahkan di sini supaya view tetap ringkas.
+        if (isset($opts['title'])) {
+            $opts['title'] = __($opts['title']);
+        }
+        foreach (($opts['actions'] ?? []) as $i => $a) {
+            if (isset($a['label'])) {
+                $opts['actions'][$i]['label'] = __($a['label']);
+            }
+        }
+
+        return \App\Core\View::partial('partials/hero-welcome', $opts);
+    }
+}
+

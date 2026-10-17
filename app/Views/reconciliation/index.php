@@ -70,7 +70,8 @@ $activeMinDiff   = ($filters['min_diff'] ?? null) === '10jt';
 $activeSort      = $filters['sort'] ?? 'diff_desc';
 $isAdminUser     = in_array(\App\Core\Auth::role(), ['poweradmin', 'adminsto'], true);
 ?>
-<div class="page-head">
+<?= page_hero() ?>
+<div class="page-head has-hero">
     <div>
         <h1><?= __('Rekonsiliasi Hasil Hitung vs Qty Stock') ?></h1>
         <p>Cross-check hasil hitung fisik terhadap stok sistem dengan perhitungan nilai aset (amount) dan status per group.</p>
@@ -1251,6 +1252,36 @@ document.addEventListener('DOMContentLoaded', function () {
     });
     return o;
   }
+  // ---- Posisi popup: fixed, menempel pada tombol (anti-terpotong) ----
+  var popAnchor = null;
+  function placePop(btn) {
+    popAnchor = btn;
+    if (pop.parentElement !== document.body) { document.body.appendChild(pop); }
+    var r = btn.getBoundingClientRect();
+    var w = pop.offsetWidth || 300;
+    var h = pop.offsetHeight || 220;
+    var vw = document.documentElement.clientWidth || window.innerWidth;
+    var vh = window.innerHeight || document.documentElement.clientHeight;
+    var gap = 6, pad = 8;
+    var left = r.left;
+    if (left + w > vw - pad) { left = vw - pad - w; }
+    if (left < pad) { left = pad; }
+    // Pilih sisi (bawah/atas) yang muat, lalu batasi tinggi popup agar
+    // tidak menutupi tombol pemicu dan tidak keluar dari viewport.
+    var below = (vh - pad) - (r.bottom + gap);
+    var above = (r.top - gap) - pad;
+    var openUp = (below < Math.min(h, 260)) && (above > below);
+    var avail = Math.max(140, Math.min(h, openUp ? above : below));
+    pop.style.maxHeight = Math.round(avail) + "px";
+    pop.style.overflowY = "auto";
+    var top = openUp ? (r.top - gap - avail) : (r.bottom + gap);
+    if (top + avail > vh - pad) { top = Math.max(pad, vh - pad - avail); }
+    if (top < pad) { top = pad; }
+    pop.style.left = Math.round(left) + 'px';
+    pop.style.top = Math.round(top) + 'px';
+  }
+  window.addEventListener('scroll', function () { if (!pop.hidden && popAnchor) { placePop(popAnchor); } }, { passive: true });
+  window.addEventListener('resize', function () { if (!pop.hidden && popAnchor) { placePop(popAnchor); } });
   function open(btn){
     cur=btn.getAttribute('data-rng'); var c=CFG[cur]; if(!c) return;
     var v=existing(cur);
@@ -1261,11 +1292,8 @@ document.addEventListener('DOMContentLoaded', function () {
       body.innerHTML='<div class="rng-row"><label class="rng-lbl">Dari<input type="'+c.type+'" id="rng-min" class="rng-in" value="'+esc(v.min)+'"'+(c.type==='number'?' step="0.01"':'')+'></label>'+
                      '<label class="rng-lbl">Sampai<input type="'+c.type+'" id="rng-max" class="rng-in" value="'+esc(v.max)+'"'+(c.type==='number'?' step="0.01"':'')+'></label></div>';
     }
-    var r=btn.getBoundingClientRect();
     pop.hidden=false;
-    var left=Math.min(r.left+window.scrollX, window.scrollX+document.documentElement.clientWidth-300);
-    pop.style.left=Math.max(8,left)+'px';
-    pop.style.top=(r.bottom+window.scrollY+6)+'px';
+    placePop(btn);
     var first=body.querySelector('input'); if(first) first.focus();
   }
   function close(){ pop.hidden=true; cur=null; }

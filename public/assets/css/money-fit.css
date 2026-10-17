@@ -1,0 +1,148 @@
+/* ==========================================================================
+   money-fit.css — anti-terpotong untuk angka & nominal (Rp ...)
+   Dimuat PALING AKHIR supaya menang atas aturan ellipsis/overflow lama.
+   Pasangan: assets/js/money-fit.js (mengecilkan font sampai muat).
+   ========================================================================== */
+
+/* 0. STRUKTUR KARTU .stat (forge-gradient.css).
+      Masalah: grid-nya "icon label label / value value spark / meta meta meta".
+      Kolom ke-3 dipakai sparkline 88px, sehingga baris nilai hanya dapat sisa
+      kolom yang sempit -> "Rp 1.175.907.500" terbungkus/terpotong di kartu
+      selebar ~228px. Perbaikan: baris nilai memakai lebar penuh, sparkline
+      dipindah jadi dekorasi di pojok kanan bawah. */
+.stat {
+    grid-template-columns: auto minmax(0, 1fr) !important;
+    grid-template-areas:
+        "icon label"
+        "value value"
+        "meta meta" !important;
+}
+
+.stat > * {
+    position: relative;
+    z-index: 1;
+}
+
+.stat .stat-value {
+    grid-area: value !important;
+    width: 100%;
+}
+
+.stat .stat-meta {
+    max-width: calc(100% - 56px) !important;
+}
+
+.stat::before {
+    position: absolute !important;
+    grid-area: auto !important;
+    right: 12px !important;
+    bottom: 12px !important;
+    width: 44px !important;
+    height: 18px !important;
+    margin: 0 !important;
+    opacity: .16 !important;
+    z-index: 0;
+}
+
+/* 1. Kartu statistik / KPI: nilai tidak boleh di-clip atau diberi elipsis. */
+.stat .stat-value,
+.stat-value,
+.kpi-value,
+.kpi-amt,
+.cc-value,
+.stat-card .value,
+.group-card-amt,
+.sf-hero-stat-value,
+.sf-amt,
+.sf-money,
+.money,
+.amt {
+    max-width: 100%;
+    min-width: 0;
+    white-space: nowrap;
+    overflow: visible !important;
+    text-overflow: clip !important;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -.025em;
+}
+
+/* 2. Wadah kartu: biarkan clipping dekoratif apa adanya (gradient ::before),
+      tapi pastikan TINGGI kartu mengikuti isi supaya teks yang membungkus
+      tidak ikut terpotong. */
+.stat,
+.stat-card,
+.kpi-card,
+.cc-card,
+.group-card {
+    height: auto;
+}
+
+/* 3. Nominal di dalam tabel: rata kanan, tidak pernah terpotong. */
+.table-wrap td.t-right,
+.table-wrap th.t-right,
+.data-table td.t-right,
+.data-table th.t-right {
+    white-space: nowrap;
+    overflow: visible;
+    text-overflow: clip;
+    font-variant-numeric: tabular-nums;
+}
+
+/* 4. Chip / meta yang berisi nominal panjang: boleh mengecil, tidak di-clip. */
+.stat-meta,
+.sf-amt-chip {
+    max-width: 100%;
+    overflow: visible !important;
+    text-overflow: clip !important;
+}
+
+/* 5. Kondisi ekstrem (angka sangat panjang di kartu sangat sempit):
+      JS menandai data-sf-wrap="1" → teks dibungkus, bukan dipotong. */
+[data-sf-wrap="1"] {
+    white-space: normal !important;
+    overflow-wrap: anywhere;
+    line-height: 1.1;
+}
+
+/* 6. Cetak: kartu tidak boleh terpotong antar halaman. */
+@media print {
+    .sidebar,
+    .topbar,
+    .app-sidebar,
+    .sf-hero,
+    .page-head .btn,
+    .no-print,
+    .toast,
+    .sf-drawer {
+        display: none !important;
+    }
+
+    .app-main,
+    .content,
+    .main {
+        margin: 0 !important;
+        padding: 0 !important;
+        width: 100% !important;
+        max-width: 100% !important;
+    }
+
+    .card,
+    .stat {
+        box-shadow: none !important;
+        border: 1px solid #d5d5d5 !important;
+        break-inside: avoid;
+        page-break-inside: avoid;
+    }
+
+    .grid {
+        display: block !important;
+    }
+
+    .stat {
+        margin-bottom: 8px;
+    }
+
+    body {
+        background: #fff !important;
+    }
+}

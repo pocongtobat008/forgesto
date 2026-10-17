@@ -66,7 +66,8 @@ $chips = [
     'success' => 'Sukses',
 ];
 ?>
-<div class="page-head">
+<?= page_hero() ?>
+<div class="page-head has-hero">
     <div>
         <h1><?= __('Notifikasi') ?></h1>
         <p>

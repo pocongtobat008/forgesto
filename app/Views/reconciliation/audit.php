@@ -18,7 +18,7 @@ $actionBadge = static fn (string $a): string => match (true) {
     str_contains($a, 'price')        => 'badge-warning',
     default                          => 'badge-neutral',
 };
-?><div class="page-head">
+?><?= page_hero() ?><div class="page-head has-hero">
     <div>
         <h1><?= __('Audit Riwayat Koreksi Rekonsiliasi') ?></h1>
         <p>Jejak lengkap setiap perubahan angka rekonsiliasi — siapa, kapan, dari berapa ke berapa, dan alasannya.</p>

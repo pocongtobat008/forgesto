@@ -24,7 +24,8 @@ $abilityLabels = [
 ];
 $switcherEnabled = (bool) config('app.auth.dev_switcher', true);
 ?>
-<div class="page-head">
+<?= page_hero() ?>
+<div class="page-head has-hero">
     <div>
         <h1><?= __('Profil &amp; Akses') ?></h1>
         <p>Role aktif, kemampuan akses, dan pengalihan user untuk pengujian.</p>

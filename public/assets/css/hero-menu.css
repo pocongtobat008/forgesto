@@ -1,0 +1,64 @@
+/* ==========================================================================
+   HERO PER MENU — gradient + ilustrasi flat berbeda untuk tiap menu
+   Bergantung pada struktur .sf-hero (forge-gradient.css); file ini hanya
+   meng-override dua token: --fg-grad (gradient) dan --fg-ill (ilustrasi).
+   ========================================================================== */
+
+/* ---------- 1 · Gradient per menu ---------- */
+.sf-hero[data-tone="violet"]  { --fg-grad: linear-gradient(125deg, #667eea 0%, #764ba2 52%, #f093fb 100%); }
+.sf-hero[data-tone="blue"]    { --fg-grad: linear-gradient(125deg, #2563eb 0%, #4338ca 55%, #22d3ee 100%); }
+.sf-hero[data-tone="teal"]    { --fg-grad: linear-gradient(100deg, rgba(0,16,14,.24) 0%, rgba(0,16,14,.06) 56%, rgba(0,16,14,0) 100%), linear-gradient(125deg, #0d9488 0%, #0f766e 52%, #22d3ee 100%); }
+.sf-hero[data-tone="amber"]   { --fg-grad: linear-gradient(100deg, rgba(20,10,0,.34) 0%, rgba(20,10,0,.10) 56%, rgba(20,10,0,0) 100%), linear-gradient(125deg, #d97706 0%, #b45309 52%, #fbbf24 100%); }
+.sf-hero[data-tone="rose"]    { --fg-grad: linear-gradient(125deg, #e11d48 0%, #9f1239 52%, #fb7185 100%); }
+.sf-hero[data-tone="indigo"]  { --fg-grad: linear-gradient(125deg, #4f46e5 0%, #6d28d9 52%, #a78bfa 100%); }
+.sf-hero[data-tone="emerald"] { --fg-grad: linear-gradient(125deg, #059669 0%, #047857 52%, #34d399 100%); }
+.sf-hero[data-tone="steel"]   { --fg-grad: linear-gradient(125deg, #475569 0%, #334155 52%, #94a3b8 100%); }
+.sf-hero[data-tone="pink"]    { --fg-grad: linear-gradient(125deg, #db2777 0%, #9d174d 52%, #f472b6 100%); }
+.sf-hero[data-tone="cyan"]    { --fg-grad: linear-gradient(100deg, rgba(0,12,24,.26) 0%, rgba(0,12,24,.06) 56%, rgba(0,12,24,0) 100%), linear-gradient(125deg, #0891b2 0%, #0369a1 52%, #38bdf8 100%); }
+.sf-hero[data-tone="lime"]    { --fg-grad: linear-gradient(100deg, rgba(12,20,0,.34) 0%, rgba(12,20,0,.10) 56%, rgba(12,20,0,0) 100%), linear-gradient(125deg, #65a30d 0%, #4d7c0f 52%, #a3e635 100%); }
+.sf-hero[data-tone="orange"]  { --fg-grad: linear-gradient(125deg, #ea580c 0%, #c2410c 52%, #fb923c 100%); }
+.sf-hero[data-tone="sky"]     { --fg-grad: linear-gradient(100deg, rgba(0,10,28,.24) 0%, rgba(0,10,28,.06) 56%, rgba(0,10,28,0) 100%), linear-gradient(125deg, #0284c7 0%, #1d4ed8 52%, #60a5fa 100%); }
+.sf-hero[data-tone="plum"]    { --fg-grad: linear-gradient(125deg, #7e22ce 0%, #a21caf 52%, #e879f9 100%); }
+.sf-hero[data-tone="brown"]   { --fg-grad: linear-gradient(125deg, #92400e 0%, #78350f 52%, #f59e0b 100%); }
+
+.sf-hero[data-tone="gold"]    { --fg-grad: linear-gradient(100deg, rgba(26,16,0,.42) 0%, rgba(26,16,0,.14) 56%, rgba(26,16,0,0) 100%), linear-gradient(125deg, #a16207 0%, #78350f 48%, #eab308 100%); }
+
+/* ---------- 2 · Ilustrasi flat per menu ---------- */
+.sf-hero[data-art="dashboard"]      { --fg-ill: url("../img/hero-flat.svg"); }
+.sf-hero[data-art="items"]          { --fg-ill: url("../img/hero-items.svg"); }
+.sf-hero[data-art="groups"]         { --fg-ill: url("../img/hero-groups.svg"); }
+.sf-hero[data-art="audit"]          { --fg-ill: url("../img/hero-audit.svg"); }
+.sf-hero[data-art="discrepancies"]  { --fg-ill: url("../img/hero-discrepancies.svg"); }
+.sf-hero[data-art="reconciliation"] { --fg-ill: url("../img/hero-reconciliation.svg"); }
+.sf-hero[data-art="progress"]       { --fg-ill: url("../img/hero-progress.svg"); }
+.sf-hero[data-art="devices"]        { --fg-ill: url("../img/hero-devices.svg"); }
+.sf-hero[data-art="users"]          { --fg-ill: url("../img/hero-users.svg"); }
+.sf-hero[data-art="masterdata"]     { --fg-ill: url("../img/hero-masterdata.svg"); }
+.sf-hero[data-art="exports"]        { --fg-ill: url("../img/hero-exports.svg"); }
+.sf-hero[data-art="activity"]       { --fg-ill: url("../img/hero-activity.svg"); }
+.sf-hero[data-art="notifications"]  { --fg-ill: url("../img/hero-notifications.svg"); }
+.sf-hero[data-art="profile"]        { --fg-ill: url("../img/hero-profile.svg"); }
+.sf-hero[data-art="warehouses"]     { --fg-ill: url("../img/hero-warehouses.svg"); }
+.sf-hero[data-art="locations"]      { --fg-ill: url("../img/hero-locations.svg"); }
+.sf-hero[data-art="import"]         { --fg-ill: url("../img/hero-import.svg"); }
+.sf-hero[data-art="rules"]          { --fg-ill: url("../img/hero-rules.svg"); }
+.sf-hero[data-art="book"]           { --fg-ill: url("../img/hero-book.svg"); }
+
+/* ---------- 3 · Judul halaman tidak diulang di bawah hero ---------- */
+/* Hero sudah memuat judul + deskripsi konteks; blok kiri .page-head
+   disembunyikan, tombol aksinya tetap dipertahankan. */
+.page-head.has-hero > div:first-child { display: none; }
+.page-head.has-hero {
+  justify-content: flex-end;
+  align-items: center;
+  gap: 10px;
+  margin-top: 2px;
+  margin-bottom: 14px;
+}
+/* Kalau setelah judul disembunyikan tidak ada tombol apa pun, buang barisnya. */
+.page-head.has-hero:not(:has(.btn-group, form, .search-select, .spacer, button, a)) { display: none; }
+
+/* ---------- 4 · Penyesuaian kecil ---------- */
+@media (max-width: 749px) {
+  .page-head.has-hero { margin-bottom: 10px; }
+}

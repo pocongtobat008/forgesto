@@ -1,0 +1,532 @@
+/* ==========================================================================
+   SF VIEW MODE — pilihan tampilan "Kartu" / "Tabel" untuk SEMUA tabel .data
+   Berlaku di phone, tablet, dan desktop (bukan cuma <=767px).
+   Gaya kartu mengikuti pola panel booking: header identitas + status,
+   judul besar, meta kecil, baris label/nilai bergaris rambut, footer aksi.
+   Dimuat PALING AKHIR setelah items-mobile.css.
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   1. KONTROL PEMILIH TAMPILAN (floating pill)
+   -------------------------------------------------------------------------- */
+.sf-vm {
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  z-index: 940;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 4px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: color-mix(in srgb, var(--surface) 86%, transparent);
+  box-shadow: 0 1px 2px rgba(16, 24, 40, .06), 0 10px 30px -12px rgba(16, 24, 40, .45);
+  -webkit-backdrop-filter: blur(12px) saturate(1.4);
+  backdrop-filter: blur(12px) saturate(1.4);
+}
+.sf-vm__lbl {
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: .07em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+  padding: 0 9px 0 7px;
+  user-select: none;
+}
+.sf-vm__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 32px;
+  min-width: 34px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--text-2);
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 650;
+  line-height: 1;
+  cursor: pointer;
+  transition: background .15s ease, color .15s ease, box-shadow .15s ease;
+}
+.sf-vm__btn svg { width: 16px; height: 16px; flex: 0 0 auto; }
+.sf-vm__btn:hover { background: var(--surface-2); color: var(--text); }
+.sf-vm__btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.sf-vm__btn[aria-pressed="true"] {
+  background: var(--accent);
+  color: #fff;
+  box-shadow: 0 1px 2px rgba(16, 24, 40, .22), 0 6px 14px -8px color-mix(in srgb, var(--accent) 80%, transparent);
+}
+.sf-vm__btn[aria-pressed="true"]:hover { background: var(--accent-hover); color: #fff; }
+
+@media (max-width: 640px) {
+  .sf-vm { right: 12px; }
+  .sf-vm__lbl { display: none; }
+  .sf-vm__btn { padding: 0 8px; }
+  .sf-vm__btn span { display: none; }
+}
+
+/* --------------------------------------------------------------------------
+   2. MODE TABEL — tabel asli di semua lebar (scroll horizontal bila sempit)
+   -------------------------------------------------------------------------- */
+html[data-view="table"] .table-wrap,
+html[data-view="table"] .recon-table-wrap {
+  overflow-x: auto !important;
+  overflow-y: visible !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  display: block;
+  -webkit-overflow-scrolling: touch;
+}
+@media (max-width: 767px) {
+html[data-view="table"] .table-wrap { overflow-x: auto !important; -webkit-overflow-scrolling: touch; }
+html[data-view="table"] table.data {
+  display: table !important;
+  width: 100% !important;
+  max-width: none !important;
+  min-width: 100%;
+  table-layout: auto !important;
+  border-collapse: collapse !important;
+  border-spacing: 0 !important;
+  font-size: .855rem;
+}
+html[data-view="table"] table.data thead { display: table-header-group !important; }
+html[data-view="table"] table.data tbody { display: table-row-group !important; }
+html[data-view="table"] table.data tbody tr {
+  display: table-row !important;
+  position: static !important;
+  width: auto !important;
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  overflow: visible !important;
+  transform: none !important;
+  column-gap: 0 !important;
+  row-gap: 0 !important;
+}
+html[data-view="table"] table.data tbody tr::before,
+html[data-view="table"] table.data tbody tr::after { content: none !important; display: none !important; }
+html[data-view="table"] table.data tbody tr:hover { background: var(--surface-2) !important; }
+html[data-view="table"] table.data tbody td {
+  display: table-cell !important;
+  position: static !important;
+  width: auto !important;
+  min-width: 0 !important;
+  max-width: none !important;
+  padding: .58rem .62rem !important;
+  border: 0 !important;
+  border-bottom: 1px solid var(--border) !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  text-align: left;
+  vertical-align: middle;
+  white-space: normal !important;
+  overflow: visible !important;
+  text-overflow: clip !important;
+  word-break: normal;
+  line-height: 1.45;
+  order: 0 !important;
+}
+html[data-view="table"] table.data tbody td::before { content: none !important; display: none !important; }
+html[data-view="table"] table.data tbody td:empty { display: table-cell !important; }
+html[data-view="table"] table.data tbody td[colspan] { display: table-cell !important; text-align: center; }
+html[data-view="table"] table.data tbody td.t-right { text-align: right !important; }
+html[data-view="table"] table.data tbody td.t-center { text-align: center !important; }
+html[data-view="table"] table.data tbody td input[type="number"] { width: auto !important; }
+html[data-view="table"] table.data tbody tr:last-child td { border-bottom: 0 !important; }
+html[data-view="table"] .sf-vm-val { display: inline !important; font: inherit !important; color: inherit !important; }
+}
+
+
+@media (max-width: 1023px) {
+  html[data-view="table"] table.data th,
+  html[data-view="table"] table.data td { white-space: nowrap !important; }
+  html[data-view="table"] table.data tbody td[colspan] { white-space: normal !important; }
+}
+
+/* tabel yang punya aturan mobile ber-ID (recon) — netralkan sticky/nowrap */
+html[data-view="table"] #recon-table.data th.t-right:last-child,
+html[data-view="table"] #recon-table.data td.t-right:last-child {
+  position: static !important;
+  box-shadow: none !important;
+  background: transparent !important;
+}
+
+/* --------------------------------------------------------------------------
+   3. MODE KARTU — grid kartu di semua breakpoint
+   -------------------------------------------------------------------------- */
+html[data-view="cards"] .table-wrap,
+html[data-view="cards"] .recon-table-wrap {
+  overflow: visible !important;
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+html[data-view="cards"] table.data {
+  display: block !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  table-layout: auto !important;
+  border-collapse: separate !important;
+  border-spacing: 0 !important;
+  font-size: .9rem;
+}
+html[data-view="cards"] .table-wrap { overflow: visible !important; }
+html[data-view="cards"] table.data thead { display: none !important; }
+html[data-view="cards"] table.data tbody {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fill, minmax(302px, 1fr));
+  gap: 14px;
+  align-items: start;
+  padding: 2px;
+}
+html[data-view="cards"] table.data tbody tr {
+  display: flex !important;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  align-content: flex-start;
+  column-gap: 8px;
+  row-gap: 0;
+  position: relative;
+  width: auto !important;
+  margin: 0 !important;
+  padding: 14px 16px 0 !important;
+  background: var(--surface) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 16px !important;
+  box-shadow: 0 1px 2px rgba(16, 24, 40, .05), 0 14px 30px -26px rgba(16, 24, 40, .6) !important;
+  overflow: hidden;
+  transition: border-color .18s ease, box-shadow .18s ease;
+}
+html[data-view="cards"] table.data tbody tr::after { content: none !important; display: none !important; }
+html[data-view="cards"] table.data tbody tr:hover {
+  background: var(--surface) !important;
+  border-color: color-mix(in srgb, var(--accent) 34%, var(--border)) !important;
+  box-shadow: 0 2px 4px rgba(16, 24, 40, .06), 0 20px 36px -28px rgba(16, 24, 40, .7) !important;
+}
+html[data-view="cards"] table.data tbody tr:has(input[type="checkbox"]:checked) {
+  border-color: color-mix(in srgb, var(--accent) 58%, var(--border)) !important;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 13%, transparent), 0 14px 30px -26px rgba(16, 24, 40, .6) !important;
+}
+html[data-view="cards"] table.data tbody td {
+  display: block !important;
+  position: static !important;
+  width: auto !important;
+  min-width: 0 !important;
+  max-width: none !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  text-align: left !important;
+  white-space: normal !important;
+  overflow: visible !important;
+  text-overflow: clip !important;
+  word-break: break-word;
+  line-height: 1.45;
+}
+html[data-view="cards"] table.data tbody td::before { content: none !important; }
+html[data-view="cards"] table.data tbody td:empty { display: none !important; }
+html[data-view="cards"] table.data tbody td[data-empty="1"] { display: none !important; }
+html[data-view="cards"] table.data tbody td[data-sf-role="kv"][data-empty="1"],
+html[data-view="cards"] table.data tbody td[data-sf-role="meta"][data-empty="1"],
+html[data-view="cards"] table.data tbody td[data-sf-role="status"][data-empty="1"] { display: none !important; }
+html[data-view="cards"] table.data tbody td:first-child { box-shadow: none !important; }
+html[data-view="cards"] table.data tbody td > div,
+html[data-view="cards"] table.data tbody td > form { min-width: 0; }
+
+/* --- 3a. header kartu: pilih + kode + status --- */
+html[data-view="cards"] td[data-sf-role="sel"] {
+  order: 1;
+  flex: 0 0 auto;
+  padding-top: 2px !important;
+}
+html[data-view="cards"] td[data-sf-role="hide"] { display: none !important; }
+
+html[data-view="cards"] td[data-sf-role="id"],
+html[data-view="cards"] td[data-sf-role="sel"] { flex: 0 0 auto; }
+html[data-view="cards"] td[data-sf-role="id"] {
+  order: 2;
+  flex: 0 1 auto;
+  padding-top: 2px !important;
+}
+html[data-view="cards"] td[data-sf-role="id"] .sf-vm-val {
+  display: inline-flex;
+  align-items: center;
+  max-width: 100%;
+  padding: 2px 8px;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  background: var(--surface-2);
+  color: var(--text-2);
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: .02em;
+  line-height: 1.7;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+html[data-view="cards"] td[data-sf-role="status"] {
+  order: 3;
+  flex: 0 1 auto;
+  min-width: 0;
+  margin-left: auto;
+  padding-top: 1px !important;
+}
+html[data-view="cards"] td[data-sf-role="status"] + td[data-sf-role="status"] { margin-left: 6px; }
+html[data-view="cards"] td[data-sf-role="status"] .badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  max-width: 100%;
+  padding: 3px 9px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 650;
+  line-height: 1.5;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+html[data-view="cards"] td[data-sf-role="status"] .badge svg { width: 12px; height: 12px; }
+
+/* --- 3b. judul + meta --- */
+html[data-view="cards"] td[data-sf-role="title"] {
+  order: 4;
+  flex: 1 0 100%;
+  margin-top: 11px !important;
+}
+html[data-view="cards"] td[data-sf-role="title"] .sf-vm-val,
+html[data-view="cards"] td[data-sf-role="title"] > .cell-title {
+  display: block;
+  color: var(--text);
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: -.012em;
+  line-height: 1.3;
+}
+html[data-view="cards"] td[data-sf-role="title"] .cell-sub {
+  display: block;
+  margin-top: 2px;
+  color: var(--text-faint);
+  font-size: .78rem;
+  font-weight: 500;
+}
+
+html[data-view="cards"] td[data-sf-role="meta"] {
+  order: var(--sf-ord, 5);
+  flex: 0 0 auto;
+  margin-top: 5px !important;
+  color: var(--text-faint);
+  font-size: .78rem;
+  font-weight: 500;
+}
+html[data-view="cards"] td[data-sf-role="meta"] + td[data-sf-role="meta"]::before {
+  content: "·";
+  margin-right: 7px;
+  opacity: .55;
+}
+
+/* --- 3c. baris label / nilai --- */
+html[data-view="cards"] table.data tbody td[data-sf-role="kv"] {
+  order: 10;
+  flex: 1 0 100%;
+  display: flex !important;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  min-height: 34px;
+  padding: 7px 0 !important;
+  border-top: 1px solid var(--border-soft) !important;
+  font-size: .82rem;
+}
+html[data-view="cards"] table.data tbody td[data-sf-role="kv"]::before {
+  content: attr(data-label) !important;
+  display: block !important;
+  flex: 0 0 auto;
+  max-width: 46%;
+  color: var(--text-faint);
+  font-size: .655rem;
+  font-weight: 800;
+  letter-spacing: .055em;
+  text-transform: uppercase;
+  line-height: 1.5;
+}
+html[data-view="cards"] table.data tbody td[data-sf-role="kv"] .sf-vm-val {
+  flex: 1 1 auto;
+  min-width: 0;
+  color: var(--text);
+  font-weight: 600;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+html[data-view="cards"] td[data-sf-role="kv"]:first-of-type,
+html[data-view="cards"] td[data-sf-role="title"] + td[data-sf-role="kv"],
+html[data-view="cards"] td[data-sf-role="meta"] + td[data-sf-role="kv"] { margin-top: 10px !important; }
+
+/* --- 3d. footer aksi --- */
+html[data-view="cards"] td[data-sf-role="act"] {
+  order: 50;
+  flex: 1 0 100%;
+  display: flex !important;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  margin: 12px -16px 0 !important;
+  padding: 10px 16px !important;
+  border-top: 1px solid var(--border) !important;
+  background: color-mix(in srgb, var(--surface-2) 55%, var(--surface)) !important;
+}
+html[data-view="cards"] td[data-sf-role="act"] > form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  margin: 0;
+}
+html[data-view="cards"] td[data-sf-role="act"] .btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 32px;
+  min-height: 32px;
+  padding: 0 12px;
+  border-radius: 9px;
+  font-size: .78rem;
+  font-weight: 650;
+  line-height: 1;
+  white-space: nowrap;
+  box-shadow: none;
+}
+html[data-view="cards"] td[data-sf-role="act"] .btn svg { width: 14px; height: 14px; }
+html[data-view="cards"] td[data-sf-role="act"] .btn-icon-only { width: 32px; padding: 0; }
+html[data-view="cards"] td[data-sf-role="act"] .btn-ghost,
+html[data-view="cards"] td[data-sf-role="act"] .btn-link,
+html[data-view="cards"] td[data-sf-role="act"] .btn-outline {
+  background: transparent;
+  border-color: transparent;
+  color: var(--text-2);
+  text-decoration: underline;
+  text-decoration-color: color-mix(in srgb, var(--text-2) 35%, transparent);
+  text-underline-offset: 3px;
+}
+html[data-view="cards"] td[data-sf-role="act"] .btn-ghost:hover,
+html[data-view="cards"] td[data-sf-role="act"] .btn-link:hover {
+  background: var(--surface-3);
+  color: var(--text);
+  text-decoration-color: currentColor;
+}
+html[data-view="cards"] td[data-sf-role="act"] .btn-outline {
+  border-color: var(--border);
+  background: var(--surface);
+  text-decoration: none;
+}
+html[data-view="cards"] td[data-sf-role="act"] .btn-outline:hover { border-color: var(--text-3); background: var(--surface-2); }
+html[data-view="cards"] td[data-sf-role="act"] .btn-brand,
+html[data-view="cards"] td[data-sf-role="act"] .btn-success,
+html[data-view="cards"] td[data-sf-role="act"] .btn-info,
+html[data-view="cards"] td[data-sf-role="act"] .btn-danger { border-color: transparent; }
+
+/* --- 3e. baris kosong / colspan --- */
+html[data-view="cards"] table.data tbody td[colspan] {
+  grid-column: 1 / -1;
+  display: block !important;
+  padding: 30px 14px !important;
+  border: 1px dashed var(--border) !important;
+  border-radius: 14px;
+  background: var(--surface) !important;
+  text-align: center !important;
+  color: var(--text-faint);
+  font-size: .84rem;
+}
+
+/* --- 3f. input di dalam kartu (qty, dsb) --- */
+html[data-view="cards"] table.data tbody td input[type="number"],
+html[data-view="cards"] table.data tbody td input[type="text"] { width: 100% !important; }
+html[data-view="cards"] table.data tbody td[data-sf-role="act"] input[type="number"] { width: 76px !important; }
+
+/* --- 3g. recon: matikan sticky action column --- */
+html[data-view="cards"] #recon-table.data th.t-right:last-child,
+html[data-view="cards"] #recon-table.data td.t-right:last-child {
+  position: static !important;
+  width: auto !important;
+  min-width: 0 !important;
+  padding: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  z-index: auto !important;
+  white-space: normal !important;
+}
+html[data-view="cards"] #recon-table.data td.t-right:last-child {
+  order: 50;
+  flex: 1 0 100%;
+  display: flex !important;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+  margin: 12px -16px 0 !important;
+  padding: 10px 16px !important;
+  border-top: 1px solid var(--border) !important;
+  background: color-mix(in srgb, var(--surface-2) 55%, var(--surface)) !important;
+}
+
+/* --------------------------------------------------------------------------
+   4. Kepadatan kartu per breakpoint
+   -------------------------------------------------------------------------- */
+@media (min-width: 768px) {
+  html[data-view="cards"] table.data tbody { grid-template-columns: repeat(auto-fill, minmax(330px, 1fr)); gap: 16px; }
+}
+@media (min-width: 1440px) {
+  html[data-view="cards"] table.data tbody { grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); }
+}
+@media (max-width: 420px) {
+  html[data-view="cards"] table.data tbody { grid-template-columns: 1fr; gap: 12px; }
+  html[data-view="cards"] table.data tbody tr { padding: 13px 14px 0 !important; }
+  html[data-view="cards"] td[data-sf-role="act"] { margin-left: -14px !important; margin-right: -14px !important; padding-left: 14px !important; padding-right: 14px !important; }
+  html[data-view="cards"] #recon-table.data td.t-right:last-child { margin-left: -14px !important; margin-right: -14px !important; }
+}
+
+/* --------------------------------------------------------------------------
+   5. Dark theme
+   -------------------------------------------------------------------------- */
+html[data-theme="dark"][data-view="cards"] table.data tbody tr,
+:root[data-theme="dark"] [data-view="cards"] table.data tbody tr {
+  box-shadow: 0 1px 2px rgba(0, 0, 0, .4), 0 16px 32px -26px rgba(0, 0, 0, .9) !important;
+}
+html[data-theme="dark"] .sf-vm { background: color-mix(in srgb, var(--surface) 90%, transparent); }
+
+/* --------------------------------------------------------------------------
+   6. Print
+   -------------------------------------------------------------------------- */
+@media print {
+  .sf-vm { display: none !important; }
+  html[data-view="cards"] table.data tbody { display: block !important; }
+  html[data-view="cards"] table.data tbody tr { break-inside: avoid; }
+}
+
+/* ===== ruang bawah supaya pill tidak menutupi kartu terakhir ===== */
+.sf-vm__spacer {
+  height: 88px;
+  width: 100%;
+  pointer-events: none;
+  clear: both;
+}
+@media (max-width: 767px) { .sf-vm__spacer { height: 150px; } }

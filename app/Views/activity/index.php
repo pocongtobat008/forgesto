@@ -23,7 +23,8 @@ $actionBadge = static fn (string $action): string => match ($action) {
 };
 $__actHasFilter = ! empty($filters['search']) || ! empty($filters['col']) || ! empty($filters['adv']);
 ?>
-<div class="page-head">
+<?= page_hero() ?>
+<div class="page-head has-hero">
     <div>
         <h1><?= __('Aktivitas') ?></h1>
         <p><?= __('Jejak seluruh aksi yang dilakukan di dalam aplikasi.') ?></p>

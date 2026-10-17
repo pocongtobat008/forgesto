@@ -16,7 +16,7 @@ use App\Core\Request;
 
 $path = trim(Request::path(), '/');
 
-$allNavPaths = ['dashboard', 'items', 'items/memo', 'items/memo_index', 'audit', 'tahun-buku', 'discrepancies', 'reconciliation', 'reconciliation/audit', 'notifications', 'master-data', 'groups', 'users', 'user-rules', 'warehouses', 'locations', 'devices', 'import', 'exports', 'activity', 'profile'];
+$allNavPaths = ['dashboard', 'progress', 'items', 'items/memo', 'items/memo_index', 'audit', 'tahun-buku', 'reports', 'discrepancies', 'reconciliation', 'reconciliation/audit', 'notifications', 'master-data', 'groups', 'users', 'user-rules', 'warehouses', 'locations', 'devices', 'import', 'exports', 'activity', 'profile'];
 $isActivePath = '';
 foreach ($allNavPaths as $cand) {
     $candTrim = trim($cand, '/');
@@ -86,6 +86,7 @@ if ($__bp) {
         // ----------------------------------------------------------------
         $opItems = [
             ['dashboard',     'dashboard', __('nav.dashboard'),   'dashboard'],
+            ['progress',      'progress',  __('nav.progress'), 'chart'],
             ['items',         'items',     __('nav.items'),    'package'],
             ['items/memo',   'items/memo', __('nav.memo'), 'file-text'],
         ];
@@ -94,6 +95,9 @@ if ($__bp) {
         }
         if (can('manage_data')) {
             $opItems[] = ['tahun-buku', 'tahun-buku', __('nav.book'), 'archive'];
+        }
+        if (function_exists('can_view_menu') && can_view_menu('reports')) {
+            $opItems[] = ['reports', 'reports', __('nav.reports'), 'chart'];
         }
         $opItems[] = ['discrepancies', 'discrepancies', __('nav.discrepancy'), 'trending-up', $openDiscrepancies];
         if (in_array(\App\Core\Auth::role(), ['poweradmin', 'adminsto'], true)) {

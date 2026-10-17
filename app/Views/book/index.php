@@ -28,7 +28,8 @@ $rentang = static fn (string $s, string $e): string => $tgl($s) . ' – ' . $tgl
 $statusLabel = $active === null ? 'Belum diatur' : ($isClosed ? __('Ditutup') : __('Berjalan'));
 $statusClass = $active === null ? '' : ($isClosed ? 'badge-danger' : 'badge-success');
 ?>
-<div class="page-head">
+<?= page_hero() ?>
+<div class="page-head has-hero">
     <div>
         <h1><?= __('Tahun Buku') ?></h1>
         <p>Atur periode stok opname, tutup buku, dan lihat selisih per group.</p>

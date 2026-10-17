@@ -10,7 +10,8 @@ $__devHasFilter = ! empty($filters['search']) || ! empty($filters['col']) || ! e
 $cfCol = $filters['col'] ?? [];
 $xfBtn = static fn (string $k, string $lbl): string => '<button type="button" class="xf-btn' . (! empty($cfCol[$k]) ? ' is-active' : '') . '" data-xf="' . $k . '" aria-label="' . e(__('Filter kolom :l', ['l' => __($lbl)])) . '" aria-haspopup aria-haspopup="dialog" title="Filter">' . icon('filter') . '</button>';
 ?>
-<div class="page-head">
+<?= page_hero() ?>
+<div class="page-head has-hero">
     <div>
         <h1><?= __('Device') ?></h1>
         <p><?= __('Perangkat yang terpasang di lokasi, seperti tablet lokasi.') ?></p>

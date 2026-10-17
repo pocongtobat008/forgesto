@@ -6,7 +6,8 @@
  * @var array $columns
  */
 ?>
-<div class="page-head">
+<?= page_hero() ?>
+<div class="page-head has-hero">
     <div>
         <h1><?= __('Import Data') ?></h1>
         <p>Unggah data dari Excel (.xlsx) atau CSV. Data baru ditambahkan, data lama diperbarui.</p>

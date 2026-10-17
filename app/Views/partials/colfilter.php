@@ -61,6 +61,8 @@ document.addEventListener('DOMContentLoaded', function () {
       html += '<label class="xf-opt' + (on ? ' is-on' : '') + '"><input type="checkbox" value="' + escHtml(v) + '"' + (on ? ' checked' : '') + '><span>' + escHtml(label) + '</span></label>';
     });
     list.innerHTML = shown ? html : '<div class="xf-loading">' + <?= json_encode(__('Tidak ada yang cocok.'), JSON_UNESCAPED_UNICODE) ?> + '</div>';
+    reposition();
+    setTimeout(reposition, 0);
   }
   function loadValues() {
     var qs = filterQueryExcept(current);
@@ -76,15 +78,53 @@ document.addEventListener('DOMContentLoaded', function () {
     title.textContent = 'Filter: ' + (LABELS[current] || current);
     q.value = '';
     list.innerHTML = '<div class="xf-loading">' + <?= json_encode(__('Memuat...'), JSON_UNESCAPED_UNICODE) ?> + '</div>';
-    var r = btn.getBoundingClientRect();
     pop.hidden = false;
-    var left = Math.min(r.left + window.scrollX, window.scrollX + document.documentElement.clientWidth - 300);
-    pop.style.left = Math.max(8, left) + 'px';
-    pop.style.top = (r.bottom + window.scrollY + 6) + 'px';
+    placePop(btn);
+    loadValues();
+    q.focus();
     loadValues();
     q.focus();
   }
   function close() { pop.hidden = true; current = null; }
+
+  // ---- Posisi popup filter: fixed + selalu menempel pada tombol ----
+  var popAnchor = null;
+  function placePop(btn) {
+    popAnchor = btn;
+    if (pop.parentElement !== document.body) { document.body.appendChild(pop); }
+    var r = btn.getBoundingClientRect();
+    var w = pop.offsetWidth || 280;
+    var h = pop.offsetHeight || 320;
+    var vw = document.documentElement.clientWidth || window.innerWidth;
+    var vh = window.innerHeight || document.documentElement.clientHeight;
+    var gap = 6, pad = 8;
+    var left = r.left;
+    if (left + w > vw - pad) { left = vw - pad - w; }
+    if (left < pad) { left = pad; }
+    // Pilih sisi (bawah/atas) yang muat, lalu batasi tinggi popup agar
+    // tidak menutupi tombol pemicu dan tidak keluar dari viewport.
+    var below = (vh - pad) - (r.bottom + gap);
+    var above = (r.top - gap) - pad;
+    var openUp = (below < Math.min(h, 260)) && (above > below);
+    var avail = Math.max(140, Math.min(h, openUp ? above : below));
+    pop.style.maxHeight = Math.round(avail) + "px";
+    pop.style.overflowY = "auto";
+    var top = openUp ? (r.top - gap - avail) : (r.bottom + gap);
+    if (top + avail > vh - pad) { top = Math.max(pad, vh - pad - avail); }
+    if (top < pad) { top = pad; }
+    pop.style.left = Math.round(left) + 'px';
+    pop.style.top = Math.round(top) + 'px';
+  }
+  function reposition() {
+    if (pop.hidden || !popAnchor) { return; }
+    var r = popAnchor.getBoundingClientRect();
+    var vh = window.innerHeight || document.documentElement.clientHeight;
+    // Tombol sudah keluar layar -> tutup saja, jangan menggantung di tengah.
+    if (r.bottom < 4 || r.top > vh - 4) { close(); return; }
+    placePop(popAnchor);
+  }
+  window.addEventListener('scroll', reposition, { passive: true });
+  window.addEventListener('resize', reposition);
   function apply() {
     f.querySelectorAll('input.col-hidden').forEach(function (i) { if (i.name.indexOf('col[' + current + ']') === 0) i.remove(); });
     picked.forEach(function (v) {

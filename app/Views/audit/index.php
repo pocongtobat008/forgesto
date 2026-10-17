@@ -22,7 +22,8 @@ foreach ($progress as $r) {
 }
 $groupCount = count($progress);
 ?>
-<div class="page-head">
+<?= page_hero() ?>
+<div class="page-head has-hero">
     <div>
         <h1><?= __('Audit') ?></h1>
         <p>Lakukan pengecekan minimal <?= (int) $minPercent ?>% data per group yang didelegasikan.</p>

@@ -460,6 +460,42 @@ class Item extends Model
      * @param array<string, mixed> $filters
      * @return array<string, int>
      */
+    /**
+     * Tren aktivitas harian: jumlah item dihitung & audit per hari.
+     */
+    public function activityTrend(int $days = 30): array
+    {
+        $days = max(7, min(90, $days));
+        $from = date("Y-m-d 00:00:00", strtotime("-" . ($days - 1) . " days"));
+
+        $counted = [];
+        foreach ($this->query(
+            "SELECT DATE(counted_at) AS d, COUNT(*) AS c FROM items WHERE counted_at >= ? GROUP BY DATE(counted_at)",
+            [$from]
+        ) as $row) {
+            $counted[(string) $row["d"]] = (int) $row["c"];
+        }
+
+        $audited = [];
+        foreach ($this->query(
+            "SELECT DATE(audited_at) AS d, COUNT(*) AS c FROM audits WHERE audited_at >= ? GROUP BY DATE(audited_at)",
+            [$from]
+        ) as $row) {
+            $audited[(string) $row["d"]] = (int) $row["c"];
+        }
+
+        $labels = $countedSeries = $auditedSeries = [];
+        for ($i = $days - 1; $i >= 0; $i--) {
+            $ts = strtotime("-" . $i . " days");
+            $key = date("Y-m-d", $ts);
+            $labels[]        = date("j M", $ts);
+            $countedSeries[] = $counted[$key] ?? 0;
+            $auditedSeries[] = $audited[$key] ?? 0;
+        }
+
+        return ["labels" => $labels, "counted" => $countedSeries, "audited" => $auditedSeries];
+    }
+
     public function summary(array $filters = []): array
     {
         [$where, $bindings] = $this->buildWhere($filters);

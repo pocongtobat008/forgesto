@@ -220,6 +220,7 @@ class ReconciliationController extends Controller
 
     public function show(array $params): string
     {
+        $this->requireReconAccess();
         if (! \App\Core\Auth::check()) {
             $this->abort(403, 'Tidak ada user aktif.');
         }
@@ -393,6 +394,7 @@ class ReconciliationController extends Controller
      */
     public function verify(array $params): string
     {
+        $this->requireReconAccess();
         $this->verifyCsrf();
         $this->guardOpenPeriod("/reconciliation");
 
@@ -675,6 +677,7 @@ class ReconciliationController extends Controller
 
     public function auditTrail(): string
     {
+        $this->requireReconAccess();
         if (! in_array(Auth::role(), ['poweradmin', 'adminsto'], true)) {
             $this->abort(403, 'Hanya Power Admin dan Admin STO yang dapat melihat audit rekonsiliasi.');
         }
@@ -884,6 +887,7 @@ class ReconciliationController extends Controller
      */
     public function sync(): string
     {
+        $this->requireReconAccess();
         $this->verifyCsrf();
 
         if (! in_array(Auth::role(), ['poweradmin', 'adminsto'], true)) {
@@ -908,10 +912,10 @@ class ReconciliationController extends Controller
     private function requireReconAccess(): void
     {
         if (! Auth::check()) { $this->abort(403, 'Tidak ada user aktif.'); }
-        if (function_exists('can_view_menu') && ! can_view_menu('reconciliation')) {
-            $this->abort(403, 'Anda tidak memiliki hak akses ke menu Rekonsiliasi.');
-        }
-        if (! in_array(Auth::role(), ['poweradmin', 'adminsto'], true) && ! (function_exists('can_view_menu') && can_view_menu('reconciliation'))) {
+
+        // Rule penting: halaman ini memuat qty stock & selisih.
+        // Hanya admin/poweradmin yang boleh melihatnya, terlepas dari user rule apa pun.
+        if (! in_array(Auth::role(), ['poweradmin', 'adminsto'], true)) {
             $this->abort(403, 'Rekonsiliasi hanya dapat diakses Power Admin dan Admin STO.');
         }
     }

@@ -88,7 +88,8 @@ $curAuditStatus = is_array($filters['audit_status'] ?? null)
     : (string) ($filters['audit_status'] ?? '');
 ?>
 
-<div class="page-head">
+<?= page_hero() ?>
+<div class="page-head has-hero">
     <div>
         <nav class="breadcrumb" aria-label="<?= __('Navigasi') ?>">
             <a href="<?= url('dashboard') ?>"><?= __('Beranda') ?></a>

@@ -40,6 +40,13 @@ class UserRule extends Model
             'route'   => 'dashboard',
             'columns' => [],
         ],
+        'progress' => [
+            'name'    => 'Progress',
+            'group'   => 'operasional',
+            'icon'    => 'chart',
+            'route'   => 'progress',
+            'columns' => [],
+        ],
         'items' => [
             'name'    => 'Data STO',
             'group'   => 'operasional',
@@ -100,6 +107,19 @@ class UserRule extends Model
                 'status'      => 'Status Periode',
                 'progress'    => 'Progress Rekonsiliasi',
                 'closed_at'   => 'Waktu Penutupan',
+            ],
+        ],
+        'reports' => [
+            'name'    => 'Report',
+            'group'   => 'operasional',
+            'icon'    => 'chart',
+            'route'   => 'reports',
+            'columns' => [
+                'audit_month' => 'Tahun Buku',
+                'status'      => 'Status Periode',
+                'diff_qty'    => 'Selisih Qty',
+                'diff_value'  => 'Nilai Selisih',
+                'diff_items'  => 'Item Berselisih',
             ],
         ],
         'discrepancies' => [
@@ -671,7 +691,7 @@ class UserRule extends Model
 
         if ($role === 'adminsto') {
             $adminMenus = [
-                'dashboard', 'items', 'items/memo', 'audit', 'tahun-buku', 'discrepancies',
+                'dashboard', 'progress', 'items', 'items/memo', 'audit', 'tahun-buku', 'reports', 'discrepancies',
                 'reconciliation', 'reconciliation/audit', 'notifications', 'master-data',
                 'groups', 'locations', 'devices', 'import', 'exports', 'activity', 'profile',
             ];
@@ -682,7 +702,7 @@ class UserRule extends Model
             $canPost = in_array($menuKey, ['items', 'items/memo', 'reconciliation'], true) ? 1 : 0;
             $canPicPost = in_array($menuKey, ['items', 'items/memo'], true) ? 1 : 0;
         } elseif ($role === 'audit') {
-            $auditMenus = ['dashboard', 'items', 'items/memo', 'audit', 'discrepancies', 'notifications', 'master-data', 'profile'];
+            $auditMenus = ['dashboard', 'progress', 'items', 'items/memo', 'audit', 'discrepancies', 'notifications', 'master-data', 'profile'];
             $canView = in_array($menuKey, $auditMenus, true) ? 1 : 0;
             $canAdd = in_array($menuKey, ['audit'], true) ? 1 : 0;
             $canEdit = in_array($menuKey, ['audit', 'discrepancies', 'profile'], true) ? 1 : 0;
@@ -690,7 +710,7 @@ class UserRule extends Model
                 $hiddenCols = '["expected"]';
             }
         } elseif ($role === 'observer') {
-            $observerMenus = ['dashboard', 'items', 'items/memo', 'discrepancies', 'notifications', 'master-data', 'profile'];
+            $observerMenus = ['dashboard', 'progress', 'items', 'items/memo', 'discrepancies', 'notifications', 'master-data', 'profile'];
             $canView = in_array($menuKey, $observerMenus, true) ? 1 : 0;
             $canEdit = in_array($menuKey, ['profile'], true) ? 1 : 0;
             $canPost = in_array($menuKey, ['items', 'items/memo'], true) ? 1 : 0;

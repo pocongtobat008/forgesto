@@ -51,7 +51,8 @@ $activeMeta = $mainRoles[$selectedRole] ?? $mainRoles['observer'];
 $activeCount = (int) ($countsMap[$selectedRole] ?? 0);
 ?>
 
-<div class="page-head" style="margin-bottom:1.25rem;">
+<?= page_hero() ?>
+<div class="page-head has-hero" style="margin-bottom:1.25rem;">
     <div>
         <div class="breadcrumbs" style="margin-bottom:.35rem;font-size:.825rem;color:var(--text-muted);">
             <a href="<?= url('dashboard') ?>"><?= __('nav.dashboard') ?></a> &rsaquo;

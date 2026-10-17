@@ -1,25 +1,32 @@
 <?php
 /**
- * Dashboard welcome hero — "Aurora Glass" signature panel.
- * Menyatukan: sapaan kontekstual (waktu), identitas, status periode, dan
- * pintasan aksi. Bukan duplikat kartu statistik: angka di sini ringkas,
- * aksi di sini nyata (tautan).
+ * Page hero — banner header untuk SEMUA menu.
+ *
+ * Satu komponen, dua mode:
+ *  1) Legacy dashboard: kirim $summary + $progress + $discrepancyCount
+ *     → chip & aksi dihitung otomatis dari data.
+ *  2) Menu lain: kirim $title + $tone + $art (+ $chips / $actions / $progress)
+ *     → dipakai lewat helper page_hero().
  *
  * @var array|null $user
- * @var array      $summary
- * @var array      $progress
- * @var int        $discrepancyCount
+ * @var string     $title
+ * @var string     $tone    kunci gradient (lihat css/hero-menu.css)
+ * @var string     $art     kunci ilustrasi  (lihat css/hero-menu.css)
+ * @var array|null $chips   [['icon'=>..,'text'=>..,'title'=>..], ...]
+ * @var array|null $actions [['icon'=>..,'label'=>..,'url'=>..], ...]
+ * @var array|null $progress ['pct'=>int,'text'=>string]  (opsional)
+ * @var array|null $summary (legacy)
+ * @var array|null $progressRows (legacy; nama lama $progress)
+ * @var int|null   $discrepancyCount (legacy)
  */
 $user = $user ?? auth();
 
-$hTotal    = (int) ($summary['total'] ?? 0);
-$hCounted  = (int) ($summary['counted'] ?? 0);
-$hAudited  = (int) ($summary['audited'] ?? 0);
-$hCountPct = percent($hCounted, $hTotal);
-$hGroupN   = is_array($progress) ? count($progress) : 0;
-$hDisc     = (int) ($discrepancyCount ?? 0);
-$hName     = (string) ($user['name'] ?? 'Pengguna');
-$hInitial  = strtoupper(mb_substr($hName, 0, 1));
+$heroTitle = (string) ($title ?? __('Dashboard'));
+$hTone     = (string) ($tone ?? 'violet');
+$hArt      = (string) ($art ?? 'dashboard');
+
+$hName    = (string) ($user['name'] ?? 'Pengguna');
+$hInitial = strtoupper(mb_substr($hName, 0, 1));
 
 // ---- Sapaan sesuai jam setempat (timezone aplikasi bila tersedia) ----
 $hHour = (int) date('G');
@@ -41,69 +48,138 @@ $hDowMap = ['Sunday' => 'Minggu', 'Monday' => 'Senin', 'Tuesday' => 'Selasa', 'W
             'Thursday' => 'Kamis', 'Friday' => 'Jumat', 'Saturday' => 'Sabtu'];
 $hMonMap = ['01' => 'Januari', '02' => 'Februari', '03' => 'Maret', '04' => 'April', '05' => 'Mei', '06' => 'Juni',
             '07' => 'Juli', '08' => 'Agustus', '09' => 'September', '10' => 'Oktober', '11' => 'November', '12' => 'Desember'];
-$hDate = date('Y-m-d');
 $hDateLabel = ($hDowMap[date('l')] ?? date('l')) . ', ' . (int) date('j') . ' ' . ($hMonMap[date('m')] ?? date('m')) . ' ' . date('Y');
 
 // ---- Gudang aktif ----
 $hWhName = '—';
+$hHasWh  = false;
 try {
     $hWh = \App\Core\Auth::activeWarehouse();
     $hWhName = (string) ($hWh['name'] ?? 'Semua Gudang');
-    if (! \App\Core\Auth::hasWarehouse()) { $hWhName = 'Semua Gudang'; }
+    $hHasWh  = (bool) \App\Core\Auth::hasWarehouse();
+    if (! $hHasWh) { $hWhName = 'Semua Gudang'; }
 } catch (\Throwable $e) {
     // Diamkan: hero tetap tampil tanpa nama gudang.
 }
 
-$hCanAudit = function_exists('can') ? can('audit_data') : false;
-?>
-<section class="sf-hero" id="sf-hero" aria-labelledby="sf-hero-name" data-sf-hero>
-    <!-- Wave: satu mesin terpadu di CSS (.sf-hero::after) — tile sinusoidal
-         seamless + overshoot tepi, jadi mustahil ada gap di ujung kartu. -->
+// ---------------------------------------------------------------------------
+// Mode legacy (dashboard): data ringkas → chip + aksi + progress bar.
+// ---------------------------------------------------------------------------
+$hSummary   = $summary ?? null;
+$hIsLegacy  = is_array($hSummary);
+$hChips     = [];
+$hActions   = [];
+$hProgress  = null;
 
+if ($hIsLegacy) {
+    $hTotal    = (int) ($hSummary['total'] ?? 0);
+    $hCounted  = (int) ($hSummary['counted'] ?? 0);
+    $hCountPct = percent($hCounted, $hTotal);
+    $hGroupN   = is_array($progress ?? null) ? count($progress) : 0;
+    $hDisc     = (int) ($discrepancyCount ?? 0);
+    $hCanAudit = function_exists('can') ? can('audit_data') : false;
+
+    $hChips = [
+        ['icon' => 'layers', 'text' => (int) $hGroupN . ' group'],
+        ['icon' => 'trending-up', 'text' => (int) $hCountPct . '% dihitung', 'title' => __('Persentase item sudah dihitung')],
+    ];
+    if ($hDisc > 0) {
+        $hChips[] = ['icon' => 'alert-circle', 'text' => (int) $hDisc . ' selisih terbuka'];
+    }
+
+    $hActions = [['icon' => 'package', 'label' => __('Buka Data STO'), 'url' => 'items']];
+    if ($hCanAudit) {
+        $hActions[] = ['icon' => 'clipboard-check', 'label' => __('Mulai Audit'), 'url' => 'audit'];
+    }
+    $hActions[] = ['icon' => 'trending-up', 'label' => __('Lihat Selisih'), 'url' => 'discrepancies'];
+
+    $hProgress = ['pct' => (int) $hCountPct, 'text' => (int) $hCounted . '/' . (int) $hTotal . ' item'];
+} else {
+    foreach ((array) ($chips ?? []) as $c) {
+        if (! empty($c['text'])) { $hChips[] = $c; }
+    }
+    foreach ((array) ($actions ?? []) as $a) {
+        if (empty($a['label']) || empty($a['url'])) { continue; }
+        if (isset($a['can']) && function_exists('can') && ! can((string) $a['can'])) { continue; }
+        $hActions[] = $a;
+    }
+    $pg = $progress ?? null;
+    if (is_array($pg) && isset($pg['pct'])) {
+        $hProgress = $pg;
+    }
+}
+
+// Chip konteks periode + gudang (selalu ada, apa pun menunya)
+$hCtxChips = [];
+try {
+    $hPeriode = (new \App\Models\AuditPeriod())->active();
+    if (is_array($hPeriode) && ! empty($hPeriode['audit_month'])) {
+        $hCtxChips[] = ['icon' => 'clock', 'text' => (string) $hPeriode['audit_month'], 'title' => __('Periode aktif')];
+    }
+} catch (\Throwable $e) {
+    // Tanpa periode: chip dilewati.
+}
+if ($hHasWh) {
+    $hCtxChips[] = ['icon' => 'building', 'text' => $hWhName, 'title' => __('Gudang aktif')];
+}
+?>
+<section class="sf-hero" id="sf-hero" aria-labelledby="sf-hero-name" data-sf-hero
+         data-tone="<?= e($hTone) ?>" data-art="<?= e($hArt) ?>">
     <div class="sf-hero-top">
         <div class="sf-hero-id">
             <span class="sf-hero-avatar" aria-hidden="true"><?= e($hInitial) ?></span>
             <div class="sf-hero-copy">
-                <span class="sf-hero-eyebrow"><?= icon($hGreetIco) ?> <?= e($hGreet) ?></span>
-                <h2 class="sf-hero-name" id="sf-hero-name"><?= e($hName) ?></h2>
+                <span class="sf-hero-eyebrow"><?= icon($hGreetIco) ?> <?= e($hGreet) ?> &middot; <?= e($hName) ?></span>
+                <h1 class="sf-hero-name" id="sf-hero-name"><?= e($heroTitle) ?></h1>
                 <p class="sf-hero-sub"><?= e($hDateLabel) ?> &middot; <?= e(role_label($user['role'] ?? null)) ?> &middot; <?= e($hWhName) ?></p>
             </div>
         </div>
 
+        <?php if ($hChips !== [] || $hCtxChips !== []): ?>
         <div class="sf-hero-chips">
-            <span class="sf-hero-chip">
-                <span class="sf-hero-chip-ico" aria-hidden="true"><?= icon('layers') ?></span>
-                <?= (int) $hGroupN ?> group
-            </span>
-            <span class="sf-hero-chip" title="<?= e(__('Persentase item sudah dihitung')) ?>">
-                <span class="sf-hero-chip-ico" aria-hidden="true"><?= icon('trending-up') ?></span>
-                <?= (int) $hCountPct ?>% dihitung
-            </span>
-            <?php if ($hDisc > 0): ?>
-                <span class="sf-hero-chip">
-                    <span class="sf-hero-chip-ico" aria-hidden="true"><?= icon('alert-circle') ?></span>
-                    <?= (int) $hDisc ?> selisih terbuka
+            <?php foreach ($hCtxChips as $c): ?>
+                <span class="sf-hero-chip"<?= ! empty($c['title']) ? ' title="' . e($c['title']) . '"' : '' ?>>
+                    <span class="sf-hero-chip-ico" aria-hidden="true"><?= icon($c['icon'] ?? 'info') ?></span>
+                    <?= e($c['text']) ?>
                 </span>
-            <?php endif; ?>
+            <?php endforeach; ?>
+            <?php foreach ($hChips as $c): ?>
+                <span class="sf-hero-chip"<?= ! empty($c['title']) ? ' title="' . e($c['title']) . '"' : '' ?>>
+                    <span class="sf-hero-chip-ico" aria-hidden="true"><?= icon($c['icon'] ?? 'info') ?></span>
+                    <?= e($c['text']) ?>
+                </span>
+            <?php endforeach; ?>
         </div>
+        <?php endif; ?>
     </div>
 
+    <?php if ($hActions !== [] || $hProgress !== null): ?>
     <div class="sf-hero-actions">
-        <a class="sf-hero-action" href="<?= url('items') ?>">
-            <?= icon('package') ?> <span><?= __('Buka Data STO') ?></span>
-        </a>
-        <?php if ($hCanAudit): ?>
-            <a class="sf-hero-action" href="<?= url('audit') ?>">
-                <?= icon('clipboard-check') ?> <span><?= __('Mulai Audit') ?></span>
+        <?php foreach ($hActions as $a):
+            $href = (string) $a['url'];
+            if (! preg_match('~^(https?:)?//~', $href) && $href !== '' && $href[0] !== '/') {
+                $href = url($href);
+            }
+        ?>
+            <a class="sf-hero-action" href="<?= e($href) ?>">
+                <?= icon($a['icon'] ?? 'chev-right') ?> <span><?= e($a['label']) ?></span>
             </a>
+        <?php endforeach; ?>
+
+        <?php if ($hProgress !== null): ?>
+            <span class="sf-hero-progress" role="progressbar" aria-valuenow="<?= (int) $hProgress['pct'] ?>" aria-valuemin="0" aria-valuemax="100"
+                  aria-label="<?= e(__('Progres penghitungan')) ?>">
+                <span class="sf-hero-progress-bar"><i style="width: <?= (int) $hProgress['pct'] ?>%"></i></span>
+                <span class="sf-hero-progress-txt"><?= e((string) ($hProgress['text'] ?? '')) ?></span>
+            </span>
         <?php endif; ?>
-        <a class="sf-hero-action" href="<?= url('discrepancies') ?>">
-            <?= icon('trending-up') ?> <span><?= __('Lihat Selisih') ?></span>
-        </a>
-        <span class="sf-hero-progress" role="progressbar" aria-valuenow="<?= (int) $hCountPct ?>" aria-valuemin="0" aria-valuemax="100"
-              aria-label="<?= e(__('Progres penghitungan')) ?>">
-            <span class="sf-hero-progress-bar"><i style="width: <?= (int) $hCountPct ?>%"></i></span>
-            <span class="sf-hero-progress-txt"><?= (int) $hCounted ?>/<?= (int) $hTotal ?> item</span>
-        </span>
     </div>
+    <?php endif; ?>
+
+    <!-- Wave berlapis: kaki header menyatu dengan kanvas -->
+    <svg class="sf-hero-wave" viewBox="0 0 1440 120" preserveAspectRatio="none" aria-hidden="true" focusable="false">
+        <path class="sf-hw1" d="M0,98 C160,72 400,102 620,82 C840,62 1040,96 1240,78 C1330,70 1390,66 1440,72 L1440,120 L0,120 Z"/>
+        <path class="sf-hw2" d="M0,70 C200,96 380,44 560,64 C740,84 920,112 1100,86 C1280,60 1360,44 1440,62 L1440,120 L0,120 Z"/>
+        <path class="sf-hw3" d="M0,86 C180,52 360,110 540,88 C720,66 900,26 1080,54 C1260,82 1350,104 1440,84 L1440,120 L0,120 Z"/>
+    </svg>
 </section>

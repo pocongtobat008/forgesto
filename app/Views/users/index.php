@@ -13,7 +13,8 @@ $roleBadge = static fn (string $role): string => match ($role) {
     default      => 'badge-success',
 };
 ?>
-<div class="page-head">
+<?= page_hero() ?>
+<div class="page-head has-hero">
     <div>
         <h1><?= __('User &amp; Role') ?></h1>
         <p>Power Admin mengelola semua user, role akses, dan delegasi group.</p>

@@ -33,6 +33,10 @@ use App\Controllers\WarehouseController;
 $router->get('/', 'DashboardController@index');
 $router->get('/dashboard', 'DashboardController@index');
 
+// Progress — progres penghitungan & audit per group
+$router->get('/progress', 'ProgressController@index');
+$router->get('/progress/group/{id}', 'ProgressController@group');
+
 /*
 |--------------------------------------------------------------------------
 | Warehouses (Gudang / Situs)
@@ -201,6 +205,15 @@ $router->post('/tahun-buku/hapus/{id}', 'BookYearController@deleteExecute');
 
 /*
 |--------------------------------------------------------------------------
+| Report tahun buku (hasil per periode + versus)
+|--------------------------------------------------------------------------
+*/
+$router->get('/reports', 'ReportController@index');
+$router->get('/reports/{id}/export', 'ReportController@export');
+$router->get('/reports/{id}', 'ReportController@detail');
+
+/*
+|--------------------------------------------------------------------------
 | Discrepancies
 |--------------------------------------------------------------------------
 */
@@ -271,3 +284,4 @@ $router->get('/activity', 'ActivityController@index');
 $router->get('/activity/distinct', 'ActivityController@distinct');
 $router->get('/profile', 'ProfileController@index');
 $router->post('/profile/switch', 'ProfileController@switch');
+$router->get("/api/spotlight", "SpotlightController@index");

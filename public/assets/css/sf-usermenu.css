@@ -1,0 +1,233 @@
+/* ==========================================================================
+   sf-usermenu.css — panel "menu pengguna" (topbar) harus TERLIHAT JELAS
+   Dimuat PALING AKHIR (setelah sf-glass.css & flat-material.css).
+
+   MASALAH
+   .dropdown-menu ikut treatment kaca dari sf-glass.css:
+       background: rgba(255,255,255,.74) + backdrop-filter: blur(12px)
+       border: 1px solid rgba(255,255,255,.72)   <-- border putih di atas putih
+   Di atas latar yang diredupkan (scrim), panel 74% putih + blur + border putih
+   terbaca sebagai kotak abu-abu pucat tanpa tepi -> "dropdown tidak terlihat".
+   Ditambah lagi baris menu hanya 13px dan tanpa target sentuh yang layak.
+
+   PERBAIKAN
+   1. Panel solid (bukan kaca) + border abu terang + bayangan berlapis.
+   2. Baris menu 44px (target sentuh), teks 14px, ikon berwarna jelas.
+   3. Judul grup (AKUN / BAHASA) lebih tegas, pemisah lebih kelihatan.
+   4. Pilihan bahasa aktif = pill biru + tanda centang (state jelas).
+   5. Varian dark theme.
+   ========================================================================== */
+
+/* ---------- 1. Panel ---------------------------------------------------- */
+.dropdown .dropdown-menu {
+    background: #ffffff !important;
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+    border: 1px solid #d7dee8 !important;
+    border-radius: 14px !important;
+    padding: 6px !important;
+    box-shadow:
+        0 1px 0 0 rgba(255, 255, 255, .9) inset,
+        0 0 0 1px rgba(15, 23, 42, .03),
+        0 6px 14px -6px rgba(15, 23, 42, .16),
+        0 20px 44px -16px rgba(15, 23, 42, .30) !important;
+    color: #0f172a !important;
+    z-index: 1300 !important;
+}
+
+/* lebar khusus panel di topbar (jangan paksa menu lain jadi lebar) */
+.topbar .dropdown .dropdown-menu {
+    min-width: 272px !important;
+}
+
+/* ---------- 2. Kepala akun --------------------------------------------- */
+.dropdown .dropdown-head {
+    padding: 10px 12px !important;
+    margin: 0 0 4px !important;
+    border: 1px solid #e6ecf3 !important;
+    border-radius: 10px !important;
+    background: #f6f8fb !important;
+}
+.dropdown .dh-name {
+    font-size: 15px !important;
+    font-weight: 750 !important;
+    line-height: 1.25 !important;
+    color: #0b1220 !important;
+    letter-spacing: -.01em;
+}
+.dropdown .dh-meta {
+    margin-top: 2px;
+    font-size: 12px !important;
+    font-weight: 600 !important;
+    color: #5b6b82 !important;
+}
+
+/* ---------- 3. Judul grup & pemisah ------------------------------------ */
+.dropdown .dropdown-group-title {
+    padding: 8px 12px 4px !important;
+    font-size: 10.5px !important;
+    font-weight: 800 !important;
+    letter-spacing: .09em !important;
+    text-transform: uppercase !important;
+    color: #64748b !important;
+}
+.dropdown .dropdown-sep {
+    height: 1px !important;
+    margin: 6px 6px !important;
+    background: #e9eef5 !important;
+    border: 0 !important;
+}
+
+/* ---------- 4. Baris menu ---------------------------------------------- */
+.dropdown .dropdown-item {
+    display: flex !important;
+    align-items: center !important;
+    gap: 10px !important;
+    min-height: 44px !important;
+    padding: 0 10px !important;
+    border-radius: 10px !important;
+    font-size: 14px !important;
+    font-weight: 650 !important;
+    line-height: 1.2 !important;
+    color: #0f172a !important;
+    text-decoration: none !important;
+    transition: background .12s ease, color .12s ease !important;
+}
+.dropdown .dropdown-item-ico {
+    display: grid !important;
+    place-items: center !important;
+    width: 30px !important;
+    height: 30px !important;
+    flex: 0 0 30px !important;
+    border-radius: 9px !important;
+    background: #eef2f8 !important;
+    color: #334155 !important;
+}
+.dropdown .dropdown-item-ico svg { width: 17px !important; height: 17px !important; }
+.dropdown .dropdown-item:hover,
+.dropdown .dropdown-item:focus-visible {
+    background: #eef2f8 !important;
+    color: #0b1220 !important;
+    outline: none !important;
+}
+.dropdown .dropdown-item:hover .dropdown-item-ico { background: #e2e8f2 !important; }
+
+/* tombol keluar */
+.dropdown .dropdown-item-danger {
+    color: #b42318 !important;
+}
+.dropdown .dropdown-item-danger .dropdown-item-ico {
+    background: #fef3f2 !important;
+    color: #b42318 !important;
+}
+.dropdown .dropdown-item-danger:hover {
+    background: #fef3f2 !important;
+    color: #912018 !important;
+}
+
+/* ---------- 5. Pemilih bahasa ----------------------------------------- */
+.dropdown .dropdown-lang {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 4px !important;
+    padding: 0 4px 2px !important;
+}
+.dropdown .dropdown-lang-opt {
+    display: flex !important;
+    align-items: center !important;
+    gap: 10px !important;
+    min-height: 42px !important;
+    padding: 0 10px !important;
+    border: 1px solid transparent !important;
+    border-radius: 10px !important;
+    font-size: 13.5px !important;
+    font-weight: 650 !important;
+    color: #1e293b !important;
+    text-decoration: none !important;
+    transition: background .12s ease, border-color .12s ease, color .12s ease !important;
+}
+.dropdown .lang-code {
+    display: inline-grid !important;
+    place-items: center !important;
+    min-width: 30px !important;
+    height: 22px !important;
+    padding: 0 6px !important;
+    border-radius: 6px !important;
+    background: #eef2f8 !important;
+    color: #334155 !important;
+    font-size: 11px !important;
+    font-weight: 800 !important;
+    letter-spacing: .04em !important;
+}
+.dropdown .lang-name { flex: 1 1 auto !important; }
+.dropdown .dropdown-lang-check {
+    display: none !important;
+    width: 18px !important;
+    height: 18px !important;
+    color: #1d4ed8 !important;
+}
+.dropdown .dropdown-lang-check svg { width: 18px !important; height: 18px !important; }
+
+.dropdown .dropdown-lang-opt:hover { background: #eef2f8 !important; }
+.dropdown .dropdown-lang-opt.is-active {
+    background: #eff6ff !important;
+    border-color: #bfdbfe !important;
+    color: #1d4ed8 !important;
+}
+.dropdown .dropdown-lang-opt.is-active .lang-code {
+    background: #1d4ed8 !important;
+    color: #ffffff !important;
+}
+.dropdown .dropdown-lang-opt.is-active .dropdown-lang-check { display: block !important; }
+
+/* ---------- 6. Dark theme --------------------------------------------- */
+[data-theme="dark"] .dropdown .dropdown-menu {
+    background: #131a24 !important;
+    border-color: #2a3547 !important;
+    color: #e7edf6 !important;
+    box-shadow:
+        0 0 0 1px rgba(255, 255, 255, .04),
+        0 6px 14px -6px rgba(0, 0, 0, .6),
+        0 22px 46px -18px rgba(0, 0, 0, .85) !important;
+}
+[data-theme="dark"] .dropdown .dropdown-head {
+    background: #182231 !important;
+    border-color: #26324a !important;
+}
+[data-theme="dark"] .dropdown .dh-name { color: #f1f5f9 !important; }
+[data-theme="dark"] .dropdown .dh-meta { color: #93a4bd !important; }
+[data-theme="dark"] .dropdown .dropdown-group-title { color: #8ba0bb !important; }
+[data-theme="dark"] .dropdown .dropdown-sep { background: #24304a !important; }
+[data-theme="dark"] .dropdown .dropdown-item { color: #e7edf6 !important; }
+[data-theme="dark"] .dropdown .dropdown-item-ico { background: #1d2837 !important; color: #a9bcd6 !important; }
+[data-theme="dark"] .dropdown .dropdown-item:hover,
+[data-theme="dark"] .dropdown .dropdown-item:focus-visible { background: #1d2837 !important; }
+[data-theme="dark"] .dropdown .dropdown-item-danger { color: #ff8f85 !important; }
+[data-theme="dark"] .dropdown .dropdown-item-danger .dropdown-item-ico { background: rgba(239, 68, 68, .14) !important; color: #ff8f85 !important; }
+[data-theme="dark"] .dropdown .dropdown-item-danger:hover { background: rgba(239, 68, 68, .14) !important; }
+[data-theme="dark"] .dropdown .lang-code { background: #1d2837 !important; color: #a9bcd6 !important; }
+[data-theme="dark"] .dropdown .dropdown-lang-opt { color: #dbe6f5 !important; }
+[data-theme="dark"] .dropdown .dropdown-lang-opt:hover { background: #1d2837 !important; }
+[data-theme="dark"] .dropdown .dropdown-lang-opt.is-active {
+    background: rgba(59, 130, 246, .16) !important;
+    border-color: rgba(96, 165, 250, .45) !important;
+    color: #93c5fd !important;
+}
+[data-theme="dark"] .dropdown .dropdown-lang-opt.is-active .lang-code { background: #2563eb !important; color: #fff !important; }
+[data-theme="dark"] .dropdown .dropdown-lang-check { color: #93c5fd !important; }
+
+/* ---------- 7. Mobile: panel lebih lega & jelas ----------------------- */
+@media (max-width: 767px) {
+    .topbar .dropdown .dropdown-menu {
+        width: min(320px, calc(100vw - 16px)) !important;
+        min-width: 0 !important;
+        padding: 6px !important;
+        /* di atas scrim gelap: beri cincin tipis supaya tepi panel tegas */
+        box-shadow:
+            0 0 0 1px rgba(15, 23, 42, .06),
+            0 10px 24px -8px rgba(15, 23, 42, .35),
+            0 26px 50px -20px rgba(15, 23, 42, .45) !important;
+    }
+    .dropdown .dropdown-item { min-height: 46px !important; font-size: 14.5px !important; }
+    .dropdown .dropdown-lang-opt { min-height: 44px !important; }
+}
