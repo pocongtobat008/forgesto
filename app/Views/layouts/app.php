@@ -57,6 +57,8 @@ $pageTitle = $title ?? 'Dashboard';
     <link rel="stylesheet" href="<?= asset_v('css/sf-usermenu.css') ?>">
     <link rel="stylesheet" href="<?= asset_v('css/sf-rowdetail.css') ?>">
     <link rel="stylesheet" href="<?= asset_v('css/sf-tables.css') ?>">
+    <!-- A11y & Polish Layer - WAJIB paling akhir (menang atas semua lapisan) -->
+    <link rel="stylesheet" href="<?= asset_v('css/a11y-fixes.css') ?>">
     <script>try{var __v=localStorage.getItem('sf:viewmode'),__q=new URLSearchParams(location.search).get('view');if(__q==='cards'||__q==='table'||__q==='auto')__v=__q;if(__v==='cards'||__v==='table')document.documentElement.setAttribute('data-view',__v);}catch(e){}</script>
     <?= $headExtra ?? '' ?>
 
@@ -85,6 +87,8 @@ $pageTitle = $title ?? 'Dashboard';
     data-pic-groups="<?= e(implode(',', array_map('intval', $picGroups ?? []))) ?>"
     data-active-group="<?= isset($activeGroup) && $activeGroup !== null ? (int) $activeGroup : '' ?>"
     data-group-pending="<?= (int) ($groupPending ?? 0) ?>">
+
+    <a class="sf-skip-link" href="#main-content">Lewati ke konten utama</a>
 
     <!-- Layer 0: ambient Aurora Glass + wave (dekoratif, tidak diakses AT) -->
     <div class="sf-aurora" aria-hidden="true">
@@ -116,7 +120,7 @@ $pageTitle = $title ?? 'Dashboard';
             <div class="sidebar-backdrop" data-sidebar-backdrop></div>
 
             <div class="main">
-                <main class="content">
+                <main class="content" id="main-content" tabindex="-1">
                     <?= View::partial('partials/flash') ?>
                     <?php
                     $__bp = $activeBookPeriod ?? null;

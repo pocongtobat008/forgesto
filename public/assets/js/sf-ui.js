@@ -240,6 +240,18 @@
             var panel = doc.createElement('div');
             panel.className = 'sf-select-panel';
             panel.setAttribute('role', 'listbox');
+            // Nama aksesibel untuk listbox: aria-label select -> <label for> -> opsi pertama
+            var __selName = (sel.getAttribute('aria-label') || sel.getAttribute('data-label') || '').trim();
+            if (!__selName && sel.id) {
+                var __lbl = doc.querySelector('label[for="' + sel.id + '"]');
+                if (__lbl) __selName = (__lbl.textContent || '').trim();
+            }
+            if (!__selName && sel.options && sel.options.length) {
+                __selName = (sel.options[0].textContent || '').trim();
+            }
+            if (!__selName) __selName = 'Pilihan';
+            panel.setAttribute('aria-label', __selName);
+            trigger.setAttribute('aria-label', __selName);
 
             sel.parentNode.insertBefore(wrap, sel);
             wrap.appendChild(sel);

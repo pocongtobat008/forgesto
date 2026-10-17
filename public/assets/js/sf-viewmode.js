@@ -160,7 +160,7 @@
   function buildControl() {
     ctrl = document.createElement('div');
     ctrl.className = 'sf-vm';
-    ctrl.setAttribute('role', 'group');
+    ctrl.setAttribute('role', 'region');
     ctrl.setAttribute('aria-label', 'Tampilan tabel');
 
     var lbl = document.createElement('span');

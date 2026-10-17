@@ -137,7 +137,12 @@
 
     function applyTheme(theme) {
         root.setAttribute('data-theme', theme);
-        store('stockforge-theme', theme);
+        // Kanonik: 'sf-theme' (dibaca layout saat boot + theme-toggle.js).
+        // Kunci lama 'stockforge-theme' dibersihkan agar tidak ada dua sumber kebenaran.
+        try {
+            localStorage.setItem('sf-theme', theme);
+            localStorage.removeItem('stockforge-theme');
+        } catch (e) { store('stockforge-theme', theme); }
         themeToggles.forEach(function (btn) {
             btn.setAttribute('aria-label', theme === 'dark' ? 'Mode terang' : 'Mode gelap');
             var sun = $('.icon-sun', btn), moon = $('.icon-moon', btn);
@@ -147,6 +152,18 @@
             }
         });
     }
+
+    // Migrasi kunci tema lama -> kanonik (sekali jalan, level modul)
+    try {
+        if (!localStorage.getItem('sf-theme')) {
+            var __legacy = localStorage.getItem('stockforge-theme');
+            if (__legacy === 'dark' || __legacy === 'light') {
+                localStorage.setItem('sf-theme', __legacy);
+                root.setAttribute('data-theme', __legacy);
+                localStorage.removeItem('stockforge-theme');
+            }
+        }
+    } catch (e) {}
     themeToggles.forEach(function (btn) {
         btn.addEventListener('click', function () {
             applyTheme(root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');

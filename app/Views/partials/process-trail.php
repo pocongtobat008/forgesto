@@ -38,9 +38,9 @@ $__trailUser = static function (array $r): string {
 ?>
 <section class="card process-trail mt-2" id="process-trail">
     <div class="card-toolbar" style="display:flex;align-items:center;gap:.6rem;flex-wrap:wrap;padding:.85rem 1.15rem;border-bottom:1px solid var(--border);">
-        <h3 style="font-size:1rem;font-weight:700;margin:0;display:flex;align-items:center;gap:.5rem;">
+        <h2 style="font-size:1rem;font-weight:700;margin:0;display:flex;align-items:center;gap:.5rem;">
             <?= icon('activity') ?> <?= __('Jejak Proses') ?>
-        </h3>
+        </h2>
         <span class="badge badge-subtle trail-scope"><?= icon('users') ?> <?= __('per Group & Petugas') ?></span>
         <div class="spacer" style="margin-left:auto;"></div>
         <span class="text-sm faint"><?= (int) count($trail) ?> <?= __('aktivitas terakhir') ?></span>

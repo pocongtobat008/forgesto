@@ -285,17 +285,17 @@ $canSeeAmt = can_see_stock_qty();
             <input type="text" id="sf-summary-search" class="sf-summary-search-input" placeholder="<?= __('Cari nama atau kode group...') ?>" autocomplete="off" aria-label="<?= __('Filter nama group') ?>" style="padding-left: 2.5rem !important;">
         </div>
 
-        <div class="sf-summary-chips" role="tablist" aria-label="<?= __('Filter kondisi selisih') ?>">
-            <button type="button" class="sf-summary-chip is-active" data-filter="all">
+        <div class="sf-summary-chips" role="group" aria-label="<?= __('Filter kondisi selisih') ?>">
+            <button type="button" class="sf-summary-chip is-active" data-filter="all" aria-pressed="true">
                 <?= __('Semua') ?> <span class="chip-count"><?= count($progress) ?></span>
             </button>
-            <button type="button" class="sf-summary-chip" data-filter="diff">
+            <button type="button" class="sf-summary-chip" data-filter="diff" aria-pressed="false">
                 <?= __('Ada Selisih') ?> <span class="chip-count"><?= (int) $summaryWithDiffCount ?></span>
             </button>
-            <button type="button" class="sf-summary-chip" data-filter="deficit">
+            <button type="button" class="sf-summary-chip" data-filter="deficit" aria-pressed="false">
                 <?= __('Defisit (-)') ?> <span class="chip-count"><?= (int) $summaryDeficitCount ?></span>
             </button>
-            <button type="button" class="sf-summary-chip" data-filter="surplus">
+            <button type="button" class="sf-summary-chip" data-filter="surplus" aria-pressed="false">
                 <?= __('Surplus (+)') ?> <span class="chip-count"><?= (int) $summarySurplusCount ?></span>
             </button>
             <?php if ($summaryRecountGroupCount > 0): ?>
@@ -538,8 +538,9 @@ $canSeeAmt = can_see_stock_qty();
 
     filterChips.forEach(function(chip) {
         chip.addEventListener('click', function() {
-            filterChips.forEach(function(c) { c.classList.remove('is-active'); });
+            filterChips.forEach(function(c) { c.classList.remove('is-active'); c.setAttribute('aria-pressed', 'false'); });
             this.classList.add('is-active');
+            this.setAttribute('aria-pressed', 'true');
             activeFilter = this.getAttribute('data-filter') || 'all';
             updateView();
         });

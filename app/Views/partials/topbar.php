@@ -92,7 +92,7 @@ if ($bp) {
     <!-- Header Actions (Clean & Minimalist: Notifications + User Profile) -->
     <div class="topbar-actions">
         <!-- Hidden button hook for programmatic [data-scan-open] calls -->
-        <button type="button" id="global-scan-trigger" data-scan-open class="sr-only" style="display:none;" aria-hidden="true"></button>
+        <span id="global-scan-trigger" data-scan-open class="sr-only" style="display:none;" aria-hidden="true"></span>
 
         <!-- Warehouse Selector -->
         <div class="wh-slot">
