@@ -24,6 +24,7 @@ $pageTitle = $title ?? 'StockForge';
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Google+Sans+Flex:wght@400..800&display=swap">
     <link rel="stylesheet" href="<?= asset_v('css/app.css') ?>">
     <link rel="stylesheet" href="<?= asset_v('css/sf-ui.css') ?>">
+    <link rel="stylesheet" href="<?= asset_v('css/flat-material.css') ?>">
     <link rel="stylesheet" href="<?= asset_v('css/sf-auth.css') ?>">
     <?= $headExtra ?? '' ?>
 

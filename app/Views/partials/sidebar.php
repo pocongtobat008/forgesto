@@ -63,7 +63,6 @@ if ($__bp) {
         </a>
         <div class="brand-text">
             <strong><?= e(config('app.name')) ?></strong>
-            <span><?= e(config('app.company')) ?></span>
         </div>
         <a href="<?= url('tahun-buku') ?>"
            class="sf-year-badge <?= $__bpClosed ? 'is-closed' : 'is-open' ?>"

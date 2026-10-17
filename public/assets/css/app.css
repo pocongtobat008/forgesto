@@ -4605,7 +4605,7 @@ table.data td[data-label="STO"] { min-width: 120px; }
 .topbar-actions .wh-switch .sf-select-trigger:focus-visible { outline: 2px solid var(--brand-600); outline-offset: 2px; box-shadow: none; }
 .topbar-actions .wh-switch .sf-select-label { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .topbar-actions .wh-switch .sf-select-chev { flex: 0 0 auto; }
-.topbar-actions .wh-switch .sf-select-panel { min-width: 190px; right: auto; left: 0; top: calc(100% + 6px); z-index: 60; }
+.topbar-actions .wh-switch .sf-select-panel { min-width: 190px; right: 0; left: auto; top: calc(100% + 6px); z-index: 60; }
 .topbar-actions .wh-switch-go { flex: 0 0 auto; width: 26px; height: 26px; min-height: 26px; }
 .topbar-actions .wh-switch-ico { flex: 0 0 auto; }
 /* tablet landscape / portrait (sidebar open): cap pill so the cluster always fits */
@@ -4680,11 +4680,13 @@ td.mono.tabular, .mono.tabular { white-space: nowrap; }
 @media (max-width: 767px) { .topbar-actions .wh-switch-go { width: 44px; height: 44px; min-width: 44px; min-height: 44px; } }
 
 /* ---- PATCH: dropdown Gudang tidak bisa diklik (panel terpotong & kalah z-index) ---- */
-.topbar-actions .wh-switch-text { overflow: visible; }
-.topbar-actions .wh-switch .sf-select { position: static; }
+.topbar-actions .wh-switch-inner { overflow: visible; }
+.topbar-actions .wh-switch .sf-select { position: relative; }
 .topbar-actions .wh-switch .sf-select-panel {
-  position: fixed; z-index: 1000; top: auto; left: auto;
-  min-width: 190px; max-height: 60vh; overflow-y: auto;
+  position: absolute; z-index: 1000; top: calc(100% + 8px) !important;
+  right: 0 !important; left: auto !important;
+  min-width: 190px; max-width: min(280px, calc(100vw - 1.5rem));
+  max-height: 60vh; overflow-y: auto;
 }
 .topbar-actions .wh-switch .sf-select.is-open .sf-select-panel { pointer-events: auto; }
 
@@ -5025,7 +5027,7 @@ body.sf-colresizing, body.sf-colresizing * { cursor: col-resize !important; user
   background:var(--surface, #fff); color:var(--text); text-decoration:none; font-variant-numeric:tabular-nums; font-size:.88rem;
 }
 a.recon-pg-btn:hover { border-color:var(--brand-500); color:var(--brand-600); }
-.recon-pg-btn.is-current { background:var(--brand-500); border-color:var(--brand-500); color:var(--accent-ink, #1a1108); font-weight:700; }
+.recon-pg-btn.is-current { background:#2563eb; border-color:#1d4ed8; color:#ffffff !important; font-weight:700; }
 .recon-pg-btn.is-disabled { opacity:.4; }
 .recon-pg-gap { min-width:24px; text-align:center; color:var(--text-faint); }
 .recon-pager-info { white-space:nowrap; }
@@ -5293,12 +5295,12 @@ html.sidebar-collapsed .sb-period.is-closed .sb-period-mini { color: var(--text-
 .adv-row .adv-pick { min-height:40px; min-width:130px; }
 
 /* ALLCOL-XF: tombol filter aktif, menu urutkan, hapus semua filter kolom */
-.xf-btn.is-active { background:var(--brand-500,var(--brand-500)); border-color:var(--brand-600,var(--brand-600)); color:var(--accent-ink,#1a1108); box-shadow:0 0 0 2px rgba(240,180,41,.25); }
+.xf-btn.is-active { background:#2563eb; border-color:#1d4ed8; color:#ffffff !important; box-shadow:0 0 0 2px rgba(37,99,235,.25); }
 .xf-label { white-space:nowrap; }
 .xf-sort { display:grid; grid-template-columns:1fr 1fr; gap:.4rem; padding:.5rem .6rem 0; }
 .xf-sort-btn { min-height:40px; border:1px solid var(--slate-300); background:#fff; border-radius:8px; font-size:.85rem; cursor:pointer; color:#0f172a; }
 .xf-sort-btn:hover { background:var(--slate-100); }
-.xf-sort-btn.is-on { background:var(--brand-500,var(--brand-500)); border-color:var(--brand-600,var(--brand-600)); color:var(--accent-ink,#1a1108); font-weight:600; }
+.xf-sort-btn.is-on { background:#2563eb; border-color:#1d4ed8; color:#ffffff !important; font-weight:600; }
 .col-clear-all { display:inline-flex; align-items:center; gap:.35rem; min-height:40px; padding:.3rem .8rem; border:1px solid #fca5a5; background:#fff1f2; color:var(--danger); border-radius:999px; font-size:.85rem; font-weight:600; text-decoration:none; }
 .col-clear-all:hover { background:#fee2e2; }
 
@@ -5852,7 +5854,7 @@ html.sidebar-collapsed .sb-period-mini { display: inline-flex !important; }
 html[data-theme="dark"] { --text-muted: #a9b0b8; }
 .tab-count { color: #4a5563; }
 .items-tabs .tab-pill.is-active .tab-count,
-.sf-tabs .tab-pill.is-active .tab-count { color: #1a1108; }
+.sf-tabs .tab-pill.is-active .tab-count { color: #ffffff !important; }
 
 /* --- 3. Strip tab Data STO ------------------------------------------------ */
 /* Phone: 1 baris scrollable + fade kanan (bukti mask ter-render di tepi). */
@@ -6564,7 +6566,7 @@ table.data thead th.t-right.mono { color: var(--text-1) !important; }
 .tab-pill.is-active .tab-count { background: var(--brand-soft) !important; color: var(--brand-ink) !important; }
 .sf-tabs.audit-tabs .tab-pill.is-active .tab-count,
 .sf-tabs.memo-tabs  .tab-pill.is-active .tab-count,
-.items-tabs .tab-pill.is-active .tab-count { color: #1a1108 !important; }
+.items-tabs .tab-pill.is-active .tab-count { color: #ffffff !important; }
 
 /* --- 9. Link di dalam tabel (1.86:1). KECUALI elemen .btn agar tombol
        tetap memakai warna tombolnya sendiri (regresi 1.38:1). --- */
@@ -6587,44 +6589,39 @@ html:not([data-theme="dark"]) table.data th.t-right.mono { color: var(--text-2) 
 
 /* tab-pill aktif: pastikan ink kontras di atas surface */
 /* dihapus: selektor :not(.is-active *) tidak sah & menimpa tab aktif */
-.sf-tabs .tab-pill.is-active, .items-tabs .tab-pill.is-active { color: var(--brand-ink) !important; }
+/* tab-pill aktif: teks putih #ffffff di atas background brand cobalt blue #2563eb */
+.sf-tabs .tab-pill.is-active, .items-tabs .tab-pill.is-active { color: #ffffff !important; }
 
-/* nomor step aktif (span.is-active 2.68:1) */
-.sf-mat-preset.is-active, .sf-mat-preset.is-active span { color: var(--accent-ink, #1a1108) !important; }
+/* nomor step aktif */
+.sf-mat-preset.is-active, .sf-mat-preset.is-active span { color: #ffffff !important; }
 
-/* teks bantuan 2.15:1 di atas kartu soft */
+/* teks bantuan di atas kartu soft */
 .hint, .help-text, .form-hint, .text-help { color: var(--text-2) !important; }
 
 /* =====================================================================
-   AUDIT UI/UX — FIX TERAKHIR (rincian sisa 15 kegagalan)
+   AUDIT UI/UX — TAB AKTIF (Startup Cobalt Blue #2563eb + White #ffffff)
    ===================================================================== */
-
-/* Tab aktif ber-latar brand-500: harus accent-ink (9.9:1), BUKAN brand-ink (4.01:1).
-   Aturan di baris 6485 memakai brand-ink !important -> di sini kita naikkan
-   spesifisitas + !important agar menang. */
 .sf-tabs .tab-pill.is-active,
 .items-tabs .tab-pill.is-active,
 .sf-tabs.audit-tabs .tab-pill.is-active,
 .sf-tabs.memo-tabs .tab-pill.is-active,
-a.tab-pill.is-active { color: var(--accent-ink, #1a1108) !important; }
+a.tab-pill.is-active,
+button.tab-pill.is-active,
+.tab-pill.is-active { color: #ffffff !important; }
 .sf-tabs .tab-pill.is-active *,
-.items-tabs .tab-pill.is-active * { color: inherit !important; }
+.items-tabs .tab-pill.is-active *,
+button.tab-pill.is-active *,
+a.tab-pill.is-active *,
+.tab-pill.is-active * { color: #ffffff !important; stroke: #ffffff !important; }
 
-/* tab-pill.is-active versi putih (sf-ui.css:155) tetap ink gelap */
-.sf-tabs .tab-pill.is-active:not([class*="brand"]) { color: var(--brand-ink) !important; }
+.sf-tabs .tab-pill.is-active:not([class*="brand"]) { color: #ffffff !important; }
 
-/* Nomor halaman aktif: --brand-700 + #fff = 5.0:1 sudah lolos.
-   Spesifisitas naik agar tidak ditimpa .pagination a,span { color: text-muted } */
+/* Nomor halaman aktif: --brand-700 + #fff = 5.0:1 sudah lolos. */
 .pagination .is-active, .pagination .is-active * { color: #fff !important; }
 
-/* .faint dipaksa --text-3 (#57626e = 5.0:1) oleh baris 6447, tapi ada
-   .faint { color: var(--text-faint) } di 1092 yang menang di konteks tertentu.
-   Samakan: text-faint = text-3. */
 .faint, .text-faint { color: var(--text-3) !important; }
 
-/* Tombol danger solid (putih di atas var(--red-500) = 3.76:1).
-   Ukuran 16px bold => ambang AA-large 3:1, jadi sudah lolos.
-   Turunkan ke --danger-text agar tembus 4.5:1 walau ukuran kecil. */
+/* Tombol danger solid */
 .btn-danger, .content .btn-danger { background: var(--danger-text) !important;
                                     border-color: var(--danger-text) !important; color: #fff !important; }
 .btn-success, .content .btn-success { background: var(--success-text) !important;
@@ -6635,16 +6632,18 @@ a.tab-pill.is-active { color: var(--accent-ink, #1a1108) !important; }
                                 border-color: var(--info-text) !important; color: #fff !important; }
 
 /* =====================================================================
-   AUDIT UI/UX — PAMUNGKAS (baris terakhir, menang atas semua di atasnya)
-   Tab aktif berlatar brand-500 (var(--brand-500)) memakai accent-ink #1a1108 = 9.99:1.
-   Sebelumnya rule di 6484/6485 menimpanya dgn brand-ink (var(--brand-ink)) = 4.01:1.
+   AUDIT UI/UX — PAMUNGKAS (Startup Blue #2563eb + White #ffffff)
    ===================================================================== */
 .sf-tabs .tab-pill.is-active,
 .items-tabs .tab-pill.is-active,
 .sf-tabs.audit-tabs .tab-pill.is-active,
 .sf-tabs.memo-tabs .tab-pill.is-active,
 a.tab-pill.is-active,
-a.tab-pill.is-active * { color: var(--accent-ink, #1a1108) !important; }
+button.tab-pill.is-active,
+.tab-pill.is-active,
+a.tab-pill.is-active *,
+button.tab-pill.is-active *,
+.tab-pill.is-active * { color: #ffffff !important; stroke: #ffffff !important; }
 
 /* nomor aktif pagination: brand-800 + putih = 6.35:1 */
 .pagination .is-active,

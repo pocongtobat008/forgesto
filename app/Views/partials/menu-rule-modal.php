@@ -15,7 +15,7 @@ $__userId = (int) ($__user['id'] ?? 0);
 $__userRole = (string) ($__user['role'] ?? 'observer');
 ?>
 <div class="sf-modal-backdrop" id="sf-menu-rule-modal" role="dialog" aria-modal="true" style="display:none;position:fixed;inset:0;background:rgba(15,23,42,0.65);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);z-index:10600;align-items:center;justify-content:center;padding:1rem;">
-    <div class="sf-modal" style="width:100%;max-width:640px;background:var(--surface,#ffffff);border:1px solid var(--border,#e2e8f0);border-radius:16px;box-shadow:0 25px 60px -15px rgba(15,23,42,0.35);overflow:hidden;animation:sfModalIn .2s ease;display:flex;flex-direction:column;max-height:calc(100vh - 2.5rem);">
+    <div class="sf-modal" style="width:100%;max-width:640px;background:var(--surface,#ffffff);border:1px solid var(--border,#e2e8f0);border-radius:var(--sf-radius-card, 8px);box-shadow:0 10px 24px rgba(31,41,51,.14);border:1px solid var(--sf-flat-border);overflow:hidden;animation:sfModalIn .2s ease;display:flex;flex-direction:column;max-height:calc(100vh - 2.5rem);">
         <!-- Header -->
         <div class="sf-modal-head" style="display:flex;align-items:center;justify-content:space-between;padding:1.15rem 1.35rem;border-bottom:1px solid var(--border,#e2e8f0);background:var(--surface-2,#f8fafc);flex-shrink:0;">
             <div style="display:flex;align-items:center;gap:.75rem;">
@@ -244,7 +244,7 @@ $__userRole = (string) ($__user['role'] ?? 'observer');
                     Tutup
                 </button>
                 <?php if ($__isPowerAdmin): ?>
-                    <button type="button" class="btn btn-primary" id="mrm-btn-save" style="min-height:38px;padding:.45rem 1.15rem;font-size:.85rem;font-weight:700;display:inline-flex;align-items:center;gap:.45rem;background:var(--brand-500,#f0b429);color:#1a1108;border:0;border-radius:10px;cursor:pointer;">
+                    <button type="button" class="btn btn-primary" id="mrm-btn-save" style="min-height:38px;padding:.45rem 1.15rem;font-size:.85rem;font-weight:700;display:inline-flex;align-items:center;gap:.45rem;cursor:pointer;">
                         <?= icon('check') ?>
                         <span id="mrm-btn-save-text">Simpan Rule Role</span>
                     </button>
@@ -310,7 +310,7 @@ $__userRole = (string) ($__user['role'] ?? 'observer');
     background-color: white;
     border-radius: 50%;
     transition: all .2s ease;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+    box-shadow: none; border: 1px solid var(--sf-flat-border-strong, #c9d0d8);
 }
 .sf-switch input:checked + .sf-switch-slider {
     background-color: var(--brand-500, #f0b429);
@@ -329,10 +329,10 @@ $__userRole = (string) ($__user['role'] ?? 'observer');
 }
 
 .mrm-role-tab.is-active {
-    background: var(--brand-500, #f0b429) !important;
-    color: #1a1108 !important;
-    border-color: var(--brand-500, #f0b429) !important;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    background: #2563eb !important;
+    color: #ffffff !important;
+    border-color: #1d4ed8 !important;
+    box-shadow: 0 1px 3px rgba(37, 99, 235, 0.3) !important;
 }
 .mrm-col-pill {
     display: inline-flex;
@@ -399,8 +399,9 @@ $__userRole = (string) ($__user['role'] ?? 'observer');
     color: #f8fafc !important;
 }
 [data-theme="dark"] .mrm-role-tab.is-active {
-    background: var(--brand-500, #f0b429) !important;
-    color: #1a1108 !important;
+    background: #2563eb !important;
+    color: #ffffff !important;
+    border-color: #1d4ed8 !important;
 }
 @keyframes spin {
     to { transform: rotate(360deg); }

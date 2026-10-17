@@ -27,7 +27,7 @@ $standalone = $standalone ?? false;
     .memo-pager .btn{min-height:44px;}
     .memo-pager span{font-size:.9rem;color:var(--text-2);}
     .memo-sheet{width:min(210mm,100%);min-height:297mm;margin:0 auto 1.25rem;background:#fff;padding:5mm;box-sizing:border-box;
-        display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr 1fr;gap:3mm;box-shadow:var(--shadow-md);border-radius:var(--radius-sm);}
+        display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr 1fr;gap:3mm;box-shadow:none;border:1px solid var(--sf-flat-border, #dfe3e8);border-radius:var(--sf-radius-card, 8px);}
     .memo-stage.is-pdf .memo-sheet{box-shadow:none;border-radius:0;width:210mm;min-height:297mm;margin:0;padding:6mm;
         break-after:page;page-break-after:always;}
     .memo-stage.is-pdf .memo-sheet:last-child{break-after:auto;page-break-after:auto;}

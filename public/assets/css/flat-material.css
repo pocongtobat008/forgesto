@@ -1,0 +1,1341 @@
+/* ==========================================================================
+   StockForge · Modern Startup SaaS Design System
+   Design Style: Linear / Supabase / Vercel / Raycast Aesthetic
+   Geometry: 100% Consistent 8px Border-Radius across ALL Buttons & Tabs
+   Palette: Modern Startup Cobalt Blue & Slate (#2563eb / #0f172a / #f8fafc)
+   Standard: WCAG 2.2 AAA / High-Contrast Precision SaaS UI
+   ========================================================================== */
+
+:root {
+  /* Startup SaaS Geometry Tokens (Consistent 8px across buttons & tabs) */
+  --sf-radius-button:  8px;
+  --sf-radius-tab:     8px;
+  --sf-radius-control: 8px;
+  --sf-radius-card:    12px;
+  --sf-radius-track:   12px;
+
+  /* Modern Startup Brand Tokens (Vibrant SaaS Blue) */
+  --brand-50:   #eff6ff;
+  --brand-100:  #dbeafe;
+  --brand-200:  #bfdbfe;
+  --brand-300:  #93c5fd;
+  --brand-400:  #60a5fa;
+  --brand-500:  #2563eb;
+  --brand-600:  #1d4ed8;
+  --brand-700:  #1e40af;
+  --brand-800:  #1e3a8a;
+  --brand-900:  #172554;
+  --brand-ink:  #1e3a8a;
+  --brand-soft: #eff6ff;
+  --brand:      #2563eb;
+
+  /* Surface & Canvas Tokens */
+  --sf-flat-canvas:        #f8fafc;
+  --sf-flat-surface:       #ffffff;
+  --sf-flat-surface-muted: #f1f5f9;
+  --sf-flat-border:        #e2e8f0;
+  --sf-flat-border-strong: #cbd5e1;
+  --sf-flat-ink:           #0f172a;
+  --sf-flat-muted:         #334155;
+  --sf-flat-faint:         #475569;
+  --sf-flat-primary:       #334155;
+  --sf-flat-primary-hover: #1e293b;
+  --sf-flat-focus:         #2563eb;
+  --sf-flat-active-bg:     #eff6ff;
+  --sf-flat-active-border: #bfdbfe;
+
+  /* Modern Startup Blue Tokens */
+  --sf-blue-primary: #2563eb;
+  --sf-blue-hover:   #1d4ed8;
+  --sf-blue-active:  #1e40af;
+  --sf-blue-surface: rgba(37, 99, 235, 0.08);
+  --sf-blue-text:    #2563eb;
+
+  /* Neutral Surface Tokens for Utility Controls */
+  --sf-btn-sec-bg:           #ffffff;
+  --sf-btn-sec-hover:        #f8fafc;
+  --sf-btn-sec-ink:          #0f172a;
+  --sf-btn-sec-border:       #e2e8f0;
+  --sf-btn-sec-hover-border: #cbd5e1;
+  --sf-btn-sec-hover-ink:    #020617;
+
+  /* Semantic Status Tokens */
+  --sf-success: #10b981;
+  --sf-danger:  #ef4444;
+  --sf-warning: #f59e0b;
+  --sf-info:    #2563eb;
+
+  /* Neutralize inherited heavy shadows */
+  --shadow: none !important;
+  --card-shadow: none !important;
+  --shadow-soft: none !important;
+  --shadow-sm: none !important;
+  --shadow-md: none !important;
+  --shadow-lg: none !important;
+  --shadow-xl: none !important;
+  --shadow-accent: none !important;
+  --bg-grad: none !important;
+  --header-bg: #ffffff !important;
+}
+
+[data-theme="dark"] {
+  --sf-radius-button:  8px;
+  --sf-radius-tab:     8px;
+  --sf-radius-control: 8px;
+  --sf-radius-card:    12px;
+  --sf-radius-track:   12px;
+
+  --brand-50:   #172554;
+  --brand-100:  #1e3a8a;
+  --brand-200:  #1e40af;
+  --brand-300:  #1d4ed8;
+  --brand-400:  #2563eb;
+  --brand-500:  #3b82f6;
+  --brand-600:  #60a5fa;
+  --brand-700:  #93c5fd;
+  --brand-800:  #bfdbfe;
+  --brand-900:  #dbeafe;
+  --brand-ink:  #93c5fd;
+  --brand-soft: #172554;
+  --brand:      #3b82f6;
+
+  --sf-flat-canvas:        #090a0f;
+  --sf-flat-surface:       #121318;
+  --sf-flat-surface-muted: #1a1b23;
+  --sf-flat-border:        rgba(255, 255, 255, 0.08);
+  --sf-flat-border-strong: rgba(255, 255, 255, 0.16);
+  --sf-flat-ink:           #f8fafc;
+  --sf-flat-muted:         #94a3b8;
+  --sf-flat-faint:         #64748b;
+  --sf-flat-primary:       #e2e8f0;
+  --sf-flat-primary-hover: #ffffff;
+  --sf-flat-focus:         #3b82f6;
+  --sf-flat-active-bg:     #1e3a8a;
+  --sf-flat-active-border: #3b82f6;
+  --header-bg:             #121318 !important;
+
+  --sf-blue-primary: #3b82f6;
+  --sf-blue-hover:   #2563eb;
+  --sf-blue-active:  #1d4ed8;
+  --sf-blue-surface: rgba(59, 130, 246, 0.14);
+  --sf-blue-text:    #60a5fa;
+
+  --sf-btn-sec-bg:           #181920;
+  --sf-btn-sec-hover:        #23242c;
+  --sf-btn-sec-ink:          #f8fafc;
+  --sf-btn-sec-border:       rgba(255, 255, 255, 0.1);
+  --sf-btn-sec-hover-border: rgba(255, 255, 255, 0.2);
+  --sf-btn-sec-hover-ink:    #ffffff;
+
+  --sf-success: #10b981;
+  --sf-danger:  #ef4444;
+  --sf-warning: #f59e0b;
+  --sf-info:    #38bdf8;
+}
+
+/* ==========================================================================
+   BASE & CHROME (CLEAN STARTUP SURFACES)
+   ========================================================================== */
+html, body {
+  background: var(--sf-flat-canvas) !important;
+  background-image: none !important;
+  color: var(--sf-flat-ink) !important;
+}
+body::before, body::after, .app-shell::before, .app-shell::after {
+  background-image: none !important;
+  box-shadow: none !important;
+}
+
+a {
+  color: var(--sf-blue-primary);
+  text-decoration: none;
+}
+a:hover {
+  color: var(--sf-blue-hover);
+}
+
+.text-xs.muted, .text-sm.muted, .text-muted, .muted, .helper-text, .faint, .text-xs.faint,
+.sf-mat-scope-lbl, label.text-xs {
+  color: var(--sf-flat-muted) !important;
+}
+
+/* Topbar */
+.topbar {
+  min-height: 60px !important;
+  background: var(--sf-flat-surface) !important;
+  background-image: none !important;
+  border-bottom: 1px solid var(--sf-flat-border) !important;
+  box-shadow: none !important;
+}
+.tb-name {
+  color: var(--sf-flat-ink) !important;
+  font-weight: 700 !important;
+  letter-spacing: -.015em;
+}
+
+/* Active Fiscal Year Pill (Okt'26) */
+.tb-period-sub, .sf-year-badge {
+  background: var(--sf-flat-surface-muted) !important;
+  border: 1px solid var(--sf-flat-border-strong) !important;
+  color: var(--sf-flat-ink) !important;
+  font-weight: 600 !important;
+  border-radius: var(--sf-radius-control) !important;
+  box-shadow: none !important;
+}
+.tb-period-sub .tb-period-text, .sf-yb-text {
+  color: var(--sf-flat-ink) !important;
+  font-weight: 600 !important;
+}
+.tb-period-sub .tb-period-dot, .sf-yb-dot {
+  background: var(--sf-blue-primary) !important;
+}
+[data-theme="dark"] .tb-period-sub, [data-theme="dark"] .sf-year-badge {
+  background: var(--sf-flat-surface-muted) !important;
+  border-color: var(--sf-flat-border-strong) !important;
+  color: #f1f5f9 !important;
+}
+[data-theme="dark"] .tb-period-sub .tb-period-text, [data-theme="dark"] .sf-yb-text {
+  color: #f1f5f9 !important;
+}
+
+/* Topbar Search */
+.topbar-search {
+  background: var(--sf-flat-surface-muted) !important;
+  border: 1px solid var(--sf-flat-border) !important;
+  color: var(--sf-flat-primary) !important;
+  border-radius: var(--sf-radius-control) !important;
+  box-shadow: inset 0 1px 2px 0 rgba(0, 0, 0, 0.02) !important;
+}
+.topbar-search:focus-within {
+  border-color: var(--sf-blue-primary) !important;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15) !important;
+}
+.topbar-search .ts-label {
+  color: var(--sf-flat-primary) !important;
+  font-weight: 500 !important;
+}
+.topbar-search kbd {
+  background: var(--sf-flat-surface) !important;
+  border: 1px solid var(--sf-flat-border) !important;
+  color: var(--sf-flat-ink) !important;
+  border-radius: 4px !important;
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.05) !important;
+}
+
+/* User Chip & Avatar */
+.user-chip {
+  background: var(--sf-flat-surface) !important;
+  border: 1px solid var(--sf-flat-border) !important;
+  border-radius: var(--sf-radius-control) !important;
+  box-shadow: none !important;
+}
+.user-chip .u-name {
+  color: var(--sf-flat-ink) !important;
+  font-weight: 600 !important;
+}
+.user-chip .u-role {
+  color: var(--sf-flat-primary) !important;
+  font-weight: 500 !important;
+}
+.avatar, .topbar .avatar, .user-chip .avatar {
+  background: var(--sf-blue-primary) !important;
+  color: #ffffff !important;
+  border: none !important;
+  box-shadow: none !important;
+  font-weight: 700 !important;
+}
+
+/* Topbar Icons */
+.topbar .icon-btn, .topbar-sidebar-toggle, .topbar-hamburger,
+.topbar-actions .theme-btn, .topbar [class*="icon-btn"] {
+  border: 1px solid transparent !important;
+  background: transparent !important;
+  color: var(--sf-flat-primary) !important;
+  box-shadow: none !important;
+  border-radius: var(--sf-radius-control) !important;
+  transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+.topbar .icon-btn:hover, .topbar-sidebar-toggle:hover, .topbar-hamburger:hover,
+.topbar-actions .theme-btn:hover {
+  background: var(--sf-flat-surface-muted) !important;
+  color: var(--sf-flat-ink) !important;
+  border-color: var(--sf-flat-border) !important;
+}
+
+.dropdown-lang-opt.is-active .lang-code,
+.dropdown-lang .lang-code, .lang-code {
+  background: var(--sf-blue-primary) !important;
+  color: #ffffff !important;
+  font-weight: 700 !important;
+  border: none !important;
+}
+
+/* Breadcrumbs Separator */
+.sf-bc-sep, .breadcrumb-item + .breadcrumb-item::before {
+  color: var(--sf-flat-muted) !important;
+}
+.topbar .wh-switch-inner, .topbar .wh-switch-static, .topbar .sf-select-trigger {
+  min-height: 36px !important;
+  border: 1px solid var(--sf-flat-border) !important;
+  background: var(--sf-flat-surface) !important;
+  color: var(--sf-flat-ink) !important;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.03) !important;
+  border-radius: var(--sf-radius-control) !important;
+}
+
+/* Sidebar */
+.sidebar {
+  background: var(--sf-flat-surface) !important;
+  border-right: 1px solid var(--sf-flat-border) !important;
+  box-shadow: none !important;
+}
+.sidebar .sidebar-group-toggle {
+  color: var(--sf-flat-muted) !important;
+  font-weight: 600 !important;
+  letter-spacing: .05em !important;
+}
+.sidebar .nav-item {
+  border: none !important;
+  border-radius: var(--sf-radius-control) !important;
+  color: var(--sf-flat-primary) !important;
+  box-shadow: none !important;
+  transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+.sidebar .nav-item:hover {
+  background: var(--sf-flat-surface-muted) !important;
+  color: var(--sf-flat-ink) !important;
+}
+.sidebar .nav-item.is-active, .sidebar a.nav-item[aria-current="page"] {
+  color: #1d4ed8 !important;
+  background: #eff6ff !important;
+  border: none !important;
+  font-weight: 600 !important;
+}
+/* FIX: latar HANYA milik kontainer nav. Anak (.nav-label/.nav-icon) WAJIB transparan,
+   kalau tidak akan muncul kotak latar (patch) bersudut tajam di dalam pill nav. */
+.sidebar .nav-item.is-active .nav-label,
+.sidebar .nav-item.is-active .nav-icon {
+  color: #1d4ed8 !important;
+  background: transparent !important;
+  border: none !important;
+  font-weight: 600 !important;
+}
+[data-theme="dark"] .sidebar .nav-item.is-active .nav-label,
+[data-theme="dark"] .sidebar .nav-item.is-active .nav-icon {
+  background: transparent !important;
+  color: inherit !important;
+}
+[data-theme="dark"] .sidebar .nav-item.is-active, [data-theme="dark"] .sidebar a.nav-item[aria-current="page"] {
+  color: #93c5fd !important;
+  background: rgba(37, 99, 235, 0.16) !important;
+}
+
+/* ==========================================================================
+   MODERN STARTUP SAAS BUTTON SYSTEM
+   Unified Geometry: 8px Radius Across ALL Buttons
+   Tactile micro-elevation (inset top sheen + crisp border + soft shadow)
+   Physics: smooth cubic-bezier transitions with subtle hover lift
+   ========================================================================== */
+
+/* BASE: Universal .btn geometry & layout */
+button, .btn, a.btn, input[type="button"], input[type="submit"],
+.wh-opt, .wh-modal-close, .col-mv-btn, .adv-close, .adv-del, .adv-val-trigger, .adv-val-mode,
+.tab-pill, .tabs .tab, .sf-mat-preset, .recon-pg-btn, .mrm-role-tab,
+.topbar-scan, .topbar-scan-btn, .xf-btn, .rng-btn, [id*="colmgr-btn"], [id*="adv-btn"] {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 0.5rem !important;
+  font-family: inherit !important;
+  font-size: 0.875rem !important;
+  font-weight: 500 !important;
+  line-height: 1.25rem !important;
+  padding: 0.4375rem 0.875rem !important;
+  border-radius: 8px !important;
+  text-decoration: none !important;
+  white-space: nowrap !important;
+  vertical-align: middle !important;
+  cursor: pointer !important;
+  user-select: none !important;
+  transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+/* SVG icons inside buttons */
+button svg, .btn svg, a.btn svg,
+.btn .icon, button .icon {
+  width: 1.125rem !important;
+  height: 1.125rem !important;
+  stroke-width: 2px !important;
+  vertical-align: middle !important;
+  flex-shrink: 0 !important;
+  fill: none !important;
+}
+
+/* 1. PRIMARY BUTTONS (.btn-primary, .btn-brand, CTAs) */
+.btn-brand, .btn-primary, .button-primary,
+.table-toolbar .btn.btn-primary,
+.table-toolbar .btn.btn-brand,
+button[data-scan-open], a[data-scan-open],
+.topbar-scan, .topbar-scan-btn,
+.filter-bar .is-barcode .btn,
+.bottom-action-bar .btn-primary,
+.bottom-action-bar button[data-scan-open],
+#btn-export-toolbar,
+#reset-all-btn,
+#xf-apply,
+.adv-pick-ok,
+#mrm-btn-save,
+.sf-home-primary-action,
+.recon-export-btn,
+.btn-primary.btn-sm,
+.btn-brand.btn-sm,
+.btn-brand.btn-xs,
+.content .page-head a.btn:not(.btn-outline):not(.btn-ghost):not(.btn-danger) {
+  background: #2563eb !important;
+  background-color: #2563eb !important;
+  background-image: none !important;
+  border: 1px solid rgba(0, 0, 0, 0.12) !important;
+  color: #ffffff !important;
+  font-weight: 500 !important;
+  border-radius: 8px !important;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05), inset 0 1px 0 0 rgba(255, 255, 255, 0.2) !important;
+}
+
+.btn-brand *, .btn-primary *, .button-primary *,
+.table-toolbar .btn.btn-primary *,
+button[data-scan-open] *, a[data-scan-open] * {
+  color: #ffffff !important;
+}
+
+.btn-brand svg, .btn-primary svg, .button-primary svg,
+.table-toolbar .btn.btn-primary svg,
+button[data-scan-open] svg, a[data-scan-open] svg,
+.filter-bar .is-barcode .btn svg,
+.bottom-action-bar button svg,
+#btn-export-toolbar svg,
+#reset-all-btn svg,
+#xf-apply svg,
+.adv-pick-ok svg,
+#mrm-btn-save svg,
+.sf-home-primary-action svg,
+.recon-export-btn svg {
+  stroke: #ffffff !important;
+  color: #ffffff !important;
+  fill: none !important;
+}
+
+.btn-brand:hover, .btn-primary:hover, .button-primary:hover,
+.table-toolbar .btn.btn-primary:hover,
+button[data-scan-open]:hover, a[data-scan-open]:hover,
+.filter-bar .is-barcode .btn:hover,
+.bottom-action-bar button[data-scan-open]:hover,
+#btn-export-toolbar:hover,
+#reset-all-btn:hover,
+#xf-apply:hover,
+.adv-pick-ok:hover,
+#mrm-btn-save:hover,
+.sf-home-primary-action:hover,
+.recon-export-btn:hover {
+  background: #1d4ed8 !important;
+  background-color: #1d4ed8 !important;
+  border-color: #1e40af !important;
+  color: #ffffff !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 4px 12px 0 rgba(37, 99, 235, 0.28), 0 1px 2px 0 rgba(0, 0, 0, 0.05), inset 0 1px 0 0 rgba(255, 255, 255, 0.25) !important;
+}
+
+.btn-brand:active, .btn-primary:active,
+button[data-scan-open]:active {
+  background: #1e40af !important;
+  border-color: #1e3a8a !important;
+  color: #ffffff !important;
+  transform: translateY(0) !important;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.1), inset 0 1px 2px 0 rgba(0, 0, 0, 0.15) !important;
+}
+
+/* 2. SECONDARY / DEFAULT BUTTONS (.btn, .btn-secondary, utility controls) */
+.table-toolbar .btn:not(.btn-primary):not(.btn-brand):not(.btn-success):not(.btn-danger),
+.items-toolbar-right .btn:not(.btn-primary):not(.btn-brand):not(.btn-success):not(.btn-danger),
+.items-toolbar-right #adv-toggle,
+.items-toolbar-right #adv-toggle.btn-info,
+.items-toolbar-right #scanner-settings,
+.items-toolbar-right #items-colmgr-btn,
+.items-toolbar-right .col-clear-all,
+.table-toolbar .btn-icon-only,
+.items-toolbar-right .btn-icon-only,
+.xf-btn,
+.rng-btn,
+table.data thead th.xf-th > .xf-btn,
+table thead th.xf-th > .xf-btn,
+table.data thead th.xf-th > .rng-btn,
+table thead th.xf-th > .rng-btn,
+#items-table thead th.xf-th > .xf-btn,
+#recon-table thead th.xf-th > .xf-btn,
+.btn-outline,
+.btn-ghost,
+.btn-secondary,
+[id*="colmgr-btn"],
+[id*="adv-btn"],
+.col-mgr .btn,
+.col-mv-btn,
+.adv-close,
+.adv-del,
+.adv-val-trigger,
+.adv-val-mode,
+.wh-opt,
+.wh-modal-close,
+.page-head .btn.btn-outline,
+.page-head a.btn.btn-outline {
+  background: var(--sf-btn-sec-bg) !important;
+  background-color: var(--sf-btn-sec-bg) !important;
+  background-image: none !important;
+  border: 1px solid var(--sf-btn-sec-border) !important;
+  color: var(--sf-btn-sec-ink) !important;
+  border-radius: 8px !important;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.04), inset 0 1px 0 0 #ffffff !important;
+}
+
+.table-toolbar .btn:not(.btn-primary):not(.btn-brand):not(.btn-success):not(.btn-danger) svg,
+.items-toolbar-right .btn:not(.btn-primary):not(.btn-brand):not(.btn-success):not(.btn-danger) svg,
+.items-toolbar-right #adv-toggle svg,
+.items-toolbar-right #adv-toggle.btn-info svg,
+.items-toolbar-right #scanner-settings svg,
+.items-toolbar-right #items-colmgr-btn svg,
+.items-toolbar-right .col-clear-all svg,
+.table-toolbar .btn-icon-only svg,
+.items-toolbar-right .btn-icon-only svg,
+.xf-btn svg,
+.rng-btn svg,
+table.data thead th.xf-th > .xf-btn svg,
+table thead th.xf-th > .xf-btn svg,
+.btn-outline svg,
+.btn-ghost svg,
+.btn-secondary svg,
+[id*="colmgr-btn"] svg,
+[id*="adv-btn"] svg,
+.col-mv-btn svg,
+.page-head .btn.btn-outline svg {
+  stroke: var(--sf-btn-sec-ink) !important;
+  color: var(--sf-btn-sec-ink) !important;
+  fill: none !important;
+}
+
+.table-toolbar .btn:not(.btn-primary):not(.btn-brand):not(.btn-success):not(.btn-danger):hover,
+.items-toolbar-right .btn:not(.btn-primary):not(.btn-brand):not(.btn-success):not(.btn-danger):hover,
+.items-toolbar-right #adv-toggle:hover,
+.items-toolbar-right #adv-toggle.btn-info:hover,
+.items-toolbar-right #scanner-settings:hover,
+.items-toolbar-right #items-colmgr-btn:hover,
+.items-toolbar-right .col-clear-all:hover,
+.xf-btn:hover,
+.rng-btn:hover,
+table.data thead th.xf-th > .xf-btn:hover,
+table thead th.xf-th > .xf-btn:hover,
+.btn-outline:hover,
+.btn-ghost:hover,
+.btn-secondary:hover,
+[id*="colmgr-btn"]:hover,
+[id*="adv-btn"]:hover,
+.col-mv-btn:hover,
+.page-head .btn.btn-outline:hover {
+  background: var(--sf-btn-sec-hover) !important;
+  border-color: var(--sf-btn-sec-hover-border) !important;
+  color: var(--sf-btn-sec-hover-ink) !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.05), inset 0 1px 0 0 #ffffff !important;
+}
+
+.table-toolbar .btn:hover svg,
+.items-toolbar-right .btn:hover svg,
+.items-toolbar-right #adv-toggle:hover svg,
+.items-toolbar-right #scanner-settings:hover svg,
+.items-toolbar-right #items-colmgr-btn:hover svg,
+.xf-btn:hover svg,
+.rng-btn:hover svg,
+.btn-outline:hover svg {
+  stroke: var(--sf-btn-sec-hover-ink) !important;
+  color: var(--sf-btn-sec-hover-ink) !important;
+}
+
+.table-toolbar .btn:active,
+.btn-secondary:active,
+.btn-outline:active {
+  background: var(--sf-btn-sec-hover) !important;
+  transform: translateY(0) !important;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.05) !important;
+}
+
+/* Active State for Filters / Utility buttons (when toggled or search applied) */
+.items-toolbar-right #adv-toggle.is-active,
+.table-toolbar .btn.is-active,
+.xf-btn.is-active,
+table.data thead th.xf-th > .xf-btn.is-active,
+table thead th.xf-th > .xf-btn.is-active {
+  background: var(--sf-blue-surface) !important;
+  border-color: var(--sf-blue-primary) !important;
+  color: var(--sf-blue-text) !important;
+  border-radius: 8px !important;
+  box-shadow: 0 1px 2px 0 rgba(37, 99, 235, 0.15) !important;
+}
+.items-toolbar-right #adv-toggle.is-active svg,
+.table-toolbar .btn.is-active svg,
+.xf-btn.is-active svg,
+table thead th.xf-th > .xf-btn.is-active svg {
+  stroke: var(--sf-blue-text) !important;
+  color: var(--sf-blue-text) !important;
+}
+
+/* 3. SUCCESS BUTTON (.btn-success, Posting) */
+#btn-posting, .btn-posting-toolbar, .btn-success {
+  background: #10b981 !important;
+  background-color: #10b981 !important;
+  border: 1px solid #059669 !important;
+  color: #ffffff !important;
+  font-weight: 500 !important;
+  border-radius: 8px !important;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05), inset 0 1px 0 0 rgba(255, 255, 255, 0.2) !important;
+}
+#btn-posting svg, .btn-posting-toolbar svg, .btn-success svg {
+  stroke: #ffffff !important;
+  color: #ffffff !important;
+}
+#btn-posting:hover, .btn-posting-toolbar:hover, .btn-success:hover {
+  background: #059669 !important;
+  border-color: #047857 !important;
+  color: #ffffff !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 4px 12px 0 rgba(16, 185, 129, 0.25) !important;
+}
+#btn-posting:active, .btn-posting-toolbar:active, .btn-success:active {
+  background: #047857 !important;
+  border-color: #065f46 !important;
+  color: #ffffff !important;
+  transform: translateY(0) !important;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.12) !important;
+}
+
+/* 4. DANGER BUTTON (.btn-danger, Delete, Reset) */
+.btn-danger, #bulk-delete-master-btn {
+  background: #ef4444 !important;
+  background-color: #ef4444 !important;
+  border: 1px solid #dc2626 !important;
+  color: #ffffff !important;
+  font-weight: 500 !important;
+  border-radius: 8px !important;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05), inset 0 1px 0 0 rgba(255, 255, 255, 0.2) !important;
+}
+.btn-danger svg, #bulk-delete-master-btn svg {
+  stroke: #ffffff !important;
+  color: #ffffff !important;
+}
+.btn-danger:hover, #bulk-delete-master-btn:hover {
+  background: #dc2626 !important;
+  border-color: #b91c1c !important;
+  color: #ffffff !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 4px 12px 0 rgba(239, 68, 68, 0.25) !important;
+}
+.btn-danger:active, #bulk-delete-master-btn:active {
+  background: #b91c1c !important;
+  border-color: #991b1b !important;
+  color: #ffffff !important;
+  transform: translateY(0) !important;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.12) !important;
+}
+
+/* 5. GHOST & OUTLINE BUTTONS */
+.btn-ghost {
+  background: transparent !important;
+  border: 1px solid transparent !important;
+  box-shadow: none !important;
+  border-radius: 8px !important;
+  color: var(--sf-btn-sec-ink) !important;
+}
+.btn-ghost:hover {
+  background: rgba(37, 99, 235, 0.08) !important;
+  border-color: transparent !important;
+  color: #2563eb !important;
+}
+
+.btn-outline-primary {
+  background: transparent !important;
+  border: 1px solid #2563eb !important;
+  color: #2563eb !important;
+  border-radius: 8px !important;
+  box-shadow: none !important;
+}
+.btn-outline-primary:hover {
+  background: #2563eb !important;
+  color: #ffffff !important;
+}
+
+/* 6. ICON-ONLY BUTTONS (.btn-icon-only, .btn-icon) */
+.table-toolbar .btn-icon-only,
+.items-toolbar-right .btn-icon-only,
+.btn-icon-only,
+.btn-icon {
+  width: 36px !important;
+  min-width: 36px !important;
+  height: 36px !important;
+  padding: 0 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  border-radius: 8px !important;
+}
+
+/* 7. BUTTON SIZES (.btn-sm, .btn-xs, .btn-lg) */
+.btn-sm {
+  padding: 0.25rem 0.625rem !important;
+  font-size: 0.75rem !important;
+  line-height: 1rem !important;
+  min-height: 28px !important;
+  border-radius: 8px !important;
+}
+.btn-xs {
+  padding: 0.1875rem 0.5rem !important;
+  font-size: 0.6875rem !important;
+  line-height: 0.875rem !important;
+  min-height: 24px !important;
+  border-radius: 8px !important;
+}
+.btn-lg {
+  padding: 0.75rem 1.25rem !important;
+  font-size: 1rem !important;
+  line-height: 1.5rem !important;
+  min-height: 44px !important;
+  border-radius: 8px !important;
+}
+
+/* Disabled State */
+button:disabled, button[disabled], .btn:disabled, .btn[disabled] {
+  opacity: .4 !important;
+  cursor: not-allowed !important;
+  box-shadow: none !important;
+  transform: none !important;
+}
+
+/* Keyboard Focus Ring */
+button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible, [tabindex]:focus-visible {
+  outline: 2px solid #2563eb !important;
+  outline-offset: 2px !important;
+  box-shadow: 0 0 0 0.25rem rgba(37, 99, 235, 0.25) !important;
+}
+
+/* ==========================================================================
+   RECONCILIATION PRESETS & UTILITY CONTROLS
+   Consistent 8px Radius Across All Interactive Items
+   ========================================================================== */
+.sf-mat-presets {
+  background: #f1f5f9 !important;
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 12px !important;
+  padding: 4px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 4px !important;
+  box-shadow: inset 0 1px 2px 0 rgba(0, 0, 0, 0.03) !important;
+}
+[data-theme="dark"] .sf-mat-presets {
+  background: #181920 !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+.sf-mat-preset.is-active,
+.recon-pg-btn.is-current,
+.mrm-role-tab.is-active {
+  background: #2563eb !important;
+  background-color: #2563eb !important;
+  border: 1px solid #1d4ed8 !important;
+  color: #ffffff !important;
+  font-weight: 600 !important;
+  border-radius: 8px !important;
+  box-shadow: 0 1px 3px 0 rgba(37, 99, 235, 0.25), inset 0 1px 0 0 rgba(255, 255, 255, 0.2) !important;
+}
+.sf-mat-preset.is-active svg,
+.mrm-role-tab.is-active svg {
+  stroke: #ffffff !important;
+  color: #ffffff !important;
+}
+
+.sf-mat-preset:not(.is-active),
+.recon-pg-btn:not(.is-current),
+.mrm-role-tab:not(.is-active) {
+  border: 1px solid transparent !important;
+  background: transparent !important;
+  color: #64748b !important;
+  border-radius: 8px !important;
+  box-shadow: none !important;
+  font-weight: 500 !important;
+}
+.sf-mat-preset:not(.is-active):hover,
+.recon-pg-btn:not(.is-current):hover,
+.mrm-role-tab:not(.is-active):hover {
+  background: rgba(255, 255, 255, 0.8) !important;
+  color: #0f172a !important;
+  border-color: transparent !important;
+}
+[data-theme="dark"] .sf-mat-preset:not(.is-active):hover,
+[data-theme="dark"] .recon-pg-btn:not(.is-current):hover,
+[data-theme="dark"] .mrm-role-tab:not(.is-active):hover {
+  background: rgba(255, 255, 255, 0.08) !important;
+  color: #f8fafc !important;
+}
+
+/* Dropdown Selected Option */
+.sf-option.is-selected {
+  background: var(--sf-blue-surface) !important;
+  color: var(--sf-blue-text) !important;
+  font-weight: 600 !important;
+  border-radius: 6px !important;
+}
+.sf-option.is-selected svg {
+  stroke: var(--sf-blue-text) !important;
+  color: var(--sf-blue-text) !important;
+}
+
+/* Row Action Buttons in Tables */
+.btn-icon.btn-icon-edit.js-row-correct,
+.code-badge-prefix,
+#mrm-menu-badge,
+.sf-pareto-rank {
+  background: var(--sf-blue-surface) !important;
+  border: 1px solid rgba(37, 99, 235, 0.2) !important;
+  color: var(--sf-blue-text) !important;
+  border-radius: 8px !important;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.04) !important;
+  font-weight: 600 !important;
+}
+.btn-icon.btn-icon-edit.js-row-correct svg {
+  stroke: var(--sf-blue-text) !important;
+  color: var(--sf-blue-text) !important;
+}
+.btn-icon.btn-icon-edit.js-row-correct:hover {
+  background: #dbeafe !important;
+  border-color: #2563eb !important;
+}
+
+.text-brand-cell {
+  color: #2563eb !important;
+  font-weight: 700 !important;
+}
+
+/* Officer Tags (Obs / Aud) */
+.off-tag {
+  border-radius: 6px !important;
+  border: none !important;
+  font-weight: 600 !important;
+}
+.off-tag-obs {
+  background: #fef3c7 !important;
+  color: #92400e !important;
+}
+.off-tag-aud {
+  background: #e0f2fe !important;
+  color: #0369a1 !important;
+}
+
+/* User Rules Column Visibility Pills */
+.col-pill-toggle.is-shown-pill,
+.col-pill-toggle.is-shown-pill .col-pill-name {
+  background: #d1fae5 !important;
+  border: 1px solid #a7f3d0 !important;
+  color: #064e3b !important;
+  border-radius: 8px !important;
+  font-weight: 500 !important;
+}
+.col-pill-toggle.is-hidden-pill,
+.col-pill-toggle.is-hidden-pill .col-pill-name {
+  background: #fee2e2 !important;
+  border: 1px solid #fecaca !important;
+  color: #7f1d1d !important;
+  border-radius: 8px !important;
+  font-weight: 500 !important;
+}
+
+/* User Rules Role Cards */
+.ur-role-card {
+  border-radius: 12px !important;
+  transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+.ur-role-card:hover {
+  border-color: #2563eb !important;
+  transform: translateY(-1px) !important;
+}
+.ur-role-card.is-active {
+  border-color: #2563eb !important;
+  box-shadow: 0 0 0 1px #2563eb, 0 4px 12px rgba(37, 99, 235, 0.1) !important;
+}
+
+/* ==========================================================================
+   CARDS, PANELS, SURFACES & GEOMETRY UNIFORMITY
+   ========================================================================== */
+.card, .panel, .summary-card, .metric-card, .stat-card, .stat,
+.modal-content, .sf-modal, .error-card {
+  background-color: var(--sf-flat-surface) !important;
+  background-image: none !important;
+  border: 1px solid var(--sf-flat-border) !important;
+  border-radius: var(--sf-radius-card) !important;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.04), 0 1px 2px 0 rgba(0, 0, 0, 0.02) !important;
+  transform: none !important;
+}
+.card:hover, .stat:hover, .stat-card:hover {
+  transform: none !important;
+}
+.card::before, .card::after, .stat::before, .stat::after {
+  display: none !important;
+}
+
+.card-header, .card-toolbar, .card-footer {
+  background: transparent !important;
+  border-color: var(--sf-flat-border) !important;
+  box-shadow: none !important;
+}
+
+/* Tables */
+table.data, .table-wrap, .table-responsive {
+  border-color: var(--sf-flat-border) !important;
+  box-shadow: none !important;
+}
+table thead th, table.data thead th, .table thead th, table th {
+  background: var(--sf-flat-surface-muted) !important;
+  color: var(--sf-flat-muted) !important;
+  font-weight: 600 !important;
+  border-color: var(--sf-flat-border) !important;
+}
+table tbody td, table.data tbody td {
+  border-color: var(--sf-flat-border) !important;
+  color: var(--sf-flat-ink) !important;
+}
+table tbody tr:hover, table.data tbody tr:hover {
+  background: var(--sf-flat-surface-muted) !important;
+}
+
+/* ==========================================================================
+   MODERN STARTUP SAAS SEGMENTED TABS
+   Unified Geometry: 8px Radius on ALL Tabs (Matching Buttons Exactly)
+   12px Track container with 4px padding and smooth state indicators
+   ========================================================================== */
+
+/* Segmented Control Track Container */
+.sf-tabs,
+.items-tabs,
+.audit-tabs,
+.memo-tabs,
+.tab-pills-wrap,
+.sf-tabtoolbar .sf-tabs {
+  background: #f1f5f9 !important;
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 12px !important;
+  padding: 4px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 4px !important;
+  box-shadow: inset 0 1px 2px 0 rgba(0, 0, 0, 0.03) !important;
+}
+[data-theme="dark"] .sf-tabs,
+[data-theme="dark"] .items-tabs,
+[data-theme="dark"] .audit-tabs,
+[data-theme="dark"] .memo-tabs,
+[data-theme="dark"] .tab-pills-wrap,
+[data-theme="dark"] .sf-tabtoolbar .sf-tabs {
+  background: #181920 !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+/* Inactive Tabs */
+.sf-tabs .tab-pill:not(.is-active),
+.audit-tabs .tab-pill:not(.is-active),
+.items-tabs .tab-pill:not(.is-active),
+.memo-tabs .tab-pill:not(.is-active),
+.tab-pills-wrap .tab-pill:not(.is-active),
+.tabs .tab:not(.is-active),
+.tab-pill:not(.is-active) {
+  border: 1px solid transparent !important;
+  border-radius: 8px !important;
+  background: transparent !important;
+  color: #334155 !important;
+  box-shadow: none !important;
+  font-weight: 500 !important;
+  padding: 6px 14px !important;
+  transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+.sf-tabs .tab-pill:not(.is-active):hover,
+.audit-tabs .tab-pill:not(.is-active):hover,
+.items-tabs .tab-pill:not(.is-active):hover,
+.tab-pill:not(.is-active):hover {
+  background: rgba(255, 255, 255, 0.8) !important;
+  color: #0f172a !important;
+  border-color: transparent !important;
+}
+[data-theme="dark"] .sf-tabs .tab-pill:not(.is-active):hover,
+[data-theme="dark"] .audit-tabs .tab-pill:not(.is-active):hover,
+[data-theme="dark"] .items-tabs .tab-pill:not(.is-active):hover,
+[data-theme="dark"] .tab-pill:not(.is-active):hover {
+  background: rgba(255, 255, 255, 0.08) !important;
+  color: #f8fafc !important;
+}
+
+/* Inactive Tab Count Badge */
+.sf-tabs .tab-pill:not(.is-active) .tab-count,
+.audit-tabs .tab-pill:not(.is-active) .tab-count,
+.items-tabs .tab-pill:not(.is-active) .tab-count,
+.memo-tabs .tab-pill:not(.is-active) .tab-count,
+.tab-pills-wrap .tab-pill:not(.is-active) .tab-count,
+.tab-pill:not(.is-active) .tab-count,
+.tab-count {
+  background: #e2e8f0 !important;
+  color: #475569 !important;
+  border-radius: 6px !important;
+  padding: 2px 7px !important;
+  font-size: 0.75rem !important;
+  font-weight: 600 !important;
+}
+[data-theme="dark"] .tab-count,
+[data-theme="dark"] .tab-pill:not(.is-active) .tab-count {
+  background: rgba(255, 255, 255, 0.12) !important;
+  color: #cbd5e1 !important;
+}
+
+/* Active Tabs (Modern Startup Focus - Guaranteed Highest Specificity) */
+html body .tab-pill.is-active,
+html body .tab-pill.is-active:not([class*="brand"]),
+html body button.tab-pill.is-active,
+html body button.tab-pill.is-active:not([class*="brand"]),
+html body a.tab-pill.is-active,
+html body a.tab-pill.is-active:not([class*="brand"]),
+html body .sf-tabs .tab-pill.is-active,
+html body .sf-tabs .tab-pill.is-active:not([class*="brand"]),
+html body .sf-tabs button.tab-pill.is-active,
+html body .sf-tabs button.tab-pill.is-active:not([class*="brand"]),
+html body .sf-tabs a.tab-pill.is-active,
+html body .items-tabs .tab-pill.is-active,
+html body .items-tabs .tab-pill.is-active:not([class*="brand"]),
+html body .audit-tabs .tab-pill.is-active,
+html body .memo-tabs .tab-pill.is-active,
+html body .tab-pills-wrap .tab-pill.is-active,
+html body .tab-pills-wrap .tab-pill.is-active:not([class*="brand"]),
+html body .tabs .tab.is-active,
+html body .sf-mat-preset.is-active,
+html body .mrm-role-tab.is-active,
+html body main.content .tab-pill.is-active,
+html body main.content .tab-pill.is-active:not([class*="brand"]),
+html body main.content button.tab-pill.is-active,
+html body main.content button.tab-pill.is-active:not([class*="brand"]),
+html body main.content a.tab-pill.is-active,
+html body main.content .sf-tabs .tab-pill.is-active,
+html body main.content .sf-tabs .tab-pill.is-active:not([class*="brand"]),
+html body main.content .sf-tabs button.tab-pill.is-active,
+html body main.content .sf-tabs button.tab-pill.is-active:not([class*="brand"]),
+html body main.content .sf-tabs a.tab-pill.is-active {
+  background: #2563eb !important;
+  background-color: #2563eb !important;
+  border: 1px solid #1d4ed8 !important;
+  color: #ffffff !important;
+  font-weight: 600 !important;
+  border-radius: 8px !important;
+  padding: 6px 14px !important;
+  box-shadow: 0 1px 3px 0 rgba(37, 99, 235, 0.3), inset 0 1px 0 0 rgba(255, 255, 255, 0.2) !important;
+}
+
+html body .tab-pill.is-active *,
+html body button.tab-pill.is-active *,
+html body a.tab-pill.is-active *,
+html body .sf-tabs .tab-pill.is-active *,
+html body .sf-tabs button.tab-pill.is-active *,
+html body .sf-tabs a.tab-pill.is-active *,
+html body .items-tabs .tab-pill.is-active *,
+html body .audit-tabs .tab-pill.is-active *,
+html body .memo-tabs .tab-pill.is-active *,
+html body .tab-pills-wrap .tab-pill.is-active *,
+html body .tabs .tab.is-active *,
+html body .sf-mat-preset.is-active *,
+html body .mrm-role-tab.is-active *,
+html body main.content .tab-pill.is-active *,
+html body main.content button.tab-pill.is-active *,
+html body main.content a.tab-pill.is-active *,
+html body main.content .sf-tabs .tab-pill.is-active *,
+html body main.content .sf-tabs button.tab-pill.is-active *,
+html body main.content .sf-tabs a.tab-pill.is-active * {
+  color: #ffffff !important;
+}
+
+.sf-tabs .tab-pill.is-active svg,
+.items-tabs .tab-pill.is-active svg,
+.audit-tabs .tab-pill.is-active svg,
+.tab-pill.is-active svg {
+  stroke: #ffffff !important;
+  color: #ffffff !important;
+}
+
+/* Active Tab Count Badge */
+html body .tab-pill.is-active .tab-count,
+html body .tab-pill.is-active * .tab-count,
+html body main.content .audit-tabs .tab-pill.is-active .tab-count,
+html body main.content .audit-tabs .tab-pill.is-active * .tab-count,
+html body .audit-tabs .tab-pill.is-active .tab-count,
+html body .audit-tabs .tab-pill.is-active * .tab-count {
+  background: #1d4ed8 !important;
+  color: #ffffff !important;
+  border-radius: 6px !important;
+  padding: 2px 7px !important;
+  font-size: 0.75rem !important;
+  font-weight: 600 !important;
+}
+
+/* Dashboard Summary Chips */
+.sf-summary-chip:not(.is-active) {
+  background: var(--sf-btn-sec-bg) !important;
+  border: 1px solid var(--sf-flat-border) !important;
+  color: var(--sf-flat-primary) !important;
+  border-radius: 8px !important;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.03) !important;
+}
+.sf-summary-chip:not(.is-active):hover {
+  background: var(--sf-btn-sec-hover) !important;
+  color: var(--sf-flat-ink) !important;
+  border-color: var(--sf-flat-border-strong) !important;
+}
+.sf-summary-chip:not(.is-active) .chip-count {
+  background: #e2e8f0 !important;
+  color: var(--sf-flat-ink) !important;
+  border-radius: 6px !important;
+}
+
+.sf-summary-chip.is-active {
+  background: #2563eb !important;
+  border: 1px solid #1d4ed8 !important;
+  color: #ffffff !important;
+  font-weight: 600 !important;
+  border-radius: 8px !important;
+  box-shadow: 0 1px 3px 0 rgba(37, 99, 235, 0.25) !important;
+}
+.sf-summary-chip.is-active .chip-count {
+  background: #1d4ed8 !important;
+  color: #ffffff !important;
+  border-radius: 6px !important;
+}
+
+/* Badges */
+.badge-brand, .pill-brand {
+  background: #eff6ff !important;
+  border: 1px solid #bfdbfe !important;
+  color: #1d4ed8 !important;
+  font-weight: 600 !important;
+  border-radius: 6px !important;
+}
+.badge-success, .badge.is-success {
+  background: #d1fae5 !important;
+  border: 1px solid #a7f3d0 !important;
+  color: #065f46 !important;
+  font-weight: 600 !important;
+  border-radius: 6px !important;
+}
+.badge-danger, .badge.is-danger {
+  background: #fee2e2 !important;
+  border: 1px solid #fecaca !important;
+  color: #991b1b !important;
+  font-weight: 600 !important;
+  border-radius: 6px !important;
+}
+.badge-warning, .badge.is-warning {
+  background: #fef3c7 !important;
+  border: 1px solid #fde68a !important;
+  color: #92400e !important;
+  font-weight: 600 !important;
+  border-radius: 6px !important;
+}
+.badge-info, .badge.is-info {
+  background: #e0f2fe !important;
+  border: 1px solid #bae6fd !important;
+  color: #0369a1 !important;
+  font-weight: 600 !important;
+  border-radius: 6px !important;
+}
+
+/* Modals & Popovers (Clean startup elevation) */
+.modal-content, .sf-modal, .sf-modal-content, .popover, .dropdown-menu, .sf-select-panel, .notif-panel {
+  box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.12), 0 8px 10px -6px rgba(15, 23, 42, 0.08) !important;
+  border-radius: var(--sf-radius-card) !important;
+}
+[data-theme="dark"] .modal-content, [data-theme="dark"] .sf-modal,
+[data-theme="dark"] .dropdown-menu, [data-theme="dark"] .sf-select-panel,
+[data-theme="dark"] .notif-panel {
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* ==========================================================================
+   MOBILE & RESPONSIVE CONSTRAINTS
+   ========================================================================== */
+@media (max-width: 768px) {
+  .topbar { min-height: 54px !important; }
+  .content, main.content { padding-bottom: 140px !important; }
+  .card, .panel, .summary-card, .metric-card, .stat-card { border-radius: 10px !important; }
+  .bottom-action-bar {
+    box-shadow: 0 -4px 16px rgba(15, 23, 42, 0.08) !important;
+    border-top: 1px solid var(--sf-flat-border) !important;
+    background: rgba(255, 255, 255, 0.95) !important;
+    backdrop-filter: blur(8px) !important;
+    -webkit-backdrop-filter: blur(8px) !important;
+  }
+  .bottom-action-bar .btn,
+  .bottom-action-bar button,
+  #mobile-scan-bar .btn {
+    border-radius: 8px !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    scroll-behavior: auto !important;
+    transition-duration: .01ms !important;
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}
+
+
+/* ==========================================================================
+   AUDIT TABS — SEGMENTED CONTROL CONSISTENCY FIX (2026-10-16)
+   Problem: .sf-tabs.audit-tabs used a pill container (9999px) while the
+   inner .tab-pill buttons were 8px rounded -> visual mismatch
+   ("kontener rounded tapi button kotak").
+   Fix: align with .items-tabs / .memo-tabs segmented-control spec:
+        track = 12px radius, #f1f5f9 surface, 4px pad, 4px gap
+        button = 8px radius, transparent when idle, cobalt #2563eb when active
+   Specificity: .sf-tabs.audit-tabs (2 classes) ties with the sf-ui.css rule
+   and wins by load order (flat-material.css loads last).
+   ========================================================================== */
+.sf-tabs.audit-tabs {
+  display: inline-flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  gap: 4px !important;
+  background: #f1f5f9 !important;
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 12px !important;
+  padding: 4px !important;
+  box-shadow: inset 0 1px 2px 0 rgba(0, 0, 0, 0.03) !important;
+  box-sizing: border-box !important;
+  width: fit-content !important;
+  max-width: 100% !important;
+  overflow-x: auto !important;
+  -webkit-overflow-scrolling: touch !important;
+  margin: 1rem 0 1.25rem !important;
+}
+[data-theme="dark"] .sf-tabs.audit-tabs {
+  background: #181920 !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+  box-shadow: inset 0 1px 2px 0 rgba(0, 0, 0, 0.3) !important;
+}
+
+.sf-tabs.audit-tabs .tab-pill {
+  width: auto !important;
+  min-height: auto !important;
+  padding: 6px 14px !important;
+  border-radius: 8px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  font-size: .875rem !important;
+  font-weight: 500 !important;
+  border: 1px solid transparent !important;
+  background: transparent !important;
+  color: #334155 !important;
+  text-decoration: none !important;
+  transition: background .15s ease-in-out, color .15s ease-in-out, box-shadow .15s ease-in-out !important;
+  box-sizing: border-box !important;
+  white-space: nowrap !important;
+}
+[data-theme="dark"] .sf-tabs.audit-tabs .tab-pill {
+  color: #94a3b8 !important;
+}
+.sf-tabs.audit-tabs .tab-pill:hover {
+  background: rgba(0, 0, 0, 0.04) !important;
+  color: #0f172a !important;
+}
+[data-theme="dark"] .sf-tabs.audit-tabs .tab-pill:hover {
+  background: rgba(255, 255, 255, 0.06) !important;
+  color: #f8fafc !important;
+}
+.sf-tabs.audit-tabs .tab-pill svg {
+  width: 16px !important;
+  height: 16px !important;
+  flex-shrink: 0 !important;
+}
+.sf-tabs.audit-tabs .tab-pill.is-active {
+  background: #2563eb !important;
+  border-color: #1d4ed8 !important;
+  color: #ffffff !important;
+  font-weight: 600 !important;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
+}
+.sf-tabs.audit-tabs .tab-pill.is-active:hover {
+  background: #1d4ed8 !important;
+  color: #ffffff !important;
+}
+
+.sf-tabs.audit-tabs .tab-pill .tab-count {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  min-width: 20px !important;
+  height: 20px !important;
+  padding: 0 6px !important;
+  border-radius: 6px !important;
+  font-size: .75rem !important;
+  font-weight: 700 !important;
+  font-family: inherit !important;
+  background: rgba(0, 0, 0, 0.06) !important;
+  color: #475569 !important;
+}
+[data-theme="dark"] .sf-tabs.audit-tabs .tab-pill .tab-count {
+  background: rgba(255, 255, 255, 0.1) !important;
+  color: #cbd5e1 !important;
+}
+.sf-tabs.audit-tabs .tab-pill.is-active .tab-count {
+  background: rgba(255, 255, 255, 0.22) !important;
+  color: #ffffff !important;
+  padding: 0 6px !important;
+  font-size: .75rem !important;
+}
+
+/* Mobile: keep the segmented control horizontal and scrollable
+   (no more stacked full-width column) for visual consistency. */
+@media (max-width: 767px) {
+  .sf-tabs.audit-tabs {
+    flex-direction: row !important;
+    border-radius: 12px !important;
+    width: 100% !important;
+    padding: 4px !important;
+    gap: 4px !important;
+  }
+  .sf-tabs.audit-tabs .tab-pill {
+    width: auto !important;
+    min-height: auto !important;
+    padding: 6px 12px !important;
+    border-radius: 8px !important;
+    font-size: .85rem !important;
+  }
+}
+/* ==========================================================================
+   SCAN BARCODE DOUBLE FIX - Muse (2026-10-16)
+   Issue: Scan Barcode button appears twice (top + bottom bar) on desktop
+   Root cause: .bottom-action-bar was visible on desktop due to CSS specificity
+   Fix: Hide bottom bar on desktop (>=1024px), show only on mobile/tablet
+   ========================================================================== */
+@media (min-width: 1024px) {
+    .bottom-action-bar {
+        display: none !important;
+    }
+}
+/* On mobile/tablet, hide the top scan button to avoid double (bottom bar shows) */
+@media (max-width: 1023px) {
+    .page-head [data-scan-open] {
+        display: none !important;
+    }
+    .filters [data-scan-open] {
+        display: none !important;
+    }
+}

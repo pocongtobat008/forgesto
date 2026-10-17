@@ -74,6 +74,13 @@ foreach ($groups as $g) {
     window.SF_DASH = <?= json_encode($sfDash, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) ?>;
 </script>
 
+<?= \App\Core\View::partial('partials/hero-welcome', [
+    'user'             => auth(),
+    'summary'          => $summary,
+    'progress'         => $progress,
+    'discrepancyCount' => $discrepancyCount,
+]) ?>
+
 <div class="page-head">
     <div>
         <h1><?= __('Dashboard') ?></h1>

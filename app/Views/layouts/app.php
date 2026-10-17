@@ -43,6 +43,9 @@ $pageTitle = $title ?? 'Dashboard';
     <link rel="stylesheet" href="<?= asset_v('css/tokens.css') ?>">
     <link rel="stylesheet" href="<?= asset_v('css/app.css') ?>">
     <link rel="stylesheet" href="<?= asset_v('css/sf-ui.css') ?>">
+    <link rel="stylesheet" href="<?= asset_v('css/flat-material.css') ?>">
+    <!-- Aurora Glass 2.0 — WAJIB dimuat TERAKHIR agar menjadi lapisan visual final -->
+    <link rel="stylesheet" href="<?= asset_v('css/sf-glass.css') ?>">
     <?= $headExtra ?? '' ?>
 
     <script>
@@ -70,6 +73,17 @@ $pageTitle = $title ?? 'Dashboard';
     data-pic-groups="<?= e(implode(',', array_map('intval', $picGroups ?? []))) ?>"
     data-active-group="<?= isset($activeGroup) && $activeGroup !== null ? (int) $activeGroup : '' ?>"
     data-group-pending="<?= (int) ($groupPending ?? 0) ?>">
+
+    <!-- Layer 0: ambient Aurora Glass + wave (dekoratif, tidak diakses AT) -->
+    <div class="sf-aurora" aria-hidden="true">
+        <span class="sf-aurora-blob b1"></span><span class="sf-aurora-blob b2"></span>
+        <span class="sf-aurora-blob b3"></span><span class="sf-aurora-blob b4"></span>
+        <svg class="sf-aurora-waves" viewBox="0 0 1440 320" preserveAspectRatio="none" aria-hidden="true" focusable="false">
+            <path class="sf-w3" d="M0,250 C240,206 480,290 720,254 C960,218 1200,268 1440,232 L1440,320 L0,320 Z"/>
+            <path class="sf-w2" d="M0,272 C260,236 520,300 780,266 C1040,232 1220,286 1440,252 L1440,320 L0,320 Z"/>
+            <path class="sf-w1" d="M0,292 C240,268 500,314 760,290 C1020,266 1220,306 1440,282 L1440,320 L0,320 Z"/>
+        </svg>
+    </div>
     <div class="app-shell">
         <?= View::partial('partials/topbar', [
             'user'              => $user,
@@ -101,7 +115,7 @@ $pageTitle = $title ?? 'Dashboard';
                         $__bpParts = explode('-', (string) ($__bp['audit_month'] ?? ''));
                         $__bpLabel = trim(($__bpMonths[$__bpParts[1] ?? ''] ?? ($__bp['audit_month'] ?? '')) . ' ' . ($__bpParts[0] ?? ''));
                     ?>
-                    <div class="sf-archive-banner" style="background:#fffbeb;border:1px solid #fde68a;color:#92400e;padding:.65rem 1.15rem;border-radius:8px;font-size:.875rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;margin-bottom:1rem;box-shadow:0 1px 2px rgba(0,0,0,0.04);">
+                    <div class="sf-archive-banner" style="background:#fffbeb;border:1px solid #fde68a;color:#92400e;padding:.65rem 1.15rem;border-radius:8px;font-size:.875rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;margin-bottom:1rem;box-shadow:none;">
                         <div style="display:flex;align-items:center;gap:.6rem;">
                             <span class="sf-archive-icon" style="display:inline-flex;align-items:center;color:#b45309;" aria-hidden="true"><?= icon('lock') ?></span>
                             <div>
@@ -164,6 +178,7 @@ $pageTitle = $title ?? 'Dashboard';
     <script src="<?= asset_v('js/notif-popup.js') ?>"></script>
     <script src="<?= asset_v('js/wh-modal.js') ?>"></script>
     <script src="<?= asset_v('js/sf-mat.js') ?>"></script>
+    <script src="<?= asset_v('js/sf-motion.js') ?>" defer></script>
     <script src="<?= asset_v('js/table-colmgr.js') ?>"></script>
     <?= $bodyExtra ?? '' ?>
 </body>

@@ -177,9 +177,9 @@ select.sf-native { position: absolute !important; opacity: 0; pointer-events: no
 .tab-pill { display: inline-flex; align-items: center; gap: .4rem; padding: .45rem .8rem; border-radius: var(--radius-pill); border: none; background: transparent;
     color: var(--text-2); font-size: .8rem; font-weight: 600; cursor: pointer; transition: background-color 160ms, color 160ms, box-shadow 160ms; }
 .tab-pill:hover { color: var(--text); background: color-mix(in srgb, var(--surface) 60%, transparent); }
-.tab-pill.is-active { background: var(--surface); color: var(--brand-ink); box-shadow: var(--shadow-sm); }
+.tab-pill.is-active { background: #2563eb !important; color: #ffffff !important; box-shadow: var(--shadow-sm); }
 .tab-pill .tab-count { font-family: var(--font-mono); font-size: .72rem; padding: .05rem .4rem; border-radius: 999px; background: var(--surface-3); color: var(--text-2); }
-.tab-pill.is-active .tab-count { background: var(--brand-soft); color: var(--brand-ink); }
+.tab-pill.is-active .tab-count { background: #1d4ed8 !important; color: #ffffff !important; }
 
 .sf-status-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: .6rem; }
 .sf-status-item { display: flex; align-items: center; gap: .65rem; padding: .7rem .8rem; border: 1px solid var(--border); border-radius: var(--radius-md); background: var(--surface); transition: transform 160ms var(--ease-out), box-shadow 160ms, border-color 160ms; }
@@ -2650,7 +2650,9 @@ body[class*="warehouses"] .card > .table-wrap {
 .sf-tabs.audit-tabs .tab-pill.is-active,
 .sf-tabs.memo-tabs .tab-pill.is-active,
 a.tab-pill.is-active,
-a.tab-pill.is-active * { color: var(--accent-ink, #1a1108) !important; }
+button.tab-pill.is-active,
+a.tab-pill.is-active *,
+button.tab-pill.is-active * { color: #ffffff !important; stroke: #ffffff !important; }
 
 /* =====================================================================
    UNIFIED TABLE CONSISTENCY & CONTAINMENT (Pocong-Tobat)
@@ -2862,10 +2864,10 @@ table.data td .cell-title {
 }
 
 .sf-tabs.audit-tabs .tab-pill.is-active {
-  background: var(--brand-500, var(--brand-500)) !important;
-  border-color: var(--brand-500, var(--brand-500)) !important;
-  color: var(--accent-ink, #1a1108) !important;
-  box-shadow: 0 2px 6px rgba(240, 180, 41, .28) !important;
+  background: #2563eb !important;
+  border-color: #1d4ed8 !important;
+  color: #ffffff !important;
+  box-shadow: 0 2px 6px rgba(37, 99, 235, .28) !important;
 }
 
 .sf-tabs.audit-tabs .tab-pill .tab-count {
@@ -2884,8 +2886,8 @@ table.data td .cell-title {
 }
 
 .sf-tabs.audit-tabs .tab-pill.is-active .tab-count {
-  background: transparent !important;
-  color: var(--accent-ink, #1a1108) !important;
+  background: #1d4ed8 !important;
+  color: #ffffff !important;
   padding: 0 4px !important;
   font-size: .95rem !important;
 }
@@ -5524,9 +5526,9 @@ html.sidebar-collapsed .main {
     background: transparent !important;
 }
 .tab-pill.is-active, a.tab-pill.is-active, button.tab-pill.is-active {
-    color: var(--mantine-primary, var(--accent)) !important;
+    color: #ffffff !important;
     font-weight: 600 !important;
-    background: transparent !important;
+    background: #2563eb !important;
 }
 .tab-pill.is-active::after, a.tab-pill.is-active::after, button.tab-pill.is-active::after {
     content: '' !important;
@@ -5548,8 +5550,8 @@ html.sidebar-collapsed .main {
     font-weight: 600 !important;
 }
 .tab-pill.is-active .tab-count, a.tab-pill.is-active .tab-count, button.tab-pill.is-active .tab-count {
-    background: var(--mantine-primary-light, var(--info-bg)) !important;
-    color: var(--mantine-primary, var(--accent)) !important;
+    background: #1d4ed8 !important;
+    color: #ffffff !important;
     font-weight: 700 !important;
 }
 
@@ -5948,8 +5950,9 @@ html.sidebar-collapsed .main {
 .wh-switch .sf-select-panel,
 .topbar .wh-switch .sf-select-panel {
     top: calc(100% + 8px) !important;
-    left: 0 !important;
-    right: auto !important;
+    left: auto !important;
+    right: 0 !important;
+    max-width: min(280px, calc(100vw - 1.5rem)) !important;
     min-width: 190px !important;
     background: var(--surface, #ffffff) !important;
     border: 1px solid var(--border, #e2e8f0) !important;

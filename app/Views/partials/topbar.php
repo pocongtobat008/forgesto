@@ -65,7 +65,6 @@ if ($bp) {
                 <div class="topbar-brand-col">
                     <div class="tb-brand-title">
                         <strong class="tb-name"><?= e(config('app.name')) ?></strong>
-                        <span class="tb-badge">STO</span>
                     </div>
                     <a href="<?= url('tahun-buku') ?>" class="tb-period-sub <?= $isClosed ? 'is-closed' : 'is-open' ?>"
                        title="<?= $isClosed ? 'Tahun Buku (Read-Only): ' . e($bpFull) : 'Tahun Buku Aktif: ' . e($bpFull) ?>"
@@ -77,6 +76,23 @@ if ($bp) {
                     </a>
                 </div>
         </div>
+
+
+    </div>
+
+    <!-- Spotlight Search -->
+    <div class="topbar-center">
+        <button type="button" class="topbar-search" data-palette-open aria-label="<?= __('Buka aksi cepat') ?>">
+            <span class="ts-icon"><?= icon('search') ?></span>
+            <span class="ts-label"><?= __('Cari cepat di Spotlight...') ?></span>
+            <kbd data-palette-hint><?= __('Ctrl K') ?></kbd>
+        </button>
+    </div>
+
+    <!-- Header Actions (Clean & Minimalist: Notifications + User Profile) -->
+    <div class="topbar-actions">
+        <!-- Hidden button hook for programmatic [data-scan-open] calls -->
+        <button type="button" id="global-scan-trigger" data-scan-open class="sr-only" style="display:none;" aria-hidden="true"></button>
 
         <!-- Warehouse Selector -->
         <div class="wh-slot">
@@ -125,21 +141,6 @@ if ($bp) {
                 <?php endif; ?>
             </form>
         </div>
-    </div>
-
-    <!-- Spotlight Search -->
-    <div class="topbar-center">
-        <button type="button" class="topbar-search" data-palette-open aria-label="<?= __('Buka aksi cepat') ?>">
-            <span class="ts-icon"><?= icon('search') ?></span>
-            <span class="ts-label"><?= __('Cari cepat di Spotlight...') ?></span>
-            <kbd data-palette-hint><?= __('Ctrl K') ?></kbd>
-        </button>
-    </div>
-
-    <!-- Header Actions (Clean & Minimalist: Notifications + User Profile) -->
-    <div class="topbar-actions">
-        <!-- Hidden button hook for programmatic [data-scan-open] calls -->
-        <button type="button" id="global-scan-trigger" data-scan-open class="sr-only" style="display:none;" aria-hidden="true"></button>
 
         <!-- Theme toggle (moved from sidebar -> header, next to notifications) -->
         <button type="button" class="icon-btn theme-btn" data-theme-toggle

@@ -1,0 +1,1208 @@
+/* ==========================================================================
+   StockForge · AURORA GLASS 2.0 — Professional SaaS Surface System
+   --------------------------------------------------------------------------
+   Concept : "Aurora Glass" — cahaya ambient cobalt/cyan/amber yang bergerak
+             sangat lambat di belakang permukaan kaca beku (frosted glass).
+             Kesan: RAP (rapi, akurat, profesional), tenang, mahal.
+   Layers  : 0 aurora + wave · 1 chrome (topbar/sidebar) · 2 container
+             (card/panel) · 3 control (button/input) · 4 data (table).
+   Rules   : token-driven (zero hardcode di luar blok token), satu motion
+             signature per view (hero), semua animasi patuh
+             prefers-reduced-motion, kontras teks >= 4.5:1 light & dark.
+   Load    : SELALU dimuat TERAKHIR setelah flat-material.css.
+   ========================================================================== */
+
+/* ==========================================================================
+   1 · TOKENS  (satu-satunya tempat nilai mentah diizinkan)
+   ========================================================================== */
+:root {
+  /* --- Efek kaca (frosted) --- */
+  --sf-g-blur-sm:  10px;
+  --sf-g-blur:     16px;
+  --sf-g-blur-lg:  22px;
+  --sf-g-sat:      1.55;
+
+  /* Permukaan kaca: opasitas dipilih agar teks tetap >= 4.5:1 */
+  --sf-g-surface:      rgba(255, 255, 255, 0.74);
+  --sf-g-surface-2:    rgba(255, 255, 255, 0.86);
+  --sf-g-surface-3:    rgba(255, 255, 255, 0.94);
+  --sf-g-surface-soft: rgba(255, 255, 255, 0.58);
+  --sf-g-surface-sunk: rgba(241, 245, 249, 0.72);
+  --sf-g-veil:         rgba(248, 250, 252, 0.62);
+
+  /* Garis rambut / specular highlight */
+  --sf-g-brd:        rgba(255, 255, 255, 0.72);
+  --sf-g-brd-line:   rgba(15, 23, 42, 0.07);
+  --sf-g-brd-strong: rgba(15, 23, 42, 0.12);
+  --sf-g-hilite:     inset 0 1px 0 rgba(255, 255, 255, 0.85);
+  --sf-g-hilite-b:   1px solid rgba(255, 255, 255, 0.72);
+
+  /* Elevasi kaca (berlapis, bukan satu bayangan generik) */
+  --sf-g-sh-xs: 0 1px 2px rgba(15, 23, 42, 0.04);
+  --sf-g-sh-sm: 0 1px 2px rgba(15, 23, 42, 0.05), 0 1px 3px rgba(15, 23, 42, 0.04);
+  --sf-g-sh-md: 0 2px 6px rgba(15, 23, 42, 0.06), 0 8px 20px -6px rgba(15, 23, 42, 0.10);
+  --sf-g-sh-lg: 0 6px 16px rgba(15, 23, 42, 0.08), 0 18px 40px -12px rgba(15, 23, 42, 0.14);
+  --sf-g-sh-xl: 0 12px 32px rgba(15, 23, 42, 0.12), 0 32px 64px -16px rgba(15, 23, 42, 0.18);
+  --sf-g-sh-chrome: 0 1px 0 rgba(15, 23, 42, 0.04), 0 10px 30px -18px rgba(15, 23, 42, 0.28);
+  --sf-g-sh-chrome-up: 0 1px 0 rgba(15, 23, 42, 0.05), 0 18px 44px -20px rgba(15, 23, 42, 0.38);
+
+  /* Aurora: cobalt -> cyan -> amber (bukan indigo/violet — hindari tel AI) */
+  --sf-g-aur-1: rgba(37, 99, 235, 0.20);
+  --sf-g-aur-2: rgba(14, 165, 233, 0.17);
+  --sf-g-aur-3: rgba(245, 158, 11, 0.13);
+  --sf-g-aur-4: rgba(13, 148, 136, 0.12);
+  --sf-g-aur-glow: radial-gradient(60% 50% at 50% 0%, rgba(37, 99, 235, 0.10), transparent 70%);
+  --sf-g-wave-1: rgba(37, 99, 235, 0.10);
+  --sf-g-wave-2: rgba(14, 165, 233, 0.08);
+  --sf-g-wave-3: rgba(245, 158, 11, 0.06);
+
+  /* Aksen interaksi */
+  --sf-g-active-bg: rgba(37, 99, 235, 0.12);
+  --sf-g-active-ink: #1d4ed8;
+  --sf-g-active-glow: inset 0 0 0 1px rgba(37, 99, 235, 0.22), 0 6px 18px -10px rgba(37, 99, 235, 0.55);
+  --sf-g-focus: 0 0 0 var(--sf-g-ring-w) rgba(37, 99, 235, 0.30);
+  --sf-g-ring-w:      3px;
+  --sf-g-act-bar-w:   3px;
+  --sf-g-nudge:       3px;
+  --sf-g-radius-sm:   6px;
+  --sf-g-bar-h:       6px;
+  --sf-g-delay-none:  0ms;
+  /* Indeks stagger yang diisi markup (style="--i:N") */
+  --i:                0;
+  --sf-g-blob-blur:   56px;
+  --sf-g-blob-blur-sm: 42px;
+  --sf-g-ring-blur:   1px;
+  --sf-g-glow-spread: 12px;
+  --sf-g-dur-sweep:   2800ms;
+  --sf-g-dur-pulse:   3600ms;
+  --sf-g-print:       rgba(255, 255, 255, 1);
+  --sf-g-danger-solid: #c92a2a;
+  --sf-g-on-accent:   rgba(255, 255, 255, 1);
+  --sf-g-scrim:       rgba(15, 23, 42, 0.45);
+  --sf-g-scrim-strong: rgba(2, 6, 23, 0.62);
+  --sf-g-sheen: linear-gradient(100deg, rgba(255, 255, 255, 0) 12%, rgba(255, 255, 255, 0.55) 50%, rgba(255, 255, 255, 0) 88%);
+  --sf-g-btn-glow: 0 1px 2px rgba(15, 23, 42, 0.12), 0 8px 20px -10px rgba(37, 99, 235, 0.55);
+
+  /* Data table */
+  --sf-g-row: rgba(255, 255, 255, 0.55);
+  --sf-g-row-hover: rgba(37, 99, 235, 0.07);
+  --sf-g-head: rgba(241, 245, 249, 0.82);
+
+  /* Geometri (konsisten dengan sistem lama: tombol 8, card 12) */
+  --sf-g-radius-panel: 16px;
+  --sf-g-radius-hero:  20px;
+  --sf-g-radius-pill:  999px;
+  --sf-g-wave-h:       88px;
+  --sf-g-lift:         -2px;
+  --sf-g-lift-sm:      -1px;
+  --sf-g-rise:         10px;
+  --sf-g-rise-sm:      6px;
+  --sf-g-press:        0.975;
+  --sf-g-avatar:       32px;
+  --sf-g-avatar-lg:    52px;
+  --sf-g-avatar-ring:  2px;
+  --sf-g-hero-pad:     1.5rem;
+  --sf-g-bar-w:        132px;
+
+  /* Gerak */
+  --sf-g-dur-instant: 1ms;
+  --sf-g-dur-fast:    100ms;
+  --sf-g-dur:         190ms;
+  --sf-g-dur-slow:    300ms;
+  --sf-g-dur-hero:    460ms;
+  --sf-g-dur-drift:   46s;
+  --sf-g-dur-wave:    24s;
+  --sf-g-dur-ring:    7s;
+  --sf-g-dur-sheen:   620ms;
+  --sf-g-stagger:     42ms;
+  --sf-g-ease:        cubic-bezier(0.16, 1, 0.3, 1);
+  --sf-g-ease-io:     cubic-bezier(0.4, 0, 0.2, 1);
+  --sf-g-ease-linear: linear;
+}
+
+[data-theme="dark"] {
+  --sf-g-surface:      rgba(24, 25, 31, 0.66);
+  --sf-g-surface-2:    rgba(20, 21, 26, 0.80);
+  --sf-g-surface-3:    rgba(28, 29, 36, 0.92);
+  --sf-g-surface-soft: rgba(24, 25, 31, 0.50);
+  --sf-g-surface-sunk: rgba(38, 40, 48, 0.62);
+  --sf-g-veil:         rgba(9, 10, 15, 0.55);
+
+  --sf-g-brd:        rgba(255, 255, 255, 0.10);
+  --sf-g-brd-line:   rgba(255, 255, 255, 0.09);
+  --sf-g-brd-strong: rgba(255, 255, 255, 0.16);
+  --sf-g-hilite:     inset 0 1px 0 rgba(255, 255, 255, 0.07);
+  --sf-g-hilite-b:   1px solid rgba(255, 255, 255, 0.10);
+
+  --sf-g-sh-xs: 0 1px 2px rgba(0, 0, 0, 0.30);
+  --sf-g-sh-sm: 0 1px 2px rgba(0, 0, 0, 0.35), 0 2px 6px rgba(0, 0, 0, 0.25);
+  --sf-g-sh-md: 0 2px 8px rgba(0, 0, 0, 0.40), 0 12px 28px -10px rgba(0, 0, 0, 0.55);
+  --sf-g-sh-lg: 0 8px 22px rgba(0, 0, 0, 0.45), 0 24px 56px -16px rgba(0, 0, 0, 0.60);
+  --sf-g-sh-xl: 0 16px 40px rgba(0, 0, 0, 0.50), 0 40px 80px -20px rgba(0, 0, 0, 0.65);
+  --sf-g-sh-chrome: 0 1px 0 rgba(255, 255, 255, 0.04), 0 12px 34px -20px rgba(0, 0, 0, 0.85);
+  --sf-g-sh-chrome-up: 0 1px 0 rgba(255, 255, 255, 0.06), 0 20px 48px -22px rgba(0, 0, 0, 0.95);
+
+  --sf-g-aur-1: rgba(59, 130, 246, 0.20);
+  --sf-g-aur-2: rgba(56, 189, 248, 0.14);
+  --sf-g-aur-3: rgba(252, 196, 25, 0.10);
+  --sf-g-aur-4: rgba(45, 212, 191, 0.10);
+  --sf-g-aur-glow: radial-gradient(60% 50% at 50% 0%, rgba(59, 130, 246, 0.14), transparent 70%);
+  --sf-g-wave-1: rgba(59, 130, 246, 0.12);
+  --sf-g-wave-2: rgba(56, 189, 248, 0.09);
+  --sf-g-wave-3: rgba(252, 196, 25, 0.06);
+
+  --sf-g-active-bg: rgba(59, 130, 246, 0.18);
+  --sf-g-active-ink: #93c5fd;
+  --sf-g-active-glow: inset 0 0 0 1px rgba(59, 130, 246, 0.30), 0 8px 22px -12px rgba(59, 130, 246, 0.70);
+  --sf-g-focus: 0 0 0 var(--sf-g-ring-w) rgba(96, 165, 250, 0.38);
+  --sf-g-sheen: linear-gradient(100deg, rgba(255, 255, 255, 0) 12%, rgba(255, 255, 255, 0.16) 50%, rgba(255, 255, 255, 0) 88%);
+  --sf-g-btn-glow: 0 1px 2px rgba(0, 0, 0, 0.35), 0 10px 24px -12px rgba(59, 130, 246, 0.75);
+
+  --sf-g-row: rgba(255, 255, 255, 0.02);
+  --sf-g-row-hover: rgba(96, 165, 250, 0.10);
+  --sf-g-head: rgba(38, 40, 48, 0.72);
+}
+
+/* Fallback: peramban tanpa backdrop-filter -> permukaan solid, tetap rapi. */
+@supports not ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
+  :root {
+    --sf-g-surface: rgba(255, 255, 255, 1);
+    --sf-g-surface-2: rgba(255, 255, 255, 1);
+    --sf-g-surface-3: rgba(255, 255, 255, 1);
+    --sf-g-surface-soft: rgba(255, 255, 255, 1);
+    --sf-g-surface-sunk: rgba(241, 245, 249, 1);
+    --sf-g-row: rgba(255, 255, 255, 1);
+    --sf-g-head: rgba(248, 250, 252, 1);
+  }
+  [data-theme="dark"] {
+    --sf-g-surface: rgba(22, 23, 28, 1);
+    --sf-g-surface-2: rgba(20, 21, 26, 1);
+    --sf-g-surface-3: rgba(27, 28, 34, 1);
+    --sf-g-surface-soft: rgba(20, 21, 26, 1);
+    --sf-g-surface-sunk: rgba(32, 33, 39, 1);
+    --sf-g-row: rgba(22, 23, 28, 1);
+    --sf-g-head: rgba(27, 28, 34, 1);
+  }
+}
+
+/* ==========================================================================
+   2 · CANVAS & LAYER AURORA  (fondasi "kaca butuh cahaya di belakangnya")
+   ========================================================================== */
+html, body {
+  background-color: var(--sf-flat-canvas) !important;
+  background-image: none !important;
+}
+.app-shell {
+  position: relative;
+  z-index: 1;
+  background: transparent !important;
+  background-image: none !important;
+}
+.main, .content, main.content {
+  background: transparent !important;
+  background-image: none !important;
+}
+
+/* Layer 0 — ambient cahaya + wave, di belakang seluruh shell. */
+.sf-aurora {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+  background-image: var(--sf-g-aur-glow);
+  background-repeat: no-repeat;
+}
+.sf-aurora-blob {
+  position: absolute;
+  display: block;
+  width: 58vw;
+  height: 58vw;
+  border-radius: 50%;
+  filter: blur(var(--sf-g-blob-blur));
+  opacity: 0.9;
+  will-change: transform;
+  transform: translate3d(0, 0, 0);
+}
+.sf-aurora-blob.b1 { background: var(--sf-g-aur-1); top: -22vw; left: -12vw; animation: sf-aurora-a var(--sf-g-dur-drift) var(--sf-g-ease-io) infinite alternate; }
+.sf-aurora-blob.b2 { background: var(--sf-g-aur-2); top: -14vw; right: -16vw; width: 46vw; height: 46vw; animation: sf-aurora-b var(--sf-g-dur-drift) var(--sf-g-ease-io) infinite alternate; }
+.sf-aurora-blob.b3 { background: var(--sf-g-aur-3); bottom: -26vw; left: 24vw; width: 40vw; height: 40vw; animation: sf-aurora-c var(--sf-g-dur-drift) var(--sf-g-ease-io) infinite alternate; }
+.sf-aurora-blob.b4 { background: var(--sf-g-aur-4); bottom: -24vw; right: -10vw; width: 34vw; height: 34vw; animation: sf-aurora-b var(--sf-g-dur-drift) var(--sf-g-ease-io) infinite alternate-reverse; }
+
+@keyframes sf-aurora-a {
+  from { transform: translate3d(0, 0, 0) scale(1); }
+  to   { transform: translate3d(6vw, 4vw, 0) scale(1.12); }
+}
+@keyframes sf-aurora-b {
+  from { transform: translate3d(0, 0, 0) scale(1.06); }
+  to   { transform: translate3d(-5vw, 5vw, 0) scale(1); }
+}
+@keyframes sf-aurora-c {
+  from { transform: translate3d(0, 0, 0) scale(1); }
+  to   { transform: translate3d(-4vw, -3vw, 0) scale(1.14); }
+}
+
+/* Wave SVG: dua lapis, mengalir sangat lambat (bukan loop mencolok). */
+.sf-aurora-waves {
+  position: absolute;
+  left: -4%;
+  right: -4%;
+  bottom: 0;
+  width: 108%;
+  height: var(--sf-g-wave-h);
+  opacity: 0.85;
+}
+.sf-aurora-waves path { stroke: none; }
+.sf-aurora-waves .sf-w1 { fill: var(--sf-g-wave-1); animation: sf-wave-drift var(--sf-g-dur-wave) var(--sf-g-ease-io) infinite alternate; }
+.sf-aurora-waves .sf-w2 { fill: var(--sf-g-wave-2); animation: sf-wave-drift calc(var(--sf-g-dur-wave) * 1.45) var(--sf-g-ease-io) infinite alternate-reverse; }
+.sf-aurora-waves .sf-w3 { fill: var(--sf-g-wave-3); animation: sf-wave-drift calc(var(--sf-g-dur-wave) * 1.9) var(--sf-g-ease-io) infinite alternate; }
+@keyframes sf-wave-drift {
+  from { transform: translate3d(0, 0, 0); }
+  to   { transform: translate3d(-2.5%, 0, 0); }
+}
+
+/* ==========================================================================
+   3 · CHROME — topbar & sidebar sebagai kaca
+   ========================================================================== */
+.topbar {
+  background: var(--sf-g-surface-2) !important;
+  -webkit-backdrop-filter: blur(var(--sf-g-blur)) saturate(var(--sf-g-sat)) !important;
+  backdrop-filter: blur(var(--sf-g-blur)) saturate(var(--sf-g-sat)) !important;
+  border-bottom: 1px solid var(--sf-g-brd-line) !important;
+  box-shadow: var(--sf-g-sh-chrome) !important;
+  transition: box-shadow var(--sf-g-dur) var(--sf-g-ease), background var(--sf-g-dur) var(--sf-g-ease) !important;
+}
+.topbar.is-scrolled {
+  background: var(--sf-g-surface-3) !important;
+  box-shadow: var(--sf-g-sh-chrome-up) !important;
+}
+.topbar-search {
+  background: var(--sf-g-surface-soft) !important;
+  border: 1px solid var(--sf-g-brd-line) !important;
+  -webkit-backdrop-filter: blur(var(--sf-g-blur-sm)) !important;
+  backdrop-filter: blur(var(--sf-g-blur-sm)) !important;
+  transition: border-color var(--sf-g-dur-fast) var(--sf-g-ease), box-shadow var(--sf-g-dur-fast) var(--sf-g-ease), background var(--sf-g-dur-fast) var(--sf-g-ease) !important;
+}
+.topbar-search:hover { background: var(--sf-g-surface) !important; }
+.topbar-search:focus-within {
+  background: var(--sf-g-surface-2) !important;
+  border-color: var(--sf-blue-primary) !important;
+  box-shadow: var(--sf-g-focus) !important;
+}
+.topbar .wh-switch-inner, .topbar .wh-switch-static, .topbar .sf-select-trigger {
+  background: var(--sf-g-surface-soft) !important;
+  border: 1px solid var(--sf-g-brd-line) !important;
+  box-shadow: none !important;
+}
+.user-chip {
+  background: var(--sf-g-surface-soft) !important;
+  border: 1px solid var(--sf-g-brd-line) !important;
+  box-shadow: none !important;
+  transition: background var(--sf-g-dur-fast) var(--sf-g-ease), border-color var(--sf-g-dur-fast) var(--sf-g-ease), transform var(--sf-g-dur-fast) var(--sf-g-ease) !important;
+}
+.user-chip:hover { background: var(--sf-g-surface) !important; border-color: var(--sf-g-brd-strong) !important; }
+
+.sidebar {
+  background: var(--sf-g-surface-soft) !important;
+  -webkit-backdrop-filter: blur(var(--sf-g-blur-lg)) saturate(var(--sf-g-sat)) !important;
+  backdrop-filter: blur(var(--sf-g-blur-lg)) saturate(var(--sf-g-sat)) !important;
+  border-right: 1px solid var(--sf-g-brd-line) !important;
+  box-shadow: var(--sf-g-hilite) !important;
+}
+.sidebar .sidebar-group-body { background: transparent !important; }
+
+/* Nav item: glass pill, indikator aktif dengan aksen cobalt. */
+.sidebar .nav-item {
+  position: relative;
+  border-radius: var(--sf-radius-control) !important;
+  transition: background var(--sf-g-dur-fast) var(--sf-g-ease), color var(--sf-g-dur-fast) var(--sf-g-ease), transform var(--sf-g-dur-fast) var(--sf-g-ease) !important;
+}
+.sidebar .nav-item:hover { background: var(--sf-g-surface) !important; transform: translateX(var(--sf-g-nudge)) !important; }
+.sidebar .nav-item.is-active,
+.sidebar a.nav-item[aria-current="page"] {
+  background: var(--sf-g-active-bg) !important;
+  color: var(--sf-g-active-ink) !important;
+  box-shadow: var(--sf-g-active-glow) !important;
+  -webkit-backdrop-filter: blur(var(--sf-g-blur-sm)) !important;
+  backdrop-filter: blur(var(--sf-g-blur-sm)) !important;
+}
+.sidebar .nav-item.is-active::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 22%;
+  bottom: 22%;
+  width: var(--sf-g-act-bar-w);
+  border-radius: var(--sf-g-radius-pill);
+  background: linear-gradient(180deg, var(--sf-blue-primary), rgba(14, 165, 233, 0.9));
+  box-shadow: 0 0 var(--sf-g-glow-spread) rgba(37, 99, 235, 0.55);
+}
+[data-theme="dark"] .sidebar .nav-item.is-active::before { background: linear-gradient(180deg, rgba(96, 165, 250, 1), rgba(56, 189, 248, 1)); }
+.sidebar .nav-item.is-active .nav-label { color: inherit !important; }
+
+/* Sidebar backdrop (drawer mobile) */
+.sidebar-backdrop { background: var(--sf-g-scrim) !important; -webkit-backdrop-filter: blur(var(--sf-g-blur-sm)) !important; backdrop-filter: blur(var(--sf-g-blur-sm)) !important; }
+
+/* Breadcrumb: chip kaca tipis */
+.sf-breadcrumb {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: var(--sf-g-surface-soft) !important;
+  border: 1px solid var(--sf-g-brd-line) !important;
+  border-radius: var(--sf-g-radius-pill) !important;
+  padding: 0.25rem 0.7rem !important;
+  -webkit-backdrop-filter: blur(var(--sf-g-blur-sm)) !important;
+  backdrop-filter: blur(var(--sf-g-blur-sm)) !important;
+  width: fit-content;
+}
+
+/* ==========================================================================
+   4 · CONTAINER — card, panel, stat, tabel bungkus, overlay
+   ========================================================================== */
+.card, section.card, .sf-panel, .panel, .stat, .mrm-tile, .by-body,
+.col-mgr-panel, .sf-select-panel, .dropdown-menu, .notif-panel, .wh-modal-panel,
+.ss-list, .palette-panel, .sf-modal, .modal-panel, .sf-toast {
+  background: var(--sf-g-surface) !important;
+  -webkit-backdrop-filter: blur(var(--sf-g-blur)) saturate(var(--sf-g-sat)) !important;
+  backdrop-filter: blur(var(--sf-g-blur)) saturate(var(--sf-g-sat)) !important;
+  border: var(--sf-g-hilite-b) !important;
+  box-shadow: var(--sf-g-hilite), var(--sf-g-sh-md) !important;
+}
+.card, section.card { border-radius: var(--sf-radius-card) !important; }
+.sf-select-panel, .dropdown-menu, .notif-panel, .wh-modal-panel, .palette-panel, .col-mgr-panel {
+  border-radius: var(--sf-g-radius-panel) !important;
+  box-shadow: var(--sf-g-hilite), var(--sf-g-sh-lg) !important;
+}
+.card-header, .card-footer {
+  background: transparent !important;
+  border-color: var(--sf-g-brd-line) !important;
+}
+.card-body { background: transparent !important; }
+
+/* Kartu statistik: kaca + satu gesture hover (lift), tanpa animasi berlebih. */
+.stat {
+  position: relative;
+  overflow: hidden;
+  transition: transform var(--sf-g-dur) var(--sf-g-ease), box-shadow var(--sf-g-dur) var(--sf-g-ease), border-color var(--sf-g-dur) var(--sf-g-ease) !important;
+}
+.stat:hover { transform: translateY(var(--sf-g-lift)) !important; box-shadow: var(--sf-g-hilite), var(--sf-g-sh-lg) !important; border-color: var(--sf-g-brd) !important; }
+.stat .stat-icon {
+  background: linear-gradient(140deg, rgba(37, 99, 235, 0.16), rgba(14, 165, 233, 0.10)) !important;
+  border: var(--sf-g-hilite-b) !important;
+  box-shadow: var(--sf-g-hilite) !important;
+  border-radius: var(--sf-radius-control) !important;
+  -webkit-backdrop-filter: blur(var(--sf-g-blur-sm)) !important;
+  backdrop-filter: blur(var(--sf-g-blur-sm)) !important;
+}
+.stat.is-success .stat-icon { background: linear-gradient(140deg, rgba(16, 185, 129, 0.18), rgba(13, 148, 136, 0.10)) !important; }
+.stat.is-danger .stat-icon { background: linear-gradient(140deg, rgba(239, 68, 68, 0.16), rgba(220, 38, 38, 0.10)) !important; }
+.stat.is-warning .stat-icon { background: linear-gradient(140deg, rgba(245, 158, 11, 0.18), rgba(217, 119, 6, 0.10)) !important; }
+.stat-value { font-variant-numeric: tabular-nums; letter-spacing: -0.02em; }
+
+/* Group/judul halaman: garis aksen + tipografi tegas (bukan sekadar teks). */
+.page-head h1 { letter-spacing: -0.02em; }
+.page-head p { color: var(--sf-flat-muted) !important; }
+
+/* ==========================================================================
+   5 · TABEL & KONTROL DATA — tetap terbaca, kaca hanya di wadah
+   ========================================================================== */
+:root:not([data-theme="dark"]) .table-wrap {
+  background: var(--sf-g-surface-soft) !important;
+  -webkit-backdrop-filter: blur(var(--sf-g-blur-sm)) !important;
+  backdrop-filter: blur(var(--sf-g-blur-sm)) !important;
+  border-radius: var(--sf-radius-card) !important;
+}
+:root:not([data-theme="dark"]) table.data { background: transparent !important; }
+:root:not([data-theme="dark"]) table.data thead, :root:not([data-theme="dark"]) table.data thead tr { background: transparent !important; }
+:root:not([data-theme="dark"]) table.data thead th, :root:not([data-theme="dark"]) thead th, :root:not([data-theme="dark"]) .xf-th {
+  background: var(--sf-g-head) !important;
+  border-bottom: 1px solid var(--sf-g-brd-strong) !important;
+  -webkit-backdrop-filter: blur(var(--sf-g-blur-sm)) !important;
+  backdrop-filter: blur(var(--sf-g-blur-sm)) !important;
+}
+:root:not([data-theme="dark"]) table.data tbody tr { background: transparent !important; }
+table.data tbody tr:nth-child(even) { background: var(--sf-g-row) !important; }
+table.data tbody tr:hover { background: var(--sf-g-row-hover) !important; }
+:root:not([data-theme="dark"]) table.data td { background: transparent !important; }
+table.data tbody tr:hover td:first-child { box-shadow: inset var(--sf-g-act-bar-w) 0 0 var(--sf-blue-primary) !important; }
+
+/* Kontrol form: kaca tipis, fokus jelas. */
+input[type="text"], input[type="search"], input[type="email"], input[type="password"],
+input[type="number"], input[type="date"], input[type="tel"], input[type="url"],
+select, textarea, .sf-native, .input {
+  background: var(--sf-g-surface-2) !important;
+  border: 1px solid var(--sf-g-brd-line) !important;
+  border-radius: var(--sf-radius-control) !important;
+  box-shadow: var(--sf-g-sh-xs) !important;
+  transition: border-color var(--sf-g-dur-fast) var(--sf-g-ease), box-shadow var(--sf-dur-fast, 120ms) var(--sf-g-ease) !important;
+}
+input:focus, select:focus, textarea:focus, .input:focus {
+  border-color: var(--sf-blue-primary) !important;
+  box-shadow: var(--sf-g-focus) !important;
+  outline: none !important;
+}
+/* Fokus keyboard konsisten di seluruh aplikasi */
+a:focus-visible, button:focus-visible, [tabindex]:focus-visible, .nav-item:focus-visible {
+  outline: none !important;
+  box-shadow: var(--sf-g-focus) !important;
+  border-radius: var(--sf-radius-control);
+}
+
+/* Tombol: sheen tipis pada primary, lift halus, press scale. */
+.btn, button, a.btn, .col-mv-btn, .xf-btn, .wh-opt, .icon-btn, .tab-pill, .tabs .tab {
+  transition: background var(--sf-g-dur-fast) var(--sf-g-ease), color var(--sf-g-dur-fast) var(--sf-g-ease),
+              border-color var(--sf-g-dur-fast) var(--sf-g-ease), transform var(--sf-g-dur-fast) var(--sf-g-ease),
+              box-shadow: var(--sf-g-dur-fast) var(--sf-g-ease) !important;
+}
+.btn:active, button:active, .col-mv-btn:active, .xf-btn:active, .icon-btn:active { transform: scale(var(--sf-g-press)) !important; }
+.btn-primary, .btn-brand, .btn.btn-brand {
+  position: relative;
+  overflow: hidden;
+  box-shadow: var(--sf-g-btn-glow) !important;
+}
+.btn-primary::after, .btn-brand::after, .btn.btn-brand::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: var(--sf-g-sheen);
+  transform: translateX(-120%);
+  opacity: 0;
+  pointer-events: none;
+}
+.btn-primary:hover::after, .btn-brand:hover::after, .btn.btn-brand:hover::after {
+  opacity: 1;
+  transform: translateX(120%);
+  transition: transform var(--sf-g-dur-sheen) var(--sf-g-ease), opacity var(--sf-g-dur-fast) var(--sf-g-ease);
+}
+.btn-primary:hover, .btn-brand:hover, .btn.btn-brand:hover { transform: translateY(var(--sf-g-lift-sm)) !important; }
+.btn-outline, .btn-secondary, .btn-ghost, .btn.btn-outline, .btn.btn-ghost, .col-mv-btn, .xf-btn, .icon-btn {
+  background: var(--sf-g-surface-2) !important;
+  border: 1px solid var(--sf-g-brd-line) !important;
+  -webkit-backdrop-filter: blur(var(--sf-g-blur-sm)) !important;
+  backdrop-filter: blur(var(--sf-g-blur-sm)) !important;
+  box-shadow: var(--sf-g-sh-xs) !important;
+}
+.btn-outline:hover, .btn-secondary:hover, .col-mv-btn:hover, .xf-btn:hover, .icon-btn:hover {
+  background: var(--sf-g-surface-3) !important;
+  border-color: var(--sf-g-brd-strong) !important;
+  transform: translateY(var(--sf-g-lift-sm)) !important;
+}
+.btn-danger { box-shadow: var(--sf-g-sh-sm) !important; }
+
+/* Badge / chip / kbd: tint kaca, tetap kontras. */
+:root:not([data-theme="dark"]) .badge {
+  border-radius: var(--sf-g-radius-sm) !important;
+  border: 1px solid var(--sf-g-brd-line) !important;
+  -webkit-backdrop-filter: blur(var(--sf-g-blur-sm)) !important;
+  backdrop-filter: blur(var(--sf-g-blur-sm)) !important;
+}
+:root:not([data-theme="dark"]) .badge-brand, :root:not([data-theme="dark"]) .badge-info { background: rgba(37, 99, 235, 0.12) !important; }
+:root:not([data-theme="dark"]) .badge-success { background: rgba(16, 185, 129, 0.16) !important; }
+:root:not([data-theme="dark"]) .badge-warning { background: rgba(245, 158, 11, 0.18) !important; }
+:root:not([data-theme="dark"]) .badge-danger { background: rgba(239, 68, 68, 0.14) !important; }
+:root:not([data-theme="dark"]) kbd, :root:not([data-theme="dark"]) .kbd {
+  background: var(--sf-g-surface-sunk) !important;
+  border: 1px solid var(--sf-g-brd-line) !important;
+  box-shadow: none !important;
+}
+
+/* Tab: track kaca + tab aktif solid (konsisten 8px). */
+:root:not([data-theme="dark"]) .tabs, :root:not([data-theme="dark"]) .sf-tabs, :root:not([data-theme="dark"]) .tab-track, :root:not([data-theme="dark"]) .sf-mat-track, :root:not([data-theme="dark"]) .btn-group {
+  background: var(--sf-g-surface-sunk) !important;
+  border: 1px solid var(--sf-g-brd-line) !important;
+  border-radius: var(--sf-radius-track) !important;
+  -webkit-backdrop-filter: blur(var(--sf-g-blur-sm)) !important;
+  backdrop-filter: blur(var(--sf-g-blur-sm)) !important;
+}
+:root:not([data-theme="dark"]) .tab-pill.is-active, :root:not([data-theme="dark"]) .tabs .tab.is-active, :root:not([data-theme="dark"]) .tab-pill[aria-selected="true"] {
+  box-shadow: var(--sf-g-btn-glow) !important;
+}
+
+/* Progress: bar kaca dengan kilau bergerak (bukan warna datar). */
+.sf-progbar {
+  background: var(--sf-g-surface-sunk) !important;
+  border: 1px solid var(--sf-g-brd-line) !important;
+  box-shadow: var(--sf-g-hilite) !important;
+  overflow: hidden;
+}
+.sf-progbar > span { position: relative; overflow: hidden; }
+.sf-progbar > span::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: var(--sf-g-sheen);
+  animation: sf-sheen-sweep var(--sf-g-dur-sweep) var(--sf-g-ease-linear) infinite;
+}
+@keyframes sf-sheen-sweep {
+  from { transform: translateX(-100%); }
+  to   { transform: translateX(100%); }
+}
+
+/* ==========================================================================
+   6 · OVERLAY & SCRIM
+   ========================================================================== */
+.wh-modal-backdrop, .modal-backdrop, .sf-backdrop, .scrim {
+  background: var(--sf-g-scrim) !important;
+  -webkit-backdrop-filter: blur(var(--sf-g-blur-sm)) !important;
+  backdrop-filter: blur(var(--sf-g-blur-sm)) !important;
+}
+[data-theme="dark"] .wh-modal-backdrop, [data-theme="dark"] .modal-backdrop { background: var(--sf-g-scrim-strong) !important; }
+.sf-archive-banner { box-shadow: var(--sf-g-sh-sm) !important; -webkit-backdrop-filter: blur(var(--sf-g-blur-sm)) !important; backdrop-filter: blur(var(--sf-g-blur-sm)) !important; }
+.alert, .flash { box-shadow: var(--sf-g-hilite), var(--sf-g-sh-sm) !important; }
+
+/* ==========================================================================
+   7 · AVATAR — animasi hidup (ring gradient berputar + denyut status)
+   ========================================================================== */
+.avatar, .user-chip .avatar {
+  position: relative;
+  background: linear-gradient(135deg, var(--sf-blue-primary), rgba(14, 165, 233, 0.95)) !important;
+  box-shadow: var(--sf-g-btn-glow) !important;
+  isolation: isolate;
+}
+.avatar::after {
+  content: "";
+  position: absolute;
+  inset: calc(-1 * var(--sf-g-avatar-ring));
+  border-radius: 50%;
+  background: conic-gradient(from 0deg, rgba(37, 99, 235, 0.0), rgba(37, 99, 235, 0.85), rgba(14, 165, 233, 0.85), rgba(245, 158, 11, 0.75), rgba(37, 99, 235, 0.0));
+  animation: sf-avatar-ring var(--sf-g-dur-ring) var(--sf-g-ease-linear) infinite;
+  z-index: -1;
+  filter: blur(var(--sf-g-ring-blur));
+  opacity: 0.85;
+}
+@keyframes sf-avatar-ring { to { transform: rotate(360deg); } }
+
+/* Avatar besar (hero dashboard) */
+.sf-hero-avatar {
+  position: relative;
+  width: var(--sf-g-avatar-lg);
+  height: var(--sf-g-avatar-lg);
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-weight: 700;
+  font-size: 1.15rem;
+  color: var(--sf-g-on-accent);
+  background: linear-gradient(135deg, var(--sf-blue-primary), rgba(14, 165, 233, 0.95));
+  box-shadow: var(--sf-g-btn-glow);
+  flex: none;
+}
+.sf-hero-avatar::before {
+  content: "";
+  position: absolute;
+  inset: calc(-1 * var(--sf-g-avatar-ring));
+  border-radius: 50%;
+  background: conic-gradient(from 0deg, rgba(37, 99, 235, 0), rgba(37, 99, 235, 0.9), rgba(14, 165, 233, 0.9), rgba(245, 158, 11, 0.8), rgba(37, 99, 235, 0));
+  animation: sf-avatar-ring var(--sf-g-dur-ring) var(--sf-g-ease-linear) infinite;
+  z-index: -1;
+}
+.sf-hero-avatar::after {
+  content: "";
+  position: absolute;
+  inset: -14%;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(37, 99, 235, 0.35), transparent 65%);
+  animation: sf-avatar-pulse var(--sf-g-dur-pulse) var(--sf-g-ease-io) infinite;
+  z-index: -2;
+}
+@keyframes sf-avatar-pulse {
+  0%, 100% { opacity: 0.45; transform: scale(0.96); }
+  50%      { opacity: 0.9;  transform: scale(1.06); }
+}
+
+/* ==========================================================================
+   8 · HERO DASHBOARD — "welcome" panel: aurora + wave + status hidup
+   ========================================================================== */
+.sf-hero {
+  position: relative;
+  overflow: hidden;
+  /* Entrance miliknya sendiri: selalu jalan tanpa perlu JS/observer. */
+  animation: sf-hero-in var(--sf-g-dur-hero) var(--sf-g-ease) both;
+  isolation: isolate;
+  border-radius: var(--sf-g-radius-hero) !important;
+  padding: var(--sf-g-hero-pad);
+  margin-bottom: 1.25rem;
+  background:
+    linear-gradient(140deg, rgba(37, 99, 235, 0.14), rgba(14, 165, 233, 0.10) 42%, rgba(245, 158, 11, 0.10) 100%),
+    var(--sf-g-surface-2);
+  border: var(--sf-g-hilite-b) !important;
+  box-shadow: var(--sf-g-hilite), var(--sf-g-sh-lg) !important;
+  -webkit-backdrop-filter: blur(var(--sf-g-blur-lg)) saturate(var(--sf-g-sat));
+  backdrop-filter: blur(var(--sf-g-blur-lg)) saturate(var(--sf-g-sat));
+}
+[data-theme="dark"] .sf-hero {
+  background:
+    linear-gradient(140deg, rgba(59, 130, 246, 0.18), rgba(56, 189, 248, 0.10) 42%, rgba(252, 196, 25, 0.08) 100%),
+    var(--sf-g-surface-2);
+}
+.sf-hero > * { position: relative; z-index: 2; }
+@keyframes sf-hero-in {
+  from { opacity: 0; transform: translateY(var(--sf-g-rise)); }
+  to   { opacity: 1; transform: none; }
+}
+.sf-hero-wave {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: calc(-1 * var(--sf-g-ring-w) * 2);
+  width: 100%;
+  height: calc(var(--sf-g-wave-h) * 0.9);
+  z-index: 1;
+  pointer-events: none;
+}
+.sf-hero-wave .sf-hw1 { fill: rgba(37, 99, 235, 0.14); animation: sf-wave-drift calc(var(--sf-g-dur-wave) * 1.2) var(--sf-g-ease-io) infinite alternate; }
+.sf-hero-wave .sf-hw2 { fill: rgba(14, 165, 233, 0.12); animation: sf-wave-drift calc(var(--sf-g-dur-wave) * 1.7) var(--sf-g-ease-io) infinite alternate-reverse; }
+.sf-hero-wave .sf-hw3 { fill: rgba(245, 158, 11, 0.10); animation: sf-wave-drift calc(var(--sf-g-dur-wave) * 2.2) var(--sf-g-ease-io) infinite alternate; }
+[data-theme="dark"] .sf-hero-wave .sf-hw1 { fill: rgba(59, 130, 246, 0.18); }
+[data-theme="dark"] .sf-hero-wave .sf-hw2 { fill: rgba(56, 189, 248, 0.14); }
+[data-theme="dark"] .sf-hero-wave .sf-hw3 { fill: rgba(252, 196, 25, 0.10); }
+
+.sf-hero-top { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; }
+.sf-hero-id { display: flex; align-items: center; gap: 0.9rem; min-width: 0; }
+.sf-hero-copy { min-width: 0; }
+.sf-hero-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: var(--text-xs);
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--sf-flat-muted) !important;
+}
+.sf-hero-name {
+  margin: 0.15rem 0 0;
+  font-size: clamp(1.15rem, 2.4vw, 1.6rem);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+.sf-hero-sub { margin: 0.2rem 0 0; font-size: var(--text-sm); color: var(--sf-flat-muted) !important; }
+.sf-hero-chips { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; margin-left: auto; }
+.sf-hero-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.4rem 0.7rem;
+  border-radius: var(--sf-g-radius-pill);
+  background: var(--sf-g-surface-soft);
+  border: 1px solid var(--sf-g-brd-line);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  color: var(--sf-flat-ink) !important;
+  -webkit-backdrop-filter: blur(var(--sf-g-blur-sm));
+  backdrop-filter: blur(var(--sf-g-blur-sm));
+}
+.sf-hero-chip .sf-hero-chip-ico { display: inline-flex; color: var(--sf-blue-primary); }
+.sf-hero-stats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.75rem;
+  margin-top: 1.15rem;
+}
+.sf-hero-stat {
+  border-radius: var(--sf-radius-card);
+  padding: 0.7rem 0.8rem;
+  background: var(--sf-g-surface-soft);
+  border: 1px solid var(--sf-g-brd-line);
+  -webkit-backdrop-filter: blur(var(--sf-g-blur-sm));
+  backdrop-filter: blur(var(--sf-g-blur-sm));
+  transition: transform var(--sf-g-dur) var(--sf-g-ease), background var(--sf-g-dur) var(--sf-g-ease);
+}
+.sf-hero-stat:hover { transform: translateY(var(--sf-g-lift-sm)); background: var(--sf-g-surface); }
+.sf-hero-stat-label { display: block; font-size: var(--text-xs); font-weight: 600; color: var(--sf-flat-muted) !important; }
+.sf-hero-stat-value {
+  display: block;
+  margin-top: 0.15rem;
+  font-size: clamp(1.1rem, 2.2vw, 1.5rem);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+.sf-hero-stat-bar { display: block; height: var(--sf-g-bar-h); margin-top: 0.5rem; border-radius: var(--sf-g-radius-pill); background: var(--sf-g-surface-sunk); overflow: hidden; }
+.sf-hero-stat-bar > i { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, var(--sf-blue-primary), rgba(14, 165, 233, 0.95)); transition: width var(--sf-g-dur-hero) var(--sf-g-ease); }
+.sf-hero-stat.is-success .sf-hero-stat-bar > i { background: linear-gradient(90deg, var(--sf-success), var(--emerald-500)); }
+.sf-hero-stat.is-warning .sf-hero-stat-bar > i { background: linear-gradient(90deg, var(--sf-warning), var(--amber-600)); }
+.sf-hero-stat.is-danger .sf-hero-stat-bar > i { background: linear-gradient(90deg, var(--sf-danger), var(--red-600)); }
+
+/* Aksi di dalam hero: pintasan nyata (bukan hiasan). */
+.sf-hero-actions { display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap; margin-top: 1rem; }
+.sf-hero-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.5rem 0.85rem;
+  border-radius: var(--sf-radius-control);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--sf-flat-ink) !important;
+  background: var(--sf-g-surface-2);
+  border: 1px solid var(--sf-g-brd-line);
+  box-shadow: var(--sf-g-sh-xs);
+  -webkit-backdrop-filter: blur(var(--sf-g-blur-sm));
+  backdrop-filter: blur(var(--sf-g-blur-sm));
+  transition: transform var(--sf-g-dur-fast) var(--sf-g-ease), background var(--sf-g-dur-fast) var(--sf-g-ease),
+              border-color var(--sf-g-dur-fast) var(--sf-g-ease) !important;
+}
+.sf-hero-action:hover {
+  transform: translateY(var(--sf-g-lift-sm));
+  background: var(--sf-g-surface-3);
+  border-color: var(--sf-g-brd-strong);
+  color: var(--sf-blue-hover) !important;
+}
+.sf-hero-action svg { color: var(--sf-blue-primary); flex: none; }
+.sf-hero-progress {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  font-size: var(--text-xs);
+  font-weight: 600;
+  color: var(--sf-flat-muted);
+}
+.sf-hero-progress-bar {
+  display: block;
+  width: var(--sf-g-bar-w);
+  height: var(--sf-g-bar-h);
+  border-radius: var(--sf-g-radius-pill);
+  background: var(--sf-g-surface-sunk);
+  border: 1px solid var(--sf-g-brd-line);
+  overflow: hidden;
+}
+.sf-hero-progress-bar > i {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--sf-blue-primary), rgba(14, 165, 233, 0.95));
+  transition: width var(--sf-g-dur-hero) var(--sf-g-ease);
+}
+.sf-hero-progress-txt { font-variant-numeric: tabular-nums; }
+
+/* ==========================================================================
+   9 · MOTION — reveal, lift, count-up (semua punya fallback reduced-motion)
+   ========================================================================== */
+.sf-reveal {
+  opacity: 0;
+  transform: translateY(var(--sf-g-rise));
+  transition: opacity var(--sf-g-dur-hero) var(--sf-g-ease), transform var(--sf-g-dur-hero) var(--sf-g-ease) !important;
+  transition-delay: calc(var(--i, 0) * var(--sf-g-stagger)) !important;
+}
+.sf-reveal.is-shown { opacity: 1; transform: none !important; }
+.sf-reveal-sm { transform: translateY(var(--sf-g-rise-sm)); }
+.sf-lift { transition: transform var(--sf-g-dur) var(--sf-g-ease), box-shadow var(--sf-g-dur) var(--sf-g-ease) !important; }
+.sf-lift:hover { transform: translateY(var(--sf-g-lift)) !important; }
+.sf-count { font-variant-numeric: tabular-nums; }
+
+/* ==========================================================================
+   10 · RESPONSIF — jaga performa & kepadatan di layar kecil
+   ========================================================================== */
+@media (max-width: 1024px) {
+  .sf-hero-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 720px) {
+  :root { --sf-g-blur: 12px; --sf-g-blur-lg: 14px; --sf-g-wave-h: 64px; --sf-g-avatar-lg: 46px; }
+  .sf-hero { padding: 1.15rem; }
+  .sf-hero-chips { margin-left: 0; }
+  .sf-hero-name { font-size: 1.2rem; }
+  .sf-hero-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.6rem; }
+  .sf-hero-progress { margin-left: 0; width: 100%; }
+  .sf-hero-progress-bar { flex: 1; width: auto; }
+  .sf-aurora-blob { filter: blur(var(--sf-g-blob-blur-sm)); }
+  /* Daftar panjang: matikan blur per-sel agar scroll mulus di HP. */
+  .table-wrap, table.data thead th { -webkit-backdrop-filter: none !important; backdrop-filter: none !important; }
+}
+@media (max-width: 420px) {
+  .sf-hero-stats { grid-template-columns: minmax(0, 1fr); }
+}
+
+/* ==========================================================================
+   11 · REDUCED MOTION — matikan gerak, bukan matikan informasi
+   ========================================================================== */
+@media (prefers-reduced-motion: reduce) {
+  .sf-aurora-blob, .sf-aurora-waves .sf-w1, .sf-aurora-waves .sf-w2, .sf-aurora-waves .sf-w3,
+  .sf-hero-wave .sf-hw1, .sf-hero-wave .sf-hw2, .sf-hero-wave .sf-hw3,
+  .avatar::after, .sf-hero-avatar::before, .sf-hero-avatar::after,
+  .sf-progbar > span::after {
+    animation: none !important;
+  }
+  .sf-reveal { opacity: 1 !important; transform: none !important; transition: none !important; transition-delay: var(--sf-g-delay-none) !important; }
+  .sf-hero { animation: none !important; opacity: 1 !important; transform: none !important; }
+  .stat:hover, .sf-lift:hover, .btn:hover, button:hover, .icon-btn:hover { transform: none !important; }
+  .btn-primary::after, .btn-brand::after { display: none; }
+  * { scroll-behavior: auto !important; }
+}
+
+/* Perbaikan kontras dark (pra-eksisting): putih di atas merah terang gagal AA.
+   Dipakai hanya di dark; tema terang tetap memakai warna aplikasi. */
+[data-theme="dark"] .btn-danger, [data-theme="dark"] .btn.btn-danger {
+  background: var(--sf-g-danger-solid) !important;
+  border-color: var(--sf-g-danger-solid) !important;
+}
+
+/* ==========================================================================
+   12 · DARK MODE CONTRAST REPAIR (pra-eksisting, terukur via piksel)
+   Bug tema gelap aplikasi: beberapa aturan menyisakan tint/teks terang-mode
+   di atas permukaan gelap (rasio < 4.5:1). Perbaikan di sini hanya warna,
+   hanya tema gelap — struktur & perilaku tidak berubah.
+   ========================================================================== */
+[data-theme="dark"] .sf-summary-search-input { color: var(--sf-flat-ink) !important; }
+[data-theme="dark"] .sf-group-code { color: var(--sf-flat-muted) !important; }
+[data-theme="dark"] .sf-recount-badge { color: var(--warning-text) !important; }
+/* Badge di tema gelap: sebagian badge mewarisi latar terang-mode (teks gelap),
+   sebagian lagi berlatar gelap (teks gelap juga) — dua-duanya sulit dibaca.
+   Solusi: paksa latar tint gelap + teks terang, konsisten di seluruh halaman. */
+[data-theme="dark"] .badge-brand,
+[data-theme="dark"] .badge-info,
+[data-theme="dark"] .badge-primary,
+[data-theme="dark"] .badge {
+  background: rgba(96, 165, 250, 0.16) !important;
+  color: var(--sf-blue-text) !important;
+}
+[data-theme="dark"] .badge-success { background: rgba(16, 185, 129, 0.18) !important; color: var(--success-text) !important; }
+[data-theme="dark"] .badge-warning { background: rgba(252, 196, 25, 0.16) !important; color: var(--warning-text) !important; }
+[data-theme="dark"] .badge-danger,
+[data-theme="dark"] .badge-deficit { background: rgba(255, 107, 107, 0.16) !important; color: var(--danger-text) !important; }
+[data-theme="dark"] .badge-neutral { background: rgba(148, 163, 184, 0.16) !important; color: var(--sf-flat-muted) !important; }
+[data-theme="dark"] .badge-purple { background: rgba(167, 139, 250, 0.18) !important; color: rgba(196, 181, 253, 1) !important; }
+
+/* Cetak: tanpa kaca, tanpa cahaya. */
+@media print {
+  .sf-aurora, .sf-hero-wave { display: none !important; }
+  .card, .stat, .sf-hero, .table-wrap { background: var(--sf-g-print) !important; box-shadow: none !important; -webkit-backdrop-filter: none !important; backdrop-filter: none !important; }
+}
+
+
+/* ==========================================================================
+   13 · WAVE UNIFIED — wave kartu (hero + page-head): ujung-ke-ujung & mulus
+   --------------------------------------------------------------------------
+   Menggantikan SVG inline `.sf-hero-wave` yang menyisakan gap ~23px di tepi
+   kanan saat drift (terukur) + kurva tak seragam (preserveAspectRatio="none").
+
+   Prinsip:
+   · Tile SVG sinusoidal dengan JUMLAH PERIODE BULAT -> sambungan tile mulus
+     (y & kemiringan identik di x=0 dan x=tile) -> repeat-x tanpa patahan.
+   · Pseudo-element di-overshoot 8% kiri/kanan + repeat-x -> MUSTAHIL ada gap di
+     tepi, untuk lebar kartu apa pun, pada fase animasi mana pun.
+   · Tiga lapis parallax (lebar tile beda); tiap lapis bergeser tepat 1 tile per
+     siklus -> loop seamless tanpa lompatan.
+   · Nama var: --sf-wv-i-* = GAMBAR (data URI), --sf-wv-w-* = LEBAR TILE (px).
+     JANGAN digabung: media query menimpa lebar -> gambar ikut invalid.
+   ========================================================================== */
+:root {
+  --sf-wv-h: 76px;              /* tinggi band wave di dasar kartu */
+  --sf-wv-dur: 150s;            /* satu siklus drift (makin besar makin lambat) */
+  --sf-wv-overshoot: 8%;        /* ekor kiri/kanan -> penjamin edge-to-edge */
+  --sf-wv-w-amber: 1000px;      /* lebar tile lapis belakang (paling landai) */
+  --sf-wv-w-sky: 780px;
+  --sf-wv-w-blue: 620px;        /* lapis depan, gelombang terapat */
+  --sf-wv-i-blue: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%201200%20120'%20preserveAspectRatio='none'%3E%3Cpath%20fill='rgba(37,99,235,0.14)'%20d='M0.0,80.4C8.3,80.6%2033.3,81.1%2050.0,81.6C66.7,82.1%2083.3,82.8%20100.0,83.5C116.7,84.2%20133.3,85.1%20150.0,86.0C166.7,86.9%20183.3,87.9%20200.0,88.9C216.7,89.9%20233.3,91.0%20250.0,92.0C266.7,93.0%20283.3,94.1%20300.0,95.1C316.7,96.1%20333.3,97.1%20350.0,98.0C366.7,98.9%20383.3,99.8%20400.0,100.5C416.7,101.2%20433.3,101.9%20450.0,102.4C466.7,102.9%20483.3,103.3%20500.0,103.6C516.7,103.9%20533.3,104.0%20550.0,104.0C566.7,104.0%20583.3,103.9%20600.0,103.6C616.7,103.3%20633.3,102.9%20650.0,102.4C666.7,101.9%20683.3,101.2%20700.0,100.5C716.7,99.8%20733.3,98.9%20750.0,98.0C766.7,97.1%20783.3,96.1%20800.0,95.1C816.7,94.1%20833.3,93.0%20850.0,92.0C866.7,91.0%20883.3,89.9%20900.0,88.9C916.7,87.9%20933.3,86.9%20950.0,86.0C966.7,85.1%20983.3,84.2%201000.0,83.5C1016.7,82.8%201033.3,82.1%201050.0,81.6C1066.7,81.1%201083.3,80.7%201100.0,80.4C1116.7,80.1%201133.3,80.0%201150.0,80.0C1166.7,80.0%201191.7,80.3%201200.0,80.4L1200,120%20L0,120%20Z'/%3E%3C/svg%3E");
+  --sf-wv-i-sky: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%201200%20120'%20preserveAspectRatio='none'%3E%3Cpath%20fill='rgba(14,165,233,0.12)'%20d='M0.0,68.0C8.3,67.4%2033.3,65.5%2050.0,64.1C66.7,62.8%2083.3,61.4%20100.0,60.0C116.7,58.6%20133.3,57.2%20150.0,55.9C166.7,54.5%20183.3,53.2%20200.0,52.0C216.7,50.8%20233.3,49.7%20250.0,48.7C266.7,47.7%20283.3,46.8%20300.0,46.1C316.7,45.5%20333.3,44.9%20350.0,44.5C366.7,44.2%20383.3,44.0%20400.0,44.0C416.7,44.0%20433.3,44.2%20450.0,44.5C466.7,44.9%20483.3,45.5%20500.0,46.1C516.7,46.8%20533.3,47.7%20550.0,48.7C566.7,49.7%20583.3,50.8%20600.0,52.0C616.7,53.2%20633.3,54.5%20650.0,55.9C666.7,57.2%20683.3,58.6%20700.0,60.0C716.7,61.4%20733.3,62.8%20750.0,64.1C766.7,65.5%20783.3,66.8%20800.0,68.0C816.7,69.2%20833.3,70.3%20850.0,71.3C866.7,72.3%20883.3,73.2%20900.0,73.9C916.7,74.5%20933.3,75.1%20950.0,75.5C966.7,75.8%20983.3,76.0%201000.0,76.0C1016.7,76.0%201033.3,75.8%201050.0,75.5C1066.7,75.1%201083.3,74.5%201100.0,73.9C1116.7,73.2%201133.3,72.3%201150.0,71.3C1166.7,70.3%201191.7,68.6%201200.0,68.0L1200,120%20L0,120%20Z'/%3E%3C/svg%3E");
+  --sf-wv-i-amber: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%201200%20120'%20preserveAspectRatio='none'%3E%3Cpath%20fill='rgba(245,158,11,0.10)'%20d='M0.0,32.0C8.3,32.9%2033.3,35.5%2050.0,37.2C66.7,38.8%2083.3,40.5%20100.0,42.0C116.7,43.5%20133.3,44.9%20150.0,46.1C166.7,47.4%20183.3,48.5%20200.0,49.3C216.7,50.2%20233.3,50.9%20250.0,51.3C266.7,51.8%20283.3,52.0%20300.0,52.0C316.7,52.0%20333.3,51.8%20350.0,51.3C366.7,50.9%20383.3,50.2%20400.0,49.3C416.7,48.5%20433.3,47.4%20450.0,46.1C466.7,44.9%20483.3,43.5%20500.0,42.0C516.7,40.5%20533.3,38.8%20550.0,37.2C566.7,35.5%20583.3,33.7%20600.0,32.0C616.7,30.3%20633.3,28.5%20650.0,26.8C666.7,25.2%20683.3,23.5%20700.0,22.0C716.7,20.5%20733.3,19.1%20750.0,17.9C766.7,16.6%20783.3,15.5%20800.0,14.7C816.7,13.8%20833.3,13.1%20850.0,12.7C866.7,12.2%20883.3,12.0%20900.0,12.0C916.7,12.0%20933.3,12.2%20950.0,12.7C966.7,13.1%20983.3,13.8%201000.0,14.7C1016.7,15.5%201033.3,16.6%201050.0,17.9C1066.7,19.1%201083.3,20.5%201100.0,22.0C1116.7,23.5%201133.3,25.2%201150.0,26.8C1166.7,28.5%201191.7,31.1%201200.0,32.0L1200,120%20L0,120%20Z'/%3E%3C/svg%3E");
+}
+
+[data-theme="dark"] {
+  --sf-wv-i-blue: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%201200%20120'%20preserveAspectRatio='none'%3E%3Cpath%20fill='rgba(59,130,246,0.18)'%20d='M0.0,80.4C8.3,80.6%2033.3,81.1%2050.0,81.6C66.7,82.1%2083.3,82.8%20100.0,83.5C116.7,84.2%20133.3,85.1%20150.0,86.0C166.7,86.9%20183.3,87.9%20200.0,88.9C216.7,89.9%20233.3,91.0%20250.0,92.0C266.7,93.0%20283.3,94.1%20300.0,95.1C316.7,96.1%20333.3,97.1%20350.0,98.0C366.7,98.9%20383.3,99.8%20400.0,100.5C416.7,101.2%20433.3,101.9%20450.0,102.4C466.7,102.9%20483.3,103.3%20500.0,103.6C516.7,103.9%20533.3,104.0%20550.0,104.0C566.7,104.0%20583.3,103.9%20600.0,103.6C616.7,103.3%20633.3,102.9%20650.0,102.4C666.7,101.9%20683.3,101.2%20700.0,100.5C716.7,99.8%20733.3,98.9%20750.0,98.0C766.7,97.1%20783.3,96.1%20800.0,95.1C816.7,94.1%20833.3,93.0%20850.0,92.0C866.7,91.0%20883.3,89.9%20900.0,88.9C916.7,87.9%20933.3,86.9%20950.0,86.0C966.7,85.1%20983.3,84.2%201000.0,83.5C1016.7,82.8%201033.3,82.1%201050.0,81.6C1066.7,81.1%201083.3,80.7%201100.0,80.4C1116.7,80.1%201133.3,80.0%201150.0,80.0C1166.7,80.0%201191.7,80.3%201200.0,80.4L1200,120%20L0,120%20Z'/%3E%3C/svg%3E");
+  --sf-wv-i-sky: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%201200%20120'%20preserveAspectRatio='none'%3E%3Cpath%20fill='rgba(56,189,248,0.14)'%20d='M0.0,68.0C8.3,67.4%2033.3,65.5%2050.0,64.1C66.7,62.8%2083.3,61.4%20100.0,60.0C116.7,58.6%20133.3,57.2%20150.0,55.9C166.7,54.5%20183.3,53.2%20200.0,52.0C216.7,50.8%20233.3,49.7%20250.0,48.7C266.7,47.7%20283.3,46.8%20300.0,46.1C316.7,45.5%20333.3,44.9%20350.0,44.5C366.7,44.2%20383.3,44.0%20400.0,44.0C416.7,44.0%20433.3,44.2%20450.0,44.5C466.7,44.9%20483.3,45.5%20500.0,46.1C516.7,46.8%20533.3,47.7%20550.0,48.7C566.7,49.7%20583.3,50.8%20600.0,52.0C616.7,53.2%20633.3,54.5%20650.0,55.9C666.7,57.2%20683.3,58.6%20700.0,60.0C716.7,61.4%20733.3,62.8%20750.0,64.1C766.7,65.5%20783.3,66.8%20800.0,68.0C816.7,69.2%20833.3,70.3%20850.0,71.3C866.7,72.3%20883.3,73.2%20900.0,73.9C916.7,74.5%20933.3,75.1%20950.0,75.5C966.7,75.8%20983.3,76.0%201000.0,76.0C1016.7,76.0%201033.3,75.8%201050.0,75.5C1066.7,75.1%201083.3,74.5%201100.0,73.9C1116.7,73.2%201133.3,72.3%201150.0,71.3C1166.7,70.3%201191.7,68.6%201200.0,68.0L1200,120%20L0,120%20Z'/%3E%3C/svg%3E");
+  --sf-wv-i-amber: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%201200%20120'%20preserveAspectRatio='none'%3E%3Cpath%20fill='rgba(252,196,25,0.10)'%20d='M0.0,32.0C8.3,32.9%2033.3,35.5%2050.0,37.2C66.7,38.8%2083.3,40.5%20100.0,42.0C116.7,43.5%20133.3,44.9%20150.0,46.1C166.7,47.4%20183.3,48.5%20200.0,49.3C216.7,50.2%20233.3,50.9%20250.0,51.3C266.7,51.8%20283.3,52.0%20300.0,52.0C316.7,52.0%20333.3,51.8%20350.0,51.3C366.7,50.9%20383.3,50.2%20400.0,49.3C416.7,48.5%20433.3,47.4%20450.0,46.1C466.7,44.9%20483.3,43.5%20500.0,42.0C516.7,40.5%20533.3,38.8%20550.0,37.2C566.7,35.5%20583.3,33.7%20600.0,32.0C616.7,30.3%20633.3,28.5%20650.0,26.8C666.7,25.2%20683.3,23.5%20700.0,22.0C716.7,20.5%20733.3,19.1%20750.0,17.9C766.7,16.6%20783.3,15.5%20800.0,14.7C816.7,13.8%20833.3,13.1%20850.0,12.7C866.7,12.2%20883.3,12.0%20900.0,12.0C916.7,12.0%20933.3,12.2%20950.0,12.7C966.7,13.1%20983.3,13.8%201000.0,14.7C1016.7,15.5%201033.3,16.6%201050.0,17.9C1066.7,19.1%201083.3,20.5%201100.0,22.0C1116.7,23.5%201133.3,25.2%201150.0,26.8C1166.7,28.5%201191.7,31.1%201200.0,32.0L1200,120%20L0,120%20Z'/%3E%3C/svg%3E");
+}
+
+@media (max-width: 720px) {
+  :root { --sf-wv-h: 58px; --sf-wv-w-amber: 620px; --sf-wv-w-sky: 480px; --sf-wv-w-blue: 380px; }
+}
+
+/* Kartu wave: hero dashboard + page-head semua menu -> satu bahasa visual */
+.sf-hero,
+.page-head {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+.sf-hero-wave { display: none !important; }   /* pensiun: SVG inline lama */
+
+.sf-hero::after,
+.page-head::after {
+  content: "";
+  position: absolute;
+  z-index: 1;
+  pointer-events: none;
+  left: calc(-1 * var(--sf-wv-overshoot));
+  right: calc(-1 * var(--sf-wv-overshoot));
+  bottom: 0;
+  height: min(var(--sf-wv-h), 55%);
+  background-image: var(--sf-wv-i-blue), var(--sf-wv-i-sky), var(--sf-wv-i-amber);
+  background-repeat: repeat-x, repeat-x, repeat-x;
+  background-size: var(--sf-wv-w-blue) 100%, var(--sf-wv-w-sky) 100%, var(--sf-wv-w-amber) 100%;
+  background-position: 0 0, 0 0, 0 0;
+  animation: sf-wave-flow var(--sf-wv-dur) linear infinite;
+}
+/* Isi kartu selalu di atas wave */
+.sf-hero > *,
+.page-head > * { position: relative; z-index: 2; }
+
+@keyframes sf-wave-flow {
+  from { background-position: 0 0, 0 0, 0 0; }
+  to   { background-position: calc(-1 * var(--sf-wv-w-blue)) 0,
+                            calc(-1 * var(--sf-wv-w-sky)) 0,
+                            calc(-1 * var(--sf-wv-w-amber)) 0; }
+}
+
+/* page-head jadi kartu (model card sama dengan hero) */
+.page-head {
+  padding: 1rem 1.25rem 1.3rem;
+  border-radius: var(--sf-g-radius-hero, 20px) !important;
+  background:
+    linear-gradient(140deg, rgba(37, 99, 235, 0.10), rgba(14, 165, 233, 0.07) 42%, rgba(245, 158, 11, 0.07) 100%),
+    var(--sf-g-surface-2) !important;
+  border: var(--sf-g-hilite-b, 1px solid rgba(255,255,255,0.5)) !important;
+  box-shadow: var(--sf-g-hilite), var(--sf-g-sh-lg) !important;
+  margin-bottom: 1.15rem;
+  align-items: center;
+}
+[data-theme="dark"] .page-head {
+  background:
+    linear-gradient(140deg, rgba(59, 130, 246, 0.14), rgba(56, 189, 248, 0.08) 42%, rgba(252, 196, 25, 0.06) 100%),
+    var(--sf-g-surface-2) !important;
+}
+.page-head h1 { margin: 0; }
+
+/* Dashboard: hero sudah jadi kartu -> page-head-nya tetap baris biasa
+   (mencegah dua kartu wave bertumpuk di satu halaman) */
+.sf-hero ~ .page-head {
+  padding: 0 !important;
+  border: 0 !important;
+  background: none !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+  align-items: flex-start !important;
+  margin-bottom: 1.1rem !important;
+}
+.sf-hero ~ .page-head::after { display: none !important; }
+
+@media (max-width: 720px) {
+  .page-head { padding: .95rem 1rem 1.2rem; align-items: flex-start; }
+  .sf-hero ~ .page-head { padding: 0 !important; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sf-hero::after, .page-head::after { animation: none !important; }
+}
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   15 · SIDEBAR SHAPE v1   ·   hasil audit lintas-mode (13 viewport × 2 state)
+   Satu sumber kebenaran geometri sidebar. Dimuat di sf-glass.css (paling akhir)
+   sehingga menang atas 303 aturan sidebar lama di app.css / sf-ui.css.
+
+   ATURAN SUKU CADANG: kelas `sidebar-collapsed` = preferensi DESKTOP saja.
+   Di ≤1023px ia WAJIB tidak berefek: drawer tetap 280px, label penuh.
+   (Bug nyata: rotate tablet landscape→portrait / resize <1024px membuat
+    kelas tetap menempel → drawer menciut jadi 68px, label & tahun-buku terpotong.)
+   ══════════════════════════════════════════════════════════════════════════════ */
+
+:root {
+  --sbs-full: 260px;        /* sidebar penuh (desktop) */
+  --sbs-rail: 68px;         /* rail (desktop, collapsed) */
+  --sbs-drawer: 280px;      /* drawer (≤1023px) */
+  --sbs-pad: 10px;          /* padding dalam sidebar */
+  --sbs-railw: 22px;        /* lebar kolom ikon */
+  --sbs-gap: 10px;          /* jarak ikon → label */
+  --sbs-item: 38px;         /* tinggi item (desktop) */
+  --sbs-item-touch: 44px;   /* tinggi item (≤1023px, target sentuh) */
+  --sbs-group: 30px;        /* tinggi label grup */
+  --sbs-radius: 8px;        /* radius seragam (konvensi app: 8px) */
+  --sbs-ico: 16px;          /* ikon item/label/grup (satu ukuran) */
+  --sbs-ico-rail: 20px;     /* ikon saat rail */
+}
+
+/* ─────────────── A. DESKTOP ≥1024px : penuh │ rail ─────────────── */
+@media (min-width: 1024px) {
+  html .sidebar { width: var(--sbs-full) !important; }
+  html.sidebar-collapsed .sidebar { width: var(--sbs-rail) !important; }
+  html .main { margin-left: var(--sbs-full) !important; }
+  html.sidebar-collapsed .main { margin-left: var(--sbs-rail) !important; }
+
+  /* rail: kotak 44×44 tepat di tengah, radius & ikon seragam */
+  html.sidebar-collapsed .sidebar .nav-item,
+  html.sidebar-collapsed .sidebar .sidebar-group-toggle {
+    width: 44px !important; height: 44px !important; min-height: 44px !important;
+    margin: 3px auto !important; padding: 0 !important;
+    justify-content: center !important; border-radius: var(--sbs-radius) !important;
+  }
+  html.sidebar-collapsed .sidebar .nav-item > svg,
+  html.sidebar-collapsed .sidebar .sidebar-group-toggle > svg {
+    width: var(--sbs-ico-rail) !important; height: var(--sbs-ico-rail) !important;
+    margin: 0 auto !important; background: none !important; padding: 0 !important;
+  }
+  /* tooltip rail menempel ke tepi kanan rail */
+  html.sidebar-collapsed .sidebar .nav-item[data-tip]:hover::before { left: calc(var(--sbs-rail) + 12px) !important; }
+  html.sidebar-collapsed .sidebar .nav-item[data-tip]:hover::after  { left: calc(var(--sbs-rail) + 6px) !important; }
+}
+
+/* ─────────────── B. ≤1023px : DRAWER — `sidebar-collapsed` = no-op ─────────────── */
+@media (max-width: 1023px) {
+  html .sidebar,
+  html.sidebar-collapsed .sidebar,
+  html:not(.sidebar-collapsed) .sidebar {
+    width: var(--sbs-drawer) !important;
+    min-width: 0 !important;
+    max-width: 86vw !important;
+    top: var(--topbar-h, 60px) !important;
+    height: calc(100vh - var(--topbar-h, 60px)) !important;
+    border-radius: 0 16px 16px 0 !important;
+    overflow-x: hidden !important;
+  }
+
+  /* teks & indikator WAJIB tampil meski html.sidebar-collapsed menempel.
+     Selector dicocokkan persis dengan aturan penyembunyi di app.css L2774
+     (specificity 0,5,1) — sf-glass.css dimuat terakhir sehingga menang. */
+  html.sidebar-collapsed .sidebar .sidebar-group-body .nav-item .nav-label,
+  html.sidebar-collapsed .sidebar .sidebar-group-toggle .nav-label {
+    display: block !important; opacity: 1 !important; width: auto !important;
+    max-width: none !important; pointer-events: auto !important;
+    overflow: visible !important; white-space: nowrap !important;
+    text-overflow: clip !important; font-size: .865rem !important;
+  }
+  html.sidebar-collapsed .sidebar .sidebar-group-body .nav-item .nav-count {
+    display: inline-flex !important; opacity: 1 !important; width: auto !important;
+    max-width: none !important; pointer-events: auto !important;
+  }
+  html.sidebar-collapsed .sidebar .sidebar-group-toggle .sidebar-group-chev {
+    display: grid !important; opacity: 1 !important; width: 15px !important; height: 15px !important;
+    max-width: none !important; pointer-events: auto !important;
+  }
+  html.sidebar-collapsed .sidebar .brand-text {
+    display: flex !important; opacity: 1 !important; width: auto !important;
+    max-width: none !important; pointer-events: auto !important;
+  }
+  html.sidebar-collapsed .sidebar .sf-year-badge { display: inline-flex !important; opacity: 1 !important; width: auto !important; }
+  html.sidebar-collapsed .sidebar .sf-yb-text { display: inline !important; opacity: 1 !important; }
+
+  /* struktur kembali normal (bukan kolom rail terpusat) */
+  html.sidebar-collapsed .sidebar .sidebar-nav {
+    display: block !important; align-items: stretch !important;
+    padding: var(--sbs-pad) var(--sbs-pad) 2rem !important;
+  }
+  html.sidebar-collapsed .sidebar .sidebar-group,
+  html.sidebar-collapsed .sidebar .sidebar-group-body,
+  html.sidebar-collapsed .sidebar .sb-group-inner {
+    display: block !important; width: auto !important; align-items: stretch !important;
+    grid-template-rows: none !important;
+  }
+  html.sidebar-collapsed .sidebar .sidebar-brand,
+  html.sidebar-collapsed .sidebar .sidebar-header-mobile {
+    display: flex !important; padding: .75rem 1rem !important; justify-content: space-between !important;
+  }
+
+  /* satu grid seragam untuk item */
+  html.sidebar-collapsed .sidebar .nav-item {
+    display: grid !important;
+    grid-template-columns: var(--sbs-railw) minmax(0, 1fr) auto !important;
+    column-gap: var(--sbs-gap) !important;
+    width: auto !important; height: var(--sbs-item-touch) !important;
+    min-height: var(--sbs-item-touch) !important; max-height: none !important;
+    margin: 1px 0 !important; padding: 0 var(--sbs-pad) !important;
+    justify-content: flex-start !important; justify-items: start !important;
+    border-radius: var(--sbs-radius) !important;
+  }
+  html.sidebar-collapsed .sidebar .nav-item > svg {
+    grid-column: 1 !important; justify-self: start !important; align-self: center !important;
+    width: var(--sbs-ico) !important; height: var(--sbs-ico) !important;
+    margin: 0 !important; padding: 0 !important; background: none !important; border-radius: 0 !important;
+  }
+  html.sidebar-collapsed .sidebar .sidebar-group-body .nav-item {
+    padding-left: calc(var(--sbs-pad) + var(--sbs-railw) + var(--sbs-gap)) !important;
+  }
+  html.sidebar-collapsed .sidebar .sidebar-group-toggle {
+    display: grid !important;
+    grid-template-columns: var(--sbs-railw) minmax(0, 1fr) auto !important;
+    column-gap: var(--sbs-gap) !important;
+    width: auto !important; height: var(--sbs-group) !important;
+    min-height: var(--sbs-group) !important; margin: 6px 0 2px !important;
+    padding: 0 var(--sbs-pad) !important; justify-items: start !important;
+  }
+
+  /* tooltip rail JANGAN muncul di dalam drawer */
+  html.sidebar-collapsed .sidebar .nav-item[data-tip]:hover::before,
+  html.sidebar-collapsed .sidebar .nav-item[data-tip]:hover::after,
+  html.sidebar-collapsed .sidebar .sidebar-group-toggle[data-tip]:hover::before,
+  html.sidebar-collapsed .sidebar .sidebar-group-toggle[data-tip]:hover::after {
+    display: none !important; content: none !important;
+  }
+}
+
+/* ─────────────── C. Ritme & bahasa ikon seragam (semua lebar) ─────────────── */
+@media (max-width: 1023px) {
+  .sidebar .nav-item { height: var(--sbs-item-touch) !important; min-height: var(--sbs-item-touch) !important; }
+  .sidebar .sidebar-group-toggle { height: var(--sbs-group) !important; min-height: var(--sbs-group) !important; }
+}
+/* label grup: tinggi & padding simetris → ritme vertikal rata */
+.sidebar .sidebar-group-toggle {
+  padding: 0 var(--sbs-pad) !important;
+  height: var(--sbs-group) !important; min-height: var(--sbs-group) !important;
+  align-items: center !important;
+}
+/* ikon grup TANPA chip abu — sama seperti ikon item (anti AI-slop, konsisten) */
+.sidebar .sidebar-group-toggle > svg {
+  width: var(--sbs-ico) !important; height: var(--sbs-ico) !important;
+  padding: 0 !important; background: none !important; border-radius: 0 !important;
+}
+/* radius seragam 8px di semua mode */
+.sidebar .nav-item, .sidebar .sidebar-group-toggle { border-radius: var(--sbs-radius) !important; }
+
+/* ─────────────── D. Hormati prefers-reduced-motion ─────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .sidebar, .sidebar *, .main, .sidebar-backdrop {
+    transition-duration: .01ms !important;
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}
+/* ═══ /SIDEBAR SHAPE v1 ═══ */
+
+
+/* ==========================================================================
+   16 · DROPDOWN DI DALAM .page-head (kartu wave) — JANGAN TERPOTONG
+   --------------------------------------------------------------------------
+   `.page-head` mengikuti gaya kartu wave (bagian 13) sehingga memakai
+   `overflow: hidden` untuk memangkas band wave ke sudut membulat.
+   Efek samping: panel `.sf-select-panel` (position: absolute) yang melebar
+   ke bawah ikut terpotong -> dropdown "Lingkup export" di /reconciliation
+   tampak tertutup (opsi di bawah tidak bisa diklik).
+
+   Perbaikan minimal:
+   · Buka klip HANYA saat ada dropdown aktif (`:has(.sf-select.is-open)`),
+     jadi tampilan normal (tertutup) tidak berubah sama sekali.
+   · Band wave tetap dipangkas ke sudut kartu lewat clip-path pada ::after
+     (pengganti overflow:hidden) -> tidak bocor keluar kartu.
+   · z-index dinaikkan seperlunya supaya panel di atas konten setelahnya,
+     tetap di bawah topbar (1000) & sidebar.
+   ========================================================================== */
+.page-head:has(.sf-select.is-open) {
+  overflow: visible;
+  z-index: 60;
+}
+/* Wave tetap memakai geometri aslinya (overshoot 8% kiri/kanan) supaya FASA
+   pola tidak bergeser saat dropdown dibuka; bagian overshoot dipangkas dengan
+   clip-path -- bukan overflow -- dan sudut bawah dibulatkan seperti kartu.
+   Jendela pangkas = lebar kartu: overshoot / (1 + 2*overshoot) = 8% / 1.16. */
+.page-head:has(.sf-select.is-open)::after {
+  clip-path: inset(0 calc(var(--sf-wv-overshoot, 8%) / 1.16) 0
+                    calc(var(--sf-wv-overshoot, 8%) / 1.16)
+                    round var(--sf-g-radius-hero, 20px));
+}
+
+
+/* --------------------------------------------------------------------------
+   16b · Kartu: panel dropdown JANGAN tertimpa elemen berikutnya
+   --------------------------------------------------------------------------
+   `.card-toolbar.sf-reveal` (masih ber-transform saat animasi reveal) dan
+   `.table-wrap` membuat stacking context sendiri dengan z-index auto; karena
+   DOM-nya setelah toolbar, tabel menimpa panel dropdown "Semua group" di
+   /audit. Solusi: setiap nenek-moyang select yang terbuka di dalam kartu
+   diberi z-index positif, sehingga selalu berada di atas elemen bertransform
+   setelahnya.
+   -------------------------------------------------------------------------- */
+.card:has(.sf-select.is-open) *:has(.sf-select.is-open) {
+  position: relative;
+  z-index: 210;
+}

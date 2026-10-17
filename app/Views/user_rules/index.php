@@ -94,11 +94,11 @@ $activeCount = (int) ($countsMap[$selectedRole] ?? 0);
             ?>
             <a href="<?= url('user-rules?role=' . $rKey) ?>" 
                class="ur-role-card <?= $isActive ? 'is-active' : '' ?>"
-               style="text-decoration:none;display:flex;flex-direction:column;gap:.65rem;padding:1rem 1.15rem;border-radius:14px;border:2px solid <?= $isActive ? 'var(--brand-500, #f0b429)' : 'var(--border, #e2e8f0)' ?>;background:<?= $isActive ? 'linear-gradient(to bottom right, rgba(240,180,41,0.12), rgba(240,180,41,0.02))' : 'var(--surface, #ffffff)' ?>;box-shadow:<?= $isActive ? '0 8px 20px -4px rgba(240,180,41,0.25)' : 'var(--shadow-sm, 0 1px 2px rgba(0,0,0,0.05))' ?>;transition:all .18s ease;position:relative;overflow:hidden;">
+               style="text-decoration:none;display:flex;flex-direction:column;gap:.65rem;padding:1rem 1.15rem;border-radius:var(--sf-radius-card, 8px);border:1px solid <?= $isActive ? 'var(--sf-flat-focus, #2563eb)' : 'var(--sf-flat-border, #dfe3e8)' ?>;background:<?= $isActive ? 'var(--sf-flat-active-bg, #e9eef3)' : 'var(--sf-flat-surface, #ffffff)' ?>;box-shadow:none;transition:border-color .15s ease, background-color .15s ease;position:relative;overflow:hidden;">
                 
                 <div style="display:flex;align-items:center;justify-content:space-between;gap:.5rem;">
                     <div style="display:flex;align-items:center;gap:.65rem;">
-                        <div style="width:38px;height:38px;border-radius:10px;background:<?= $isActive ? 'var(--brand-500, #f0b429)' : 'rgba(0,0,0,0.05)' ?>;color:<?= $isActive ? '#1a1108' : $rMeta['color'] ?>;display:flex;align-items:center;justify-content:center;font-size:1.15rem;flex-shrink:0;">
+                        <div style="width:38px;height:38px;border-radius:10px;background:<?= $isActive ? 'rgba(37, 99, 235, 0.12)' : 'rgba(0,0,0,0.05)' ?>;color:<?= $isActive ? '#2563eb' : $rMeta['color'] ?>;display:flex;align-items:center;justify-content:center;font-size:1.15rem;flex-shrink:0;">
                             <?= icon($rMeta['icon']) ?>
                         </div>
                         <div>
@@ -376,7 +376,7 @@ foreach ($rules as $r) {
         </div>
 
         <!-- Sticky Bottom Bar -->
-        <div class="card-footer" style="position:sticky;bottom:0;background:var(--surface,#ffffff);border-top:1px solid var(--border);padding:1rem 1.35rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;z-index:10;box-shadow:0 -4px 12px rgba(0,0,0,0.06);">
+        <div class="card-footer" style="position:sticky;bottom:0;background:var(--surface,#ffffff);border-top:1px solid var(--border);padding:1rem 1.35rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;z-index:10;box-shadow:none;">
             <div class="flex items-center gap">
                 <span style="display:flex;align-items:center;gap:.5rem;font-size:.88rem;color:var(--text-muted);">
                     <span style="color:var(--brand);"><?= icon('shield-check') ?></span>
@@ -386,7 +386,7 @@ foreach ($rules as $r) {
 
             <div class="flex items-center gap">
                 <a href="<?= url('user-rules?role=' . $selectedRole) ?>" class="btn btn-ghost"><?= __('Batal / Muat Ulang') ?></a>
-                <button type="submit" class="btn btn-primary" style="min-height:44px;padding:0 1.5rem;font-weight:700;display:inline-flex;align-items:center;gap:.5rem;box-shadow:0 2px 8px rgba(240,180,41,0.35);">
+                <button type="submit" class="btn btn-primary" style="min-height:44px;padding:0 1.5rem;font-weight:700;display:inline-flex;align-items:center;gap:.5rem;box-shadow:none;">
                     <?= icon('shield-check') ?> <?= __('Simpan Rule Role :role', ['role' => $activeMeta['name']]) ?>
                 </button>
             </div>
@@ -396,7 +396,7 @@ foreach ($rules as $r) {
 
 <!-- MODAL TAMBAH MENU KHUSUS -->
 <div class="sf-modal-backdrop" id="modal-custom-menu" role="dialog" aria-modal="true" style="display:none;position:fixed;inset:0;background:rgba(15,23,42,0.6);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);z-index:10500;align-items:center;justify-content:center;padding:1rem;">
-    <div class="sf-modal" style="width:100%;max-width:540px;background:var(--surface,#ffffff);border:1px solid var(--border,#e2e8f0);border-radius:16px;box-shadow:0 25px 60px -15px rgba(15,23,42,0.35);overflow:hidden;animation:sfModalIn .2s ease;">
+    <div class="sf-modal" style="width:100%;max-width:540px;background:var(--surface,#ffffff);border:1px solid var(--border,#e2e8f0);border-radius:var(--sf-radius-card, 8px);box-shadow:0 10px 24px rgba(31,41,51,.14);border:1px solid var(--sf-flat-border);overflow:hidden;animation:sfModalIn .2s ease;">
         <div class="sf-modal-head" style="display:flex;align-items:center;justify-content:space-between;padding:1.15rem 1.35rem;border-bottom:1px solid var(--border,#e2e8f0);background:var(--surface-2,#f8fafc);">
             <div style="display:flex;align-items:center;gap:.65rem;">
                 <div style="width:34px;height:34px;border-radius:8px;background:rgba(240,180,41,0.15);color:var(--brand-ink);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
@@ -541,15 +541,15 @@ foreach ($rules as $r) {
 .sf-rule-input:focus {
     outline: none;
     border-color: var(--brand, #f0b429);
-    box-shadow: 0 0 0 3px rgba(240, 180, 41, 0.25);
+    box-shadow: 0 0 0 2px rgba(37,99,235,.16);
 }
 
 .ur-role-card:hover {
-    border-color: var(--brand-500, #f0b429) !important;
-    transform: translateY(-2px);
+    border-color: var(--cc-face, #f4eddb) !important;
+    transform: none;
 }
 .ur-role-card.is-active {
-    border-color: var(--brand-500, #f0b429) !important;
+    border-color: var(--cc-face, #f4eddb) !important;
 }
 
 .col-pill-toggle {
@@ -587,10 +587,10 @@ foreach ($rules as $r) {
     transition: all .15s ease;
 }
 .custom-perm-tile:hover {
-    border-color: var(--brand-500, #f0b429);
+    border-color: var(--cc-face, #f4eddb);
 }
 .custom-perm-tile.is-active {
-    border-color: var(--brand-500, #f0b429);
+    border-color: var(--cc-face, #f4eddb);
     background: rgba(240, 180, 41, 0.08);
 }
 .perm-tile-label {
