@@ -90,11 +90,15 @@
   position: absolute;
   z-index: 1;
   left: auto;
-  right: 10px;
-  bottom: var(--fg-ill-bottom, 40px);
-  width: var(--fg-ill-w);
-  height: calc(var(--fg-ill-w) * .86);
-  background: var(--fg-ill, url("../img/hero-flat.svg?v=20261017e")) no-repeat center bottom / contain;
+  right: 12px;
+  bottom: 40px;
+  /* Lebar mengikuti tinggi: kalau header pendek, ilustrasi ikut mengecil
+     (bukan terpotong di tepi atas oleh overflow:hidden). Rasio 260:220
+     sama dengan viewBox aset, jadi contain mengisi kotak persis. */
+  width: auto;
+  height: min(calc(var(--fg-ill-w) * .86), calc(100% - 54px));
+  aspect-ratio: 260 / 220;
+  background: var(--fg-ill, url("../img/hero-flat.svg?v=20261018d")) no-repeat center bottom / contain;
   /* animasi halus: ilustrasi mengambang naik-turun + napas skala sangat kecil */
   transform-origin: 50% 100%;
   will-change: transform;
@@ -174,8 +178,11 @@
 
 /* aksen gradient di topbar (identitas, tanpa mengganggu keterbacaan) */
 .topbar { border-bottom: 1px solid var(--fg-line) !important; }
+/* Aksen garis 3px di tepi atas topbar DINONAKTIFKAN (Pass 9, 18 Okt 2026).
+   Alasan: garis penuh-lebar bertabrakan dengan scrollbar dan terbaca sebagai
+   "garis menempel" di atas header. Kembalikan dengan content: "" di bawah. */
 .topbar::before {
-  content: "";
+  content: none;
   position: absolute;
   left: 0; right: 0; top: 0;
   height: 3px;
@@ -1094,3 +1101,18 @@ html[data-theme="light"] body {
 .sf-note-ico svg { width: 14px; height: 14px; stroke: currentColor; fill: none; }
 [data-theme="dark"] .sf-note { background: rgba(255, 255, 255, .04); }
 [data-theme="dark"] .sf-bar-track { background: rgba(255, 255, 255, .08); box-shadow: inset 0 1px 2px rgba(0, 0, 0, .4); }
+
+/* --------------------------------------------------------------------------
+   TINGGI MINIMUM HEADER — kunci konsistensi ilustrasi antar menu
+   Sebelumnya header tanpa chip hanya ~161px, sementara kotak ilustrasi 184px,
+   jadi aset terpotong ~63px di tepi atas (terlihat "mepet").
+   Dengan min-height, semua header punya ruang yang sama dan ilustrasi utuh.
+   -------------------------------------------------------------------------- */
+.content > .sf-hero { min-height: 254px; }
+
+@media (max-width: 1365px) { .content > .sf-hero { min-height: 238px; } }
+@media (max-width: 1199px) { .content > .sf-hero { min-height: 218px; } }
+@media (max-width: 1023px) { .content > .sf-hero { min-height: 188px; } }
+/* Mobile: ilustrasi di atas judul (top:6px), jadi tidak butuh min-height */
+@media (max-width: 749px)  { .content > .sf-hero { min-height: 0; } }
+@media (max-height: 520px) and (orientation: landscape) { .content > .sf-hero { min-height: 0; } }

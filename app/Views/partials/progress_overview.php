@@ -318,7 +318,7 @@ $canSeeAmt = can_see_stock_qty();
 
     <!-- Table matching visual reference -->
     <div class="sf-summary-table-wrap">
-        <table class="sf-summary-table" id="sf-summary-table">
+        <table class="sf-summary-table" id="sf-summary-table"><caption class="sr-only">Ringkasan progres per group</caption>
             <thead>
                 <tr>
                     <th style="min-width:260px;">

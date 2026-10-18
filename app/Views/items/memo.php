@@ -14,9 +14,26 @@ $pages   = array_chunk($memos, 6);
 $pageUrl = static fn (int $p): string => url('items/memo/preview') . '?' . $pager['base'] . '&page=' . $p;
 ?>
 <?php if (! $isPdf): ?>
+<!DOCTYPE html>
+<html lang="<?= e(current_locale()) ?>" data-theme="light">
+<head>
+<meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light">
+<title><?= e(__('Preview Marking Memo')) ?> &middot; <?= e(config('app.name')) ?></title>
+<link rel="icon" type="image/svg+xml" href="<?= asset_v('img/logo.svg') ?>">
+<link rel="stylesheet" href="<?= asset_v('css/tokens.css') ?>">
+<link rel="stylesheet" href="<?= asset_v('css/app.css') ?>">
+<link rel="stylesheet" href="<?= asset_v('css/sf-ui.css') ?>">
+<link rel="stylesheet" href="<?= asset_v('css/flat-material.css') ?>">
+<link rel="stylesheet" href="<?= asset_v('css/a11y-fixes.css') ?>">
+<link rel="stylesheet" href="<?= asset_v('css/a11y-pass2.css') ?>">
+<?= \App\Core\View::partial('items/_memo_styles', ['standalone' => false]) ?>
+</head>
+<body class="memo-doc">
+<?php else: ?>
+<?= \App\Core\View::partial('items/_memo_styles', ['standalone' => true]) ?>
 <?php endif; ?>
-<?= \App\Core\View::partial('items/_memo_styles', ['standalone' => $isPdf]) ?>
 
 <div class="memo-stage<?= $isPdf ? ' is-pdf' : '' ?>">
 <?php if (! $isPdf): ?>
@@ -62,41 +79,12 @@ $pageUrl = static fn (int $p): string => url('items/memo/preview') . '?' . $page
 <?php foreach ($pages as $sheet): ?>
     <main class="memo-sheet">
         <?php foreach ($sheet as $m): ?>
-            <article class="memo">
-                <header class="memo-head">
-                    <span class="memo-kicker"><?= __('Marking memo') ?></span>
-                    <span class="memo-meta">
-                        <span class="memo-period"><?= e($periodLabel ?? '') ?></span>
-                        <span class="memo-wh"><?= e($m['warehouse'] ?? '') ?></span>
-                    </span>
-                    <span class="memo-code"><?= e($m['code']) ?></span>
-                </header>
-                <div class="memo-body">
-                    <div class="memo-info">
-                        <div class="memo-row-name">
-                            <span class="memo-k"><?= __('Nama barang') ?></span>
-                            <span class="memo-v"><?= e($m['name']) ?></span>
-                        </div>
-                        <div class="memo-row-loc">
-                            <span class="memo-k"><?= __('Lokasi') ?></span>
-                            <span class="memo-v"><?= e($m['location'] !== '' ? $m['location'] : 'Belum diatur') ?></span>
-                        </div>
-                        <div class="memo-row-qty">
-                            <span class="memo-k">Total QTY</span>
-                            <span class="memo-qty memo-qty-blank"><b>&nbsp;</b></span>
-                        </div>
-                        <div>
-                            <span class="memo-k">Remark</span>
-                            <span class="memo-v"><?= e($m['group'] ?? '') ?></span>
-                        </div>
-                    </div>
-                    <div class="memo-qr">
-                        <?= $m['qr'] /* SVG dari sf_qr_svg.py */ ?>
-                        <small><?= e($m['code']) ?></small>
-                    </div>
-                </div>
-            </article>
+            <?= \App\Core\View::partial('items/_memo_card', ['m' => $m, 'periodLabel' => $periodLabel ?? '']) ?>
         <?php endforeach; ?>
     </main>
 <?php endforeach; ?>
 </div>
+<?php if (! $isPdf): ?>
+</body>
+</html>
+<?php endif; ?>

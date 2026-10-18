@@ -66,6 +66,31 @@
        0.  TOASTS
        ================================================================= */
     var toastWrap = null;
+
+    /* Live region persisten: toast visual tidak terbaca pembaca layar bila
+       elemennya baru disisipkan bersama isinya, jadi pengumuman lewat sini. */
+    function liveRegion(assertive) {
+        var id = assertive ? 'sf-live-assertive' : 'sf-live-polite';
+        var el = doc.getElementById(id);
+        if (!el) {
+            el = doc.createElement('div');
+            el.id = id;
+            el.className = 'sr-only';
+            el.setAttribute('role', assertive ? 'alert' : 'status');
+            el.setAttribute('aria-live', assertive ? 'assertive' : 'polite');
+            el.setAttribute('aria-atomic', 'true');
+            doc.body.appendChild(el);
+        }
+        return el;
+    }
+    window.sfAnnounce = function (msg, type) {
+        if (!msg) return;
+        var assertive = (type === 'error' || type === 'danger' || type === 'warning');
+        var el = liveRegion(assertive);
+        el.textContent = '';
+        setTimeout(function () { el.textContent = String(msg); }, 60);
+    };
+
     function toastWrapEl() {
         if (toastWrap) return toastWrap;
         toastWrap = doc.createElement('div');
@@ -78,9 +103,10 @@
         var wrap = toastWrapEl();
         var el = doc.createElement('div');
         el.className = 'sf-toast is-' + (type || 'info');
-        el.setAttribute('role', 'status');
+        el.setAttribute('aria-hidden', 'true');
         el.innerHTML = '<span class="sf-toast-dot"></span><span class="sf-toast-msg"></span>';
         el.querySelector('.sf-toast-msg').textContent = msg;
+        window.sfAnnounce(msg, type);
         wrap.appendChild(el);
         requestAnimationFrame(function () { el.classList.add('is-in'); });
         setTimeout(function () {
@@ -240,6 +266,8 @@
             var panel = doc.createElement('div');
             panel.className = 'sf-select-panel';
             panel.setAttribute('role', 'listbox');
+            // Panel bisa di-scroll: beri tab stop agar bisa dijangkau keyboard (WCAG 2.1.1)
+            panel.setAttribute('tabindex', '0');
             // Nama aksesibel untuk listbox: aria-label select -> <label for> -> opsi pertama
             var __selName = (sel.getAttribute('aria-label') || sel.getAttribute('data-label') || '').trim();
             if (!__selName && sel.id) {

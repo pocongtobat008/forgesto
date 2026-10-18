@@ -1,0 +1,494 @@
+/* ============================================================
+   StockForge — Login "Wave" (split card + scalloped divider)
+   Desain mengikuti mockup: panel biru berlogo + gelombang scallop,
+   form putih dengan input garis bawah. Mobile: header biru di atas.
+   ============================================================ */
+
+.aw-page {
+  --aw-blue: #1b5fc4;
+  --aw-blue-deep: #0f4aa8;
+  --aw-ink: #0b2a5b;
+  --aw-muted: #78859a;
+  --aw-line: #d7dee9;
+  --aw-lobe: 30px;
+
+  min-height: 100svh;
+  display: grid;
+  place-items: center;
+  padding: clamp(16px, 3vw, 40px);
+  background:
+    radial-gradient(1200px 620px at 50% -15%, #f2f6ff 0%, rgba(242, 246, 255, 0) 60%),
+    radial-gradient(900px 500px at 110% 110%, #dfe7f4 0%, rgba(223, 231, 244, 0) 65%),
+    #e9ecf1;
+  font-family: "Google Sans Flex", "Poppins", system-ui, -apple-system, "Segoe UI", sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ---------- Kartu ---------- */
+.aw-card {
+  width: min(1040px, 100%);
+  display: grid;
+  grid-template-columns: minmax(300px, 40%) minmax(0, 1fr);
+  background: #fff;
+  border-radius: 26px;
+  overflow: hidden;
+  position: relative;
+  box-shadow:
+    0 30px 70px -32px rgba(11, 42, 91, .45),
+    0 2px 10px rgba(11, 42, 91, .07);
+}
+
+/* ---------- Panel biru ---------- */
+.aw-brand {
+  position: relative;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 18px;
+  padding: 46px 40px;
+  color: #fff;
+  background-color: var(--aw-blue);
+  background-image: radial-gradient(120% 85% at 0% 0%, rgba(255, 255, 255, .13), rgba(255, 255, 255, 0) 58%);
+}
+
+/* Scallop: deretan setengah lingkaran yang mendorong ke panel putih.
+   radius = --aw-lobe, jarak antar pusat = 2 x --aw-lobe, sehingga
+   lingkaran tepat bersinggungan → kurva rapi tanpa celah datar. */
+.aw-brand::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: calc(var(--aw-lobe) * -1);
+  width: var(--aw-lobe);
+  height: 100%;
+  pointer-events: none;
+  /* Tepat 8 lekuk: tinggi tile = 100%/8 dan bentuk gradien "ellipse 100% 50%",
+     jadi tiap lekuk selalu bersinggungan di batas tile. Akibatnya gelombang
+     MULAI dan BERAKHIR tepat di titik temu (kedalaman 0) di tepi atas & bawah
+     panel — tidak ada lekuk terpotong separuh di sudut kartu. */
+  background-image: radial-gradient(
+    ellipse 100% 50% at 0 50%,
+    var(--aw-blue) 0 96%,
+    rgba(255, 255, 255, .55) 96% 100%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  background-size: 100% calc(100% / 8);
+  background-position: 0 0;
+  background-repeat: repeat-y;
+}
+
+.aw-ill {
+  width: min(214px, 84%);
+  margin: 2px auto 0;
+  filter: drop-shadow(0 16px 24px rgba(4, 26, 64, .22));
+}
+
+.aw-ill svg { display: block; width: 100%; height: auto; }
+
+.aw-welcome {
+  margin: 0;
+  text-align: center;
+  font-size: 1rem;
+  font-weight: 400;
+  letter-spacing: .01em;
+  color: rgba(255, 255, 255, .88);
+  line-height: 1.35;
+}
+
+.aw-welcome strong {
+  display: block;
+  margin-top: 4px;
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: -.01em;
+  color: #fff;
+}
+
+.aw-lead {
+  margin: 0;
+  text-align: center;
+  font-size: .8rem;
+  line-height: 1.7;
+  color: rgba(255, 255, 255, .72);
+  max-width: 30ch;
+  margin-inline: auto;
+}
+
+.aw-brand-foot {
+  position: absolute;
+  left: 40px;
+  right: 40px;
+  bottom: 26px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: .625rem;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, .55);
+}
+
+.aw-brand-foot a {
+  color: inherit;
+  text-decoration: none;
+  transition: color .18s ease;
+}
+
+.aw-brand-foot a:hover { color: #fff; }
+
+.aw-brand-foot span {
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: currentColor;
+  opacity: .7;
+}
+
+/* ---------- Panel form ---------- */
+.aw-form {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 58px clamp(26px, 4vw, 64px) 58px clamp(46px, 6vw, 84px);
+}
+
+.aw-form-inner { width: 100%; max-width: 368px; }
+
+.aw-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 14px;
+  padding: 5px 11px 5px 9px;
+  border-radius: 999px;
+  background: rgba(27, 95, 196, .08);
+  color: var(--aw-blue);
+  font-size: .66rem;
+  font-weight: 600;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+}
+
+.aw-eyebrow svg { width: 13px; height: 13px; }
+
+.aw-title {
+  margin: 0;
+  font-size: 1.42rem;
+  font-weight: 700;
+  letter-spacing: -.015em;
+  color: var(--aw-ink);
+}
+
+.aw-sub {
+  margin: 8px 0 0;
+  font-size: .82rem;
+  line-height: 1.6;
+  color: var(--aw-muted);
+}
+
+/* ---------- Field garis bawah ---------- */
+.aw-field { position: relative; margin-top: 30px; }
+
+.aw-field label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: .68rem;
+  font-weight: 700;
+  letter-spacing: .075em;
+  text-transform: uppercase;
+  color: #3d4c66;
+}
+
+.aw-field input {
+  width: 100%;
+  border: 0;
+  border-bottom: 1px solid var(--aw-line);
+  border-radius: 0;
+  background: transparent;
+  padding: 8px 2px 11px;
+  font: inherit;
+  font-size: 1rem;         /* 16px → iOS tidak auto-zoom */
+  font-weight: 600;
+  letter-spacing: .06em;
+  color: var(--aw-ink);
+  text-transform: uppercase;
+  outline: none;
+  transition: border-color .2s ease, box-shadow .2s ease;
+}
+
+.aw-field input::placeholder {
+  font-weight: 400;
+  letter-spacing: .04em;
+  color: #b9c3d2;
+  text-transform: none;
+}
+
+/* aksen biru yang memudar di ujung kanan garis */
+.aw-control { position: relative; display: block; }
+
+.aw-control::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 1px;
+  pointer-events: none;
+  background: linear-gradient(90deg, rgba(27, 95, 196, 0) 45%, rgba(27, 95, 196, .55) 100%);
+  opacity: .8;
+  transition: opacity .2s ease;
+}
+
+.aw-field input:focus,
+.aw-field input:focus-visible {
+  border-bottom-color: var(--aw-blue);
+  /* netralkan focus-ring global aplikasi (kotak 4px) — di sini cukup garis bawah */
+  outline: none !important;
+  box-shadow: 0 2px 0 0 var(--aw-blue) !important;
+}
+
+.aw-field input:focus::placeholder { color: #cfd7e3; }
+
+.aw-field.is-error input { border-bottom-color: #d9534f; }
+.aw-field.is-error input:focus { box-shadow: 0 2px 0 0 #d9534f !important; }
+.aw-field.is-error .aw-control::after { background: linear-gradient(90deg, rgba(217, 83, 79, 0), rgba(217, 83, 79, .5)); }
+
+.aw-hint {
+  margin: 9px 0 0;
+  font-size: .72rem;
+  line-height: 1.5;
+  color: #6f7c90; /* kontras ≥ 4.5:1 di atas putih */
+}
+
+.aw-error {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  margin: 9px 0 0;
+  font-size: .74rem;
+  font-weight: 500;
+  line-height: 1.5;
+  color: #c0392b;
+}
+
+.aw-error svg { width: 14px; height: 14px; flex: 0 0 auto; margin-top: 1px; }
+
+/* ---------- Ingat ID ---------- */
+.aw-check {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  margin-top: 22px;
+  font-size: .78rem;
+  color: #5b6a80;
+  cursor: pointer;
+  user-select: none;
+}
+
+.aw-check input {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 17px;
+  height: 17px;
+  margin: 0;
+  border: 1.5px solid #c3ccda;
+  border-radius: 5px;
+  background: #fff;
+  cursor: pointer;
+  transition: background .16s ease, border-color .16s ease;
+}
+
+.aw-check input:checked {
+  background-color: var(--aw-blue);
+  border-color: var(--aw-blue);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23fff' stroke-width='3.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m5 13 4.5 4.5L19 7'/%3E%3C/svg%3E");
+  background-size: 12px 12px;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.aw-check input:focus-visible { outline: 2px solid rgba(27, 95, 196, .45); outline-offset: 2px; }
+
+/* ---------- Tombol ---------- */
+.aw-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 26px;
+}
+
+.aw-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 46px;
+  padding: 0 24px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  font: inherit;
+  font-size: .85rem;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  transition: transform .16s cubic-bezier(.2, .8, .3, 1), background .16s ease, box-shadow .16s ease, border-color .16s ease;
+}
+
+.aw-btn--primary {
+  background: var(--aw-blue);
+  color: #fff;
+  box-shadow: 0 6px 14px -10px rgba(27, 95, 196, .75), inset 0 1px 0 rgba(255, 255, 255, .22);
+}
+
+.aw-btn--primary:hover { background: var(--aw-blue-deep); transform: translateY(-1px); }
+.aw-btn--primary:active { transform: translateY(0); }
+
+.aw-btn--primary svg {
+  width: 16px;
+  height: 16px;
+  transition: transform .18s ease;
+}
+
+.aw-btn--primary:hover svg { transform: translateX(3px); }
+
+.aw-btn--ghost {
+  background: #fff;
+  border-color: #ccd4e0;
+  color: #5b6a80;
+}
+
+.aw-btn--ghost:hover { border-color: #a9b6c8; color: #2f3d54; background: #f8fafc; }
+
+.aw-btn:focus-visible { outline: 2px solid rgba(27, 95, 196, .45); outline-offset: 2px; }
+
+/* ---------- Panel bantuan ---------- */
+.aw-help {
+  margin-top: 16px;
+  padding: 13px 15px;
+  border: 1px solid #e2e8f1;
+  border-radius: 12px;
+  background: #f7f9fc;
+  font-size: .76rem;
+  line-height: 1.6;
+  color: #5b6a80;
+}
+
+.aw-help[hidden] { display: none; }
+
+.aw-help strong { color: var(--aw-ink); }
+
+/* ---------- Alert flash ---------- */
+.aw-alert {
+  margin-top: 20px;
+  padding: 11px 13px;
+  border-radius: 10px;
+  font-size: .78rem;
+  line-height: 1.5;
+  border: 1px solid transparent;
+}
+
+.aw-alert--success { background: #eaf7ef; border-color: #c3e8d3; color: #1c6b3f; }
+.aw-alert--error,
+.aw-alert--danger { background: #fdecea; border-color: #f6cfcb; color: #b03a2e; }
+.aw-alert--warning { background: #fff6e6; border-color: #f7e0b6; color: #8a5a00; }
+.aw-alert--info { background: #eaf1fd; border-color: #cbdcf7; color: #1b4f9c; }
+
+/* ============================================================
+   Mobile / tablet sempit: header biru di atas + gelombang horizontal
+   ============================================================ */
+@media (max-width: 860px) {
+  .aw-page { padding: 0; place-items: stretch; }
+
+  .aw-card {
+    width: 100%;
+    min-height: 100svh;
+    grid-template-columns: 1fr;
+    grid-template-rows: auto 1fr; /* header biru setinggi konten, form ambil sisa */
+    border-radius: 0;
+    box-shadow: none;
+    background: #fff;
+  }
+
+  .aw-brand {
+    z-index: 3;
+    min-height: 232px;
+    justify-content: center;
+    gap: 14px;
+    padding: 34px 26px 40px;
+    border-radius: 0 0 0 0;
+  }
+
+  .aw-page { --aw-lobe: 26px; }
+
+  .aw-brand::after {
+    top: auto;
+    bottom: calc(var(--aw-lobe) * -1);
+    right: 0;
+    width: 100%;
+    height: var(--aw-lobe);
+    background-image: radial-gradient(
+      circle at 50% 0,
+      var(--aw-blue) 0 calc(var(--aw-lobe) - 1.5px),
+      rgba(255, 255, 255, .55) calc(var(--aw-lobe) - 1.5px) var(--aw-lobe),
+      rgba(255, 255, 255, 0) var(--aw-lobe)
+    );
+    background-size: calc(var(--aw-lobe) * 2) 100%;
+    background-position: center;
+    background-repeat: repeat-x;
+  }
+
+  .aw-ill { width: min(178px, 74%); margin-top: 0; }
+  .aw-welcome { font-size: .82rem; }
+  .aw-welcome strong { font-size: 1.22rem; }
+  .aw-lead { font-size: .74rem; max-width: 34ch; }
+  .aw-brand-foot { display: none; }
+
+  .aw-form {
+    z-index: 2;
+    align-items: flex-start;
+    margin-top: -14px;
+    /* 26px gelombang + 14px tarikan margin + jarak aman */
+    padding: 50px 22px calc(34px + env(safe-area-inset-bottom));
+    border-radius: 22px 22px 0 0;
+    background: #fff;
+  }
+
+  .aw-form-inner { max-width: min(100%, 440px); margin-inline: auto; }
+  .aw-title { font-size: 1.24rem; }
+  .aw-actions { gap: 9px; }
+  .aw-btn { flex: 1 1 auto; padding: 0 18px; }
+}
+
+@media (max-width: 380px) {
+  .aw-btn { flex: 1 1 100%; }
+}
+
+/* ---------- Dark mode ---------- */
+[data-theme="dark"] .aw-page {
+  background:
+    radial-gradient(1000px 520px at 50% -15%, #16203a 0%, rgba(22, 32, 58, 0) 60%),
+    #0a0d14;
+}
+
+[data-theme="dark"] .aw-card { background: #111621; box-shadow: 0 30px 70px -32px rgba(0, 0, 0, .8); }
+[data-theme="dark"] .aw-form { background: #111621; }
+[data-theme="dark"] .aw-title { color: #eaf0fb; }
+[data-theme="dark"] .aw-sub,
+[data-theme="dark"] .aw-hint { color: #8b98ad; }
+[data-theme="dark"] .aw-field label { color: #a9b6ca; }
+[data-theme="dark"] .aw-field input { color: #eaf0fb; border-bottom-color: #26303f; }
+[data-theme="dark"] .aw-check { color: #a9b6ca; }
+[data-theme="dark"] .aw-check input { background: #0d1219; border-color: #2b3648; }
+[data-theme="dark"] .aw-btn--ghost { background: #151b26; border-color: #2b3648; color: #b6c2d4; }
+[data-theme="dark"] .aw-btn--ghost:hover { background: #1a2230; color: #e6eefb; }
+[data-theme="dark"] .aw-help { background: #151b26; border-color: #232d3d; color: #9dabbd; }
+[data-theme="dark"] .aw-help strong { color: #e6eefb; }
+[data-theme="dark"] .aw-eyebrow { background: rgba(96, 148, 235, .14); color: #8fb6f5; }
+
+@media (prefers-reduced-motion: reduce) {
+  .aw-btn, .aw-btn--primary svg, .aw-field input { transition: none; }
+}

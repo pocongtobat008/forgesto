@@ -9,7 +9,7 @@ return [
     'nav.master_items'    => 'Master Data',
     'nav.other'           => 'Other',
     'nav.dashboard'       => 'Dashboard',
-    'nav.items'           => 'STO Data',
+    'nav.items'           => 'Observer',
     'nav.progress'        => 'Progress',
     'nav.memo'            => 'Marking Memo',
     'nav.audit'           => 'Audit',

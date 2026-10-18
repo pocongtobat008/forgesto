@@ -253,7 +253,7 @@ foreach ($rules as $r) {
 
         <!-- Tabel Matriks Rules -->
         <div class="table-wrap">
-            <table class="data" id="table-user-rules" style="table-layout:auto !important;min-width:1050px;">
+            <table class="data" id="table-user-rules" style="table-layout:auto !important;min-width:1050px;"><caption class="sr-only">Matriks hak akses per peran</caption>
                 <thead>
                     <tr style="background:var(--bg-subtle, rgba(0,0,0,0.02));">
                         <th style="min-width:180px;"><?= __('Menu / Halaman') ?></th>
@@ -294,7 +294,7 @@ foreach ($rules as $r) {
                             <!-- 1. LIHAT MENU -->
                             <td class="t-center">
                                 <label class="sf-switch" title="<?= e(__('Izin lihat menu /:k', ['k' => $mKey])) ?>">
-                                    <input type="checkbox" name="rules[<?= e($mKey) ?>][can_view]" value="1" class="chk-action chk-view" <?= ! empty($r['can_view']) ? 'checked' : '' ?>>
+                                    <input type="checkbox" name="rules[<?= e($mKey) ?>][can_view]" value="1" class="chk-action chk-view" aria-label="<?= e(__('Lihat menu') . ' ' . $mKey) ?>" <?= ! empty($r['can_view']) ? 'checked' : '' ?>>
                                     <span class="sf-slider"></span>
                                 </label>
                             </td>
@@ -302,7 +302,7 @@ foreach ($rules as $r) {
                             <!-- 2. TAMBAH -->
                             <td class="t-center">
                                 <label class="sf-switch" title="<?= __('Tombol Tambah') ?>">
-                                    <input type="checkbox" name="rules[<?= e($mKey) ?>][can_add]" value="1" class="chk-action chk-add" <?= ! empty($r['can_add']) ? 'checked' : '' ?>>
+                                    <input type="checkbox" name="rules[<?= e($mKey) ?>][can_add]" value="1" class="chk-action chk-add" aria-label="<?= e(__('Tambah') . ' ' . $mKey) ?>" <?= ! empty($r['can_add']) ? 'checked' : '' ?>>
                                     <span class="sf-slider"></span>
                                 </label>
                             </td>
@@ -310,7 +310,7 @@ foreach ($rules as $r) {
                             <!-- 3. EDIT -->
                             <td class="t-center">
                                 <label class="sf-switch" title="<?= __('Tombol Edit') ?>">
-                                    <input type="checkbox" name="rules[<?= e($mKey) ?>][can_edit]" value="1" class="chk-action chk-edit" <?= ! empty($r['can_edit']) ? 'checked' : '' ?>>
+                                    <input type="checkbox" name="rules[<?= e($mKey) ?>][can_edit]" value="1" class="chk-action chk-edit" aria-label="<?= e(__('Edit') . ' ' . $mKey) ?>" <?= ! empty($r['can_edit']) ? 'checked' : '' ?>>
                                     <span class="sf-slider"></span>
                                 </label>
                             </td>
@@ -318,7 +318,7 @@ foreach ($rules as $r) {
                             <!-- 4. HAPUS -->
                             <td class="t-center">
                                 <label class="sf-switch" title="<?= __('Tombol Hapus') ?>">
-                                    <input type="checkbox" name="rules[<?= e($mKey) ?>][can_delete]" value="1" class="chk-action chk-delete" <?= ! empty($r['can_delete']) ? 'checked' : '' ?>>
+                                    <input type="checkbox" name="rules[<?= e($mKey) ?>][can_delete]" value="1" class="chk-action chk-delete" aria-label="<?= e(__('Hapus') . ' ' . $mKey) ?>" <?= ! empty($r['can_delete']) ? 'checked' : '' ?>>
                                     <span class="sf-slider"></span>
                                 </label>
                             </td>
@@ -326,7 +326,7 @@ foreach ($rules as $r) {
                             <!-- 5. POSTING -->
                             <td class="t-center">
                                 <label class="sf-switch" title="<?= __('Tombol Posting') ?>">
-                                    <input type="checkbox" name="rules[<?= e($mKey) ?>][can_post]" value="1" class="chk-action chk-post" <?= ! empty($r['can_post']) ? 'checked' : '' ?>>
+                                    <input type="checkbox" name="rules[<?= e($mKey) ?>][can_post]" value="1" class="chk-action chk-post" aria-label="<?= e(__('Posting') . ' ' . $mKey) ?>" <?= ! empty($r['can_post']) ? 'checked' : '' ?>>
                                     <span class="sf-slider"></span>
                                 </label>
                             </td>
@@ -334,7 +334,7 @@ foreach ($rules as $r) {
                             <!-- 6. PIC POSTING -->
                             <td class="t-center">
                                 <label class="sf-switch" title="<?= __('Otoritas PIC Posting') ?>">
-                                    <input type="checkbox" name="rules[<?= e($mKey) ?>][can_pic_post]" value="1" class="chk-action chk-pic-post" <?= ! empty($r['can_pic_post']) ? 'checked' : '' ?>>
+                                    <input type="checkbox" name="rules[<?= e($mKey) ?>][can_pic_post]" value="1" class="chk-action chk-pic-post" aria-label="<?= e(__('Posting PIC') . ' ' . $mKey) ?>" <?= ! empty($r['can_pic_post']) ? 'checked' : '' ?>>
                                     <span class="sf-slider"></span>
                                 </label>
                             </td>
@@ -442,7 +442,7 @@ foreach ($rules as $r) {
                                 <span><?= __('Lihat Menu') ?></span>
                             </div>
                             <label class="sf-switch" style="margin:0;" onclick="event.stopPropagation();">
-                                <input type="checkbox" id="chk_custom_view" name="can_view" value="1" checked class="custom-perm-chk">
+                                <input type="checkbox" id="chk_custom_view" name="can_view" value="1" checked class="custom-perm-chk" aria-label="<?= e(__('Lihat Menu')) ?>">
                                 <span class="sf-slider"></span>
                             </label>
                         </div>
@@ -454,7 +454,7 @@ foreach ($rules as $r) {
                                 <span><?= __('Tambah Data') ?></span>
                             </div>
                             <label class="sf-switch" style="margin:0;" onclick="event.stopPropagation();">
-                                <input type="checkbox" id="chk_custom_add" name="can_add" value="1" class="custom-perm-chk">
+                                <input type="checkbox" id="chk_custom_add" name="can_add" value="1" class="custom-perm-chk" aria-label="<?= e(__('Tambah Data')) ?>">
                                 <span class="sf-slider"></span>
                             </label>
                         </div>
@@ -466,7 +466,7 @@ foreach ($rules as $r) {
                                 <span><?= __('Edit Data') ?></span>
                             </div>
                             <label class="sf-switch" style="margin:0;" onclick="event.stopPropagation();">
-                                <input type="checkbox" id="chk_custom_edit" name="can_edit" value="1" class="custom-perm-chk">
+                                <input type="checkbox" id="chk_custom_edit" name="can_edit" value="1" class="custom-perm-chk" aria-label="<?= e(__('Edit Data')) ?>">
                                 <span class="sf-slider"></span>
                             </label>
                         </div>
@@ -478,7 +478,7 @@ foreach ($rules as $r) {
                                 <span><?= __('Hapus Data') ?></span>
                             </div>
                             <label class="sf-switch" style="margin:0;" onclick="event.stopPropagation();">
-                                <input type="checkbox" id="chk_custom_del" name="can_delete" value="1" class="custom-perm-chk">
+                                <input type="checkbox" id="chk_custom_del" name="can_delete" value="1" class="custom-perm-chk" aria-label="<?= e(__('Hapus Data')) ?>">
                                 <span class="sf-slider"></span>
                             </label>
                         </div>
@@ -490,7 +490,7 @@ foreach ($rules as $r) {
                                 <span><?= __('Posting Data') ?></span>
                             </div>
                             <label class="sf-switch" style="margin:0;" onclick="event.stopPropagation();">
-                                <input type="checkbox" id="chk_custom_post" name="can_post" value="1" class="custom-perm-chk">
+                                <input type="checkbox" id="chk_custom_post" name="can_post" value="1" class="custom-perm-chk" aria-label="<?= e(__('Posting')) ?>">
                                 <span class="sf-slider"></span>
                             </label>
                         </div>
@@ -502,7 +502,7 @@ foreach ($rules as $r) {
                                 <span><?= __('PIC Posting') ?></span>
                             </div>
                             <label class="sf-switch" style="margin:0;" onclick="event.stopPropagation();">
-                                <input type="checkbox" id="chk_custom_pic" name="can_pic_post" value="1" class="custom-perm-chk">
+                                <input type="checkbox" id="chk_custom_pic" name="can_pic_post" value="1" class="custom-perm-chk" aria-label="<?= e(__('Posting PIC')) ?>">
                                 <span class="sf-slider"></span>
                             </label>
                         </div>

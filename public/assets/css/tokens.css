@@ -69,13 +69,13 @@
     /* Semantic Status Colors (WCAG AA compliant) */
     --success: #047857;         /* Mantine teal-6 */
     --success-bg: #e6fcf5;      /* Mantine teal-0 */
-    --success-text: #0ca678;    /* Mantine teal-7 */
+    --success-text: #0b7a56;    /* teal-8 (kontras 4.8:1 di atas #f1f3f5) */
     --warning: #f59e0b;         /* Mantine yellow-6 */
     --warning-bg: #fff9db;      /* Mantine yellow-0 */
     --warning-text: #b45309;    /* Mantine yellow-8 */
     --danger: #b91c1c;          /* Mantine red-6 */
     --danger-bg: #ffe3e3;       /* Mantine red-0 */
-    --danger-text: #e03131;     /* Mantine red-8 */
+    --danger-text: #c92a2a;     /* red-9 (kontras 4.9:1 di atas #f1f3f5) */
     --info: #1971c2;            /* Mantine blue-6 */
     --info-bg: #e7f5ff;         /* Mantine blue-0 */
     --info-text: #1971c2;       /* Mantine blue-7 */

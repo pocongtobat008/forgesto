@@ -54,7 +54,7 @@ $groupCount = count($rows);
 </div>
 
 <div class="table-wrap">
-    <table class="data">
+    <table class="data"><caption class="sr-only">Group pada tahun buku</caption>
         <thead>
             <tr>
                 <th><?= __('Group') ?></th>

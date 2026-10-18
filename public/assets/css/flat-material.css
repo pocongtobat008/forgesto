@@ -616,9 +616,9 @@ table thead th.xf-th > .xf-btn.is-active svg {
 
 /* 4. DANGER BUTTON (.btn-danger, Delete, Reset) */
 .btn-danger, #bulk-delete-master-btn {
-  background: #ef4444 !important;
-  background-color: #ef4444 !important;
-  border: 1px solid #dc2626 !important;
+  background: #dc2626 !important;
+  background-color: #dc2626 !important;
+  border: 1px solid #b91c1c !important;
   color: #ffffff !important;
   font-weight: 500 !important;
   border-radius: 8px !important;
@@ -629,15 +629,15 @@ table thead th.xf-th > .xf-btn.is-active svg {
   color: #ffffff !important;
 }
 .btn-danger:hover, #bulk-delete-master-btn:hover {
-  background: #dc2626 !important;
-  border-color: #b91c1c !important;
+  background: #b91c1c !important;
+  border-color: #991b1b !important;
   color: #ffffff !important;
   transform: translateY(-1px) !important;
   box-shadow: 0 4px 12px 0 rgba(239, 68, 68, 0.25) !important;
 }
 .btn-danger:active, #bulk-delete-master-btn:active {
-  background: #b91c1c !important;
-  border-color: #991b1b !important;
+  background: #991b1b !important;
+  border-color: #7f1d1d !important;
   color: #ffffff !important;
   transform: translateY(0) !important;
   box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.12) !important;

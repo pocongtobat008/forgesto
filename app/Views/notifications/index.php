@@ -118,7 +118,7 @@ $chips = [
     <?php endforeach; ?>
     <a class="btn btn-xs <?= $unreadOnly ? 'btn-brand' : 'btn-outline' ?>"
        href="<?= e($link($typeFilter, ! $unreadOnly)) ?>"
-       aria-pressed="<?= $unreadOnly ? 'true' : 'false' ?>"
+       aria-current="<?= $unreadOnly ? 'true' : 'false' ?>"
        style="min-height:44px;padding-inline:.9rem;">
         <?= icon('filter') ?> Hanya belum dibaca
     </a>

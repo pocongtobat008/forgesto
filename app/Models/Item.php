@@ -441,7 +441,8 @@ class Item extends Model
     {
         $row = $this->first(
             'SELECT i.*, g.code AS group_code, g.name AS group_name,
-                    l.name AS location_name, d.name AS device_name,
+                    l.name AS location_name, l.code AS location_code,
+                    d.name AS device_name,
                     cu.name AS counted_by_name, pu.name AS posted_by_name,
                     (SELECT GROUP_CONCAT(uo.name ORDER BY uo.name SEPARATOR \', \')
                        FROM user_groups ugo JOIN users uo ON uo.id = ugo.user_id

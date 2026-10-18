@@ -34,9 +34,9 @@ return [
     // Login is intentionally disabled for the current testing phase: the app
     // resolves the active user from the session "dev switch" instead.
     'auth' => [
-        'login_enabled'  => false,
-        'default_user'   => 'poweradmin', // username used when no session user
-        'dev_switcher'   => true,         // allow switching user/role for testing
+        'login_enabled'  => true,
+        'default_user'   => 'WE2015072', // username used when no session user
+        'dev_switcher'   => false,        // false = login wajib, tidak ada auto-login
     ],
 
     // ---------------------------------------------------------------------

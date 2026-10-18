@@ -234,7 +234,7 @@ $curAuditStatus = is_array($filters['audit_status'] ?? null)
 $cfCol = $filters['col'] ?? [];
 $xfBtn = static fn (string $k, string $lbl): string => '<button type="button" class="xf-btn' . (! empty($cfCol[$k]) ? ' is-active' : '') . '" data-xf="' . $k . '" aria-label="' . e(__( 'Filter kolom :l', ['l' => __($lbl)])) . '" aria-haspopup="dialog" title="Filter">' . icon('filter') . '</button>';
 ?>
-        <table class="data" id="master-table" data-colmgr-key="master-data-v1" data-colmgr-prefix="master">
+        <table class="data" id="master-table" data-colmgr-key="master-data-v1" data-colmgr-prefix="master"><caption class="sr-only">Data master</caption>
             <thead>
                 <tr>
                     <th style="width:44px;" class="t-center" data-col="no">#</th>

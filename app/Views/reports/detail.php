@@ -171,7 +171,7 @@ $statusTone = static function (string $s): string {
         <span class="badge badge-muted"><?= count($groups) ?> <?= __('group') ?></span>
     </div>
     <div class="table-wrap">
-        <table class="data">
+        <table class="data"><caption class="sr-only">Selisih per group</caption>
             <thead>
                 <tr>
                     <th><?= __('Group') ?></th>
@@ -216,7 +216,7 @@ $statusTone = static function (string $s): string {
         <span class="badge badge-muted"><?= count($items) ?> <?= __('item') ?></span>
     </div>
     <div class="table-wrap">
-        <table class="data">
+        <table class="data"><caption class="sr-only">Item dengan selisih terbesar</caption>
             <thead>
                 <tr>
                     <th><?= __('Kode') ?></th>

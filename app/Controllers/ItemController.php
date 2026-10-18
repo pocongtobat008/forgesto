@@ -90,7 +90,7 @@ class ItemController extends Controller
         }
 
         return $this->view('items/index', [
-            'title'         => __('Data STO'),
+            'title'         => __('Observer'),
             'showAll'       => $showAll,
             'items'         => $itemsPage,
             'filters'       => $filters,

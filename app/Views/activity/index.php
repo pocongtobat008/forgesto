@@ -64,7 +64,7 @@ $__actHasFilter = ! empty($filters['search']) || ! empty($filters['col']) || ! e
     ?>
 
     <div class="table-wrap">
-        <table class="data" id="activity-table" data-colmgr-key="activity-v1" data-colmgr-prefix="activity">
+        <table class="data" id="activity-table" data-colmgr-key="activity-v1" data-colmgr-prefix="activity"><caption class="sr-only">Log aktivitas pengguna</caption>
             <thead>
                 <tr>
 <?php

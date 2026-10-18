@@ -48,7 +48,7 @@ $bad = (int) ($out['failed'] ?? 0);
 
 <?php if (! empty($rows)): ?>
     <div class="card" style="padding:0;overflow:auto;">
-        <table class="table" style="width:100%;">
+        <table class="table" style="width:100%;"><caption class="sr-only">Pratinjau data karyawan</caption>
             <thead>
                 <tr>
                     <th style="width:48px;">#</th>

@@ -285,7 +285,7 @@ foreach ($__keepKeys as $__k) {
     </div>
     </div><!-- /.sf-tabtoolbar -->
     <div class="table-wrap">
-        <table class="data" id="items-table" data-rowdetail data-colmgr-key="items-v1" data-colmgr-prefix="items">
+        <table class="data" id="items-table" data-rowdetail data-colmgr-key="items-v1" data-colmgr-prefix="items"><caption class="sr-only">Daftar barang</caption>
             <thead>
                 <tr>
                     <th data-col="select" style="width:44px" class="t-center th-select-all" title="<?= __('Pilih semua item tampil') ?>">
@@ -544,28 +544,50 @@ foreach ($__keepKeys as $__k) {
   var popAnchor = null;
   function placePop(btn) {
     popAnchor = btn;
-    // Pindahkan ke body agar tidak terkurung ancestor ber-transform/overflow.
     if (pop.parentElement !== document.body) { document.body.appendChild(pop); }
     var r = btn.getBoundingClientRect();
-    var w = pop.offsetWidth || 280;
-    var h = pop.offsetHeight || 320;
     var vw = document.documentElement.clientWidth || window.innerWidth;
     var vh = window.innerHeight || document.documentElement.clientHeight;
     var gap = 6, pad = 8;
+    var w = pop.offsetWidth || 280;
     var left = r.left;
     if (left + w > vw - pad) { left = vw - pad - w; }
     if (left < pad) { left = pad; }
-    // Pilih sisi (bawah/atas) yang muat, lalu batasi tinggi popup agar
-    // tidak menutupi tombol pemicu dan tidak keluar dari viewport.
+
+    // Ukur tinggi NATURAL tanpa batas. Dulu pop.offsetHeight dibaca saat
+    // maxHeight lama masih terpasang, jadi tinggi terkunci pada tinggi
+    // keadaan "Memuat..." dan daftar nilai terhimpit jadi 1 baris.
+    var prevList = list.style.maxHeight;
+    pop.style.maxHeight = 'none';
+    pop.style.overflowY = 'hidden';
+    list.style.maxHeight = 'none';
+    var natural = pop.offsetHeight;
+    var listNatural = list.offsetHeight;
+    list.style.maxHeight = prevList || '';
+
+    var chrome = Math.max(0, natural - listNatural);          // head + cari + urut + footer
+    var want = Math.min(Math.max(listNatural, 132), 300);      // 3 s.d. 7 baris
+
     var below = (vh - pad) - (r.bottom + gap);
     var above = (r.top - gap) - pad;
-    var openUp = (below < Math.min(h, 260)) && (above > below);
-    var avail = Math.max(140, Math.min(h, openUp ? above : below));
-    pop.style.maxHeight = Math.round(avail) + "px";
-    pop.style.overflowY = "auto";
-    var top = openUp ? (r.top - gap - avail) : (r.bottom + gap);
-    if (top + avail > vh - pad) { top = Math.max(pad, vh - pad - avail); }
+    var openUp = (below < chrome + want) && (above > below);
+    var room = (openUp ? above : below) - chrome;
+    if (room < 132 && ((openUp ? below : above) - chrome) > room) {
+      openUp = !openUp;
+      room = (openUp ? above : below) - chrome;
+    }
+    var listH = Math.min(want, Math.max(120, room));
+    list.style.maxHeight = Math.round(listH) + 'px';
+
+    var total = chrome + listH;
+    var top = openUp ? (r.top - gap - total) : (r.bottom + gap);
+    if (top + total > vh - pad) { top = Math.max(pad, vh - pad - total); }
     if (top < pad) { top = pad; }
+    // jaring pengaman: viewport sangat pendek -> popup sendiri yang scroll
+    if (total > vh - pad * 2) {
+      pop.style.maxHeight = Math.round(vh - pad * 2) + 'px';
+      pop.style.overflowY = 'auto';
+    }
     pop.style.left = Math.round(left) + 'px';
     pop.style.top = Math.round(top) + 'px';
   }
@@ -667,7 +689,7 @@ foreach ($__keepKeys as $__k) {
             <button type="button" class="icon-btn" data-scan-close aria-label="<?= __('Tutup') ?>"><?= icon('x') ?></button>
         </div>
         <div class="modal-body">
-            <div id="scanner-viewport"></div>
+            <div id="scanner-viewport" role="status" aria-live="polite"></div>
             <p class="scanner-hint">Arahkan kamera ke barcode atau QR code. Hasil scan otomatis mengisi pencarian lalu memfilter tabel.</p>
         </div>
     </div>

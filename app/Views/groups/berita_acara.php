@@ -30,7 +30,7 @@ $periode = $periode ?? '-';
             <strong><?= __('BERITA ACARA STOCK TAKE OPNAME (STO)') ?></strong>
             <span><?= e($group['sto_name'] ?? 'Stock Take Opname') ?></span>
         </div>
-        <table class="ba-meta">
+        <table class="ba-meta"><caption class="sr-only">Identitas berita acara</caption>
             <tr><td><?= __('Group') ?></td><td>: <?= e($group['name']) ?> (<span class="mono"><?= e($group['code']) ?></span>)</td></tr>
             <tr><td><?= __('Gudang / Situs') ?></td><td>: <?= e($group['warehouse_name'] ?? '-') ?><?= ! empty($group['warehouse_city']) ? ', ' . e($group['warehouse_city']) : '' ?></td></tr>
             <tr><td><?= __('Periode hitung') ?></td><td>: <?= e($periode) ?></td></tr>
@@ -40,7 +40,7 @@ $periode = $periode ?? '-';
 
     <section class="ba-sec">
         <h3><?= __('1. Ringkasan hitung fisik') ?></h3>
-        <table class="ba-table">
+        <table class="ba-table"><caption class="sr-only">Ringkasan hasil hitung fisik</caption>
             <tbody>
                 <tr><td><?= __('Total barang') ?></td><td class="t-right"><?= (int) $stats['items'] ?></td></tr>
                 <tr><td><?= __('Sudah dihitung') ?></td><td class="t-right"><?= (int) $stats['counted'] ?> (<?= $pct ?>%)</td></tr>
@@ -56,7 +56,7 @@ $periode = $periode ?? '-';
 
     <section class="ba-sec">
         <h3><?= __('2. Petugas') ?></h3>
-        <div class="ba-scroll"><table class="ba-table">
+        <div class="ba-scroll"><table class="ba-table"><caption class="sr-only">Daftar petugas</caption>
             <thead><tr><th><?= __('Peran') ?></th><th><?= __('Nama') ?></th><th><?= __('No. telp') ?></th></tr></thead>
             <tbody>
                 <?php foreach ($observers as $u): ?>
@@ -74,7 +74,7 @@ $periode = $periode ?? '-';
 
     <section class="ba-sec">
         <h3><?= __('3. Tablet yang digunakan') ?></h3>
-        <table class="ba-table">
+        <table class="ba-table"><caption class="sr-only">Daftar tablet yang digunakan</caption>
             <thead><tr><th><?= __('Kode') ?></th><th><?= __('Nama') ?></th><th><?= __('Serial') ?></th><th><?= __('Rak') ?></th></tr></thead>
             <tbody>
                 <?php foreach ($tablets as $t): ?>
@@ -92,7 +92,7 @@ $periode = $periode ?? '-';
         <?php if ($pendingItems === []): ?>
             <p><?= __('Seluruh barang pada group ini sudah dihitung.') ?></p>
         <?php else: ?>
-            <table class="ba-table">
+            <table class="ba-table"><caption class="sr-only">Barang belum dihitung</caption>
                 <thead><tr><th><?= __('Kode') ?></th><th><?= __('Nama barang') ?></th><th><?= __('Rak') ?></th></tr></thead>
                 <tbody>
                     <?php foreach ($pendingItems as $it): ?>

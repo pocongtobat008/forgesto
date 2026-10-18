@@ -51,7 +51,7 @@ $xfBtn = static fn (string $k, string $lbl): string => '<button type="button" cl
     ?>
 
     <div class="table-wrap">
-        <table class="data" id="exports-table" data-colmgr-key="exports-v1" data-colmgr-prefix="exports">
+        <table class="data" id="exports-table" data-colmgr-key="exports-v1" data-colmgr-prefix="exports"><caption class="sr-only">Daftar ekspor</caption>
             <thead>
                 <tr>
                     <th data-col="file" class="xf-th"><span class="xf-label"><?= __('File') ?></span><?= $xfBtn('file', 'File') ?></th>
@@ -79,7 +79,7 @@ $xfBtn = static fn (string $k, string $lbl): string => '<button type="button" cl
                             <td class="t-center mono tabular"><?= (int) $log['total_rows'] ?></td>
                             <td class="t-center"><span class="badge <?= $badge ?>"><?= e(ucfirst((string) $log['status'])) ?></span></td>
                             <td class="t-center" style="min-width:110px;">
-                                <div class="progress-mini" role="progressbar" aria-valuenow="<?= (int) $log['progress'] ?>" aria-valuemin="0" aria-valuemax="100"><span style="width:<?= max(0, min(100, (int) $log['progress'])) ?>%"></span></div>
+                                <div class="progress-mini" role="progressbar" aria-label="<?= __('Progres') ?>" aria-valuenow="<?= (int) $log['progress'] ?>" aria-valuemin="0" aria-valuemax="100"><span style="width:<?= max(0, min(100, (int) $log['progress'])) ?>%"></span></div>
                                 <span class="text-sm faint"><?= (int) $log['progress'] ?>%</span>
                             </td>
                             <td class="text-sm"><?= e($log['user_name'] ?: '-') ?></td>

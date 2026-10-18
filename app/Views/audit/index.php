@@ -155,7 +155,7 @@ $__rechCount = (int) $recheck['total'];
         <span class="badge badge-brand">Target minimal <?= (int) $minPercent ?>%</span>
     </div>
     <div class="table-wrap">
-        <table class="data" id="audit-coverage-table" data-colmgr-key="audit-cov-v1" data-colmgr-prefix="audit-cov">
+        <table class="data" id="audit-coverage-table" data-colmgr-key="audit-cov-v1" data-colmgr-prefix="audit-cov"><caption class="sr-only">Cakupan audit per group</caption>
             <thead>
                 <tr>
                     <th data-col="group"><?= __('Group') ?></th>
@@ -228,7 +228,7 @@ $__rechCount = (int) $recheck['total'];
         <form method="get" action="<?= url('audit') ?>" id="audit-filter" class="filters" style="display:flex;align-items:center;gap:.75rem;margin:0;flex-wrap:wrap;">
             <input type="hidden" name="tab" value="<?= e($__at) ?>">
             <div class="form-group" style="margin:0;">
-                <select id="group_id" name="group_id" data-auto-submit style="min-height:38px;">
+                <select id="group_id" name="group_id" data-auto-submit aria-label="<?= __('Group') ?>" style="min-height:38px;">
                     <option value=""><?= __('Semua group') ?></option>
                     <?php foreach ($groups as $group): ?>
                         <option value="<?= (int) $group['id'] ?>" <?= (int) ($filters['group_id'][0] ?? 0) === (int) $group['id'] ? 'selected' : '' ?>>
@@ -245,7 +245,7 @@ $__rechCount = (int) $recheck['total'];
     </div>
 
     <div class="table-wrap">
-        <table class="data" id="audit-sample-table" data-colmgr-key="audit-sample-v1" data-colmgr-prefix="audit-sample">
+        <table class="data" id="audit-sample-table" data-colmgr-key="audit-sample-v1" data-colmgr-prefix="audit-sample"><caption class="sr-only">Rekomendasi audit belum memenuhi target</caption>
             <thead>
                 <tr>
                     <th data-col="code" class="xf-th"><span class="xf-label"><?= __('Kode') ?></span><?= $xfBtn('code', 'Kode') ?></th>
@@ -299,7 +299,7 @@ $__rechCount = (int) $recheck['total'];
         <form method="get" action="<?= url('audit') ?>" id="audit-filter" class="filters" style="display:flex;align-items:center;gap:.75rem;margin:0;flex-wrap:wrap;">
             <input type="hidden" name="tab" value="<?= e($__at) ?>">
             <div class="form-group" style="margin:0;">
-                <select id="group_id" name="group_id" data-auto-submit style="min-height:38px;">
+                <select id="group_id" name="group_id" data-auto-submit aria-label="<?= __('Group') ?>" style="min-height:38px;">
                     <option value=""><?= __('Semua group') ?></option>
                     <?php foreach ($groups as $group): ?>
                         <option value="<?= (int) $group['id'] ?>" <?= (int) ($filters['group_id'][0] ?? 0) === (int) $group['id'] ? 'selected' : '' ?>>
@@ -315,7 +315,7 @@ $__rechCount = (int) $recheck['total'];
         </div>
     </div>
     <div class="table-wrap">
-        <table class="data" id="audit-posted-table" data-colmgr-key="audit-posted-v1" data-colmgr-prefix="audit-posted">
+        <table class="data" id="audit-posted-table" data-colmgr-key="audit-posted-v1" data-colmgr-prefix="audit-posted"><caption class="sr-only">Audit yang sudah diposting</caption>
             <thead>
                 <tr>
                     <th data-col="code" class="xf-th"><span class="xf-label"><?= __('Kode') ?></span><?= $xfBtn('code', 'Kode') ?></th>
@@ -377,7 +377,7 @@ $__rechCount = (int) $recheck['total'];
         <form method="get" action="<?= url('audit') ?>" id="audit-filter" class="filters" style="display:flex;align-items:center;gap:.75rem;margin:0;flex-wrap:wrap;">
             <input type="hidden" name="tab" value="<?= e($__at) ?>">
             <div class="form-group" style="margin:0;">
-                <select id="group_id" name="group_id" data-auto-submit style="min-height:38px;">
+                <select id="group_id" name="group_id" data-auto-submit aria-label="<?= __('Group') ?>" style="min-height:38px;">
                     <option value=""><?= __('Semua group') ?></option>
                     <?php foreach ($groups as $group): ?>
                         <option value="<?= (int) $group['id'] ?>" <?= (int) ($filters['group_id'][0] ?? 0) === (int) $group['id'] ? 'selected' : '' ?>>
@@ -393,7 +393,7 @@ $__rechCount = (int) $recheck['total'];
         </div>
     </div>
     <div class="table-wrap">
-        <table class="data" id="audit-recheck-table" data-colmgr-key="audit-recheck-v1" data-colmgr-prefix="audit-recheck">
+        <table class="data" id="audit-recheck-table" data-colmgr-key="audit-recheck-v1" data-colmgr-prefix="audit-recheck"><caption class="sr-only">Cek ulang Admin STO</caption>
             <thead>
                 <tr>
                     <th data-col="code" class="xf-th"><span class="xf-label"><?= __('Kode') ?></span><?= $xfBtn('code', 'Kode') ?></th>
@@ -458,7 +458,7 @@ $__rechCount = (int) $recheck['total'];
         <a class="btn btn-ghost btn-xs" href="<?= url('audit/history') ?>">Semua riwayat</a>
     </div>
     <div class="table-wrap">
-        <table class="data">
+        <table class="data"><caption class="sr-only">Audit terakhir</caption>
             <thead>
                 <tr><th><?= __('Item') ?></th><th class="col-hide-tablet"><?= __('Group') ?></th><th class="col-hide-tablet t-center"><?= __('Hasil') ?></th><th class="col-hide-tablet"><?= __('Auditor') ?></th><th class="col-hide-tablet"><?= __('Waktu') ?></th></tr>
             </thead>
@@ -545,7 +545,7 @@ $__rechCount = (int) $recheck['total'];
             <button type="button" class="icon-btn" data-scan-close aria-label="<?= __('Tutup') ?>"><?= icon('x') ?></button>
         </div>
         <div class="modal-body">
-            <div id="scanner-viewport"></div>
+            <div id="scanner-viewport" role="status" aria-live="polite"></div>
             <p class="scanner-hint"><?= __('Arahkan kamera ke barcode atau QR code untuk memeriksa item audit.') ?></p>
         </div>
     </div>

@@ -37,7 +37,7 @@ $pgEnd   = min($pgLast, $pgPage + 2);
     <?php if (! $pgShowAll && $pgLast > 1): ?>
         <nav class="pagination" aria-label="<?= __('Navigasi halaman') ?>">
             <?php if ($pgPage > 1): ?>
-                <a href="<?= e($pgLink($pgPage - 1)) ?>"><?= icon('chev-left') ?></a>
+                <a href="<?= e($pgLink($pgPage - 1)) ?>" aria-label="<?= __('Halaman sebelumnya') ?>"><?= icon('chev-left') ?></a>
             <?php else: ?>
                 <span class="is-disabled"><?= icon('chev-left') ?></span>
             <?php endif; ?>
@@ -61,7 +61,7 @@ $pgEnd   = min($pgLast, $pgPage + 2);
             <?php endif; ?>
 
             <?php if ($pgPage < $pgLast): ?>
-                <a href="<?= e($pgLink($pgPage + 1)) ?>"><?= icon('chev-right') ?></a>
+                <a href="<?= e($pgLink($pgPage + 1)) ?>" aria-label="<?= __('Halaman berikutnya') ?>"><?= icon('chev-right') ?></a>
             <?php else: ?>
                 <span class="is-disabled"><?= icon('chev-right') ?></span>
             <?php endif; ?>

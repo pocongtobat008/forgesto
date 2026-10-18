@@ -83,7 +83,7 @@ $xfBtn = static fn (string $k, string $lbl): string => '<button type="button" cl
     ?>
 
     <div class="table-wrap">
-        <table class="data" id="groups-table" data-colmgr-key="groups-v1" data-colmgr-prefix="groups">
+        <table class="data" id="groups-table" data-colmgr-key="groups-v1" data-colmgr-prefix="groups"><caption class="sr-only">Daftar group barang</caption>
             <thead>
                 <tr>
                     <th data-col="code" class="xf-th"><span class="xf-label"><?= __('Kode') ?></span><?= $xfBtn('code', 'Kode') ?></th>

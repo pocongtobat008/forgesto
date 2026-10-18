@@ -14,7 +14,7 @@
 </div>
 
 <div class="table-wrap">
-    <table class="data" id="items-table" data-colmgr-key="items-v1" data-colmgr-prefix="items">
+    <table class="data" id="items-table" data-colmgr-key="items-v1" data-colmgr-prefix="items"><caption class="sr-only">Daftar barang</caption>
         <thead>
             <tr>
                 <th style="width:40px"><span class="sr-only"><?= __('Pilih') ?></span></th>

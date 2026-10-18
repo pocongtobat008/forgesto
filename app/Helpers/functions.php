@@ -503,7 +503,7 @@ if (! function_exists('page_hero')) {
                     ],
                 ],
                 'items' => [
-                    'title' => 'Data STO', 'tone' => 'blue', 'art' => 'items',
+                    'title' => 'Observer', 'tone' => 'blue', 'art' => 'items',
                     'actions' => [
                         ['icon' => 'clipboard-check', 'label' => 'Mulai Audit', 'url' => 'audit', 'can' => 'audit_data'],
                         ['icon' => 'trending-up', 'label' => 'Lihat Selisih', 'url' => 'discrepancies'],

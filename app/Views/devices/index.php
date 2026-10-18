@@ -66,7 +66,7 @@ $xfBtn = static fn (string $k, string $lbl): string => '<button type="button" cl
     ?>
 
     <div class="table-wrap">
-        <table class="data" id="devices-table" data-colmgr-key="devices-v1" data-colmgr-prefix="devices">
+        <table class="data" id="devices-table" data-colmgr-key="devices-v1" data-colmgr-prefix="devices"><caption class="sr-only">Daftar perangkat</caption>
             <thead>
                 <tr>
                     <th class="xf-th" data-col="code" style="width:110px;"><span class="xf-label"><?= __('Kode') ?></span><?= $xfBtn('code', 'Kode') ?></th>

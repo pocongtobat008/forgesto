@@ -84,15 +84,22 @@ if ($__bp) {
         // ----------------------------------------------------------------
         // Accordion group 1 · Operasional
         // ----------------------------------------------------------------
+        /* Urutan utama mengikuti alur kerja: Dashboard -> Progress -> Observer
+           -> Audit -> Rekonsiliasi. Sisanya (memo, tahun buku, report, selisih,
+           audit rekonsiliasi, notifikasi) menyusul di bawahnya. */
         $opItems = [
             ['dashboard',     'dashboard', __('nav.dashboard'),   'dashboard'],
             ['progress',      'progress',  __('nav.progress'), 'chart'],
             ['items',         'items',     __('nav.items'),    'package'],
-            ['items/memo',   'items/memo', __('nav.memo'), 'file-text'],
         ];
         if (can('audit_data')) {
             $opItems[] = ['audit', 'audit', __('nav.audit'), 'clipboard-check'];
         }
+        if (in_array(\App\Core\Auth::role(), ['poweradmin', 'adminsto'], true)) {
+            $opItems[] = ['reconciliation', 'reconciliation', __('nav.reconciliation'), 'scale'];
+        }
+
+        $opItems[] = ['items/memo',   'items/memo', __('nav.memo'), 'file-text'];
         if (can('manage_data')) {
             $opItems[] = ['tahun-buku', 'tahun-buku', __('nav.book'), 'archive'];
         }
@@ -100,9 +107,6 @@ if ($__bp) {
             $opItems[] = ['reports', 'reports', __('nav.reports'), 'chart'];
         }
         $opItems[] = ['discrepancies', 'discrepancies', __('nav.discrepancy'), 'trending-up', $openDiscrepancies];
-        if (in_array(\App\Core\Auth::role(), ['poweradmin', 'adminsto'], true)) {
-            $opItems[] = ['reconciliation', 'reconciliation', __('nav.reconciliation'), 'scale'];
-        }
         if (in_array(\App\Core\Auth::role(), ['poweradmin', 'adminsto'], true)) {
             $opItems[] = ['reconciliation/audit', 'reconciliation/audit', __('nav.recon_audit'), 'shield-check'];
         }
@@ -148,6 +152,7 @@ if ($__bp) {
         }
         if (can('manage_users')) {
             $masterItems[] = ['users',     'users',     __('nav.users'),     'users'];
+            $masterItems[] = ['employee-ids', 'users', __('ID Karyawan'), 'barcode'];
         }
         if (function_exists('can_view_menu') && can_view_menu('user-rules')) {
             $masterItems[] = ['user-rules', 'user-rules', __('Rules User'), 'shield'];

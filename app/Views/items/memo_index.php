@@ -87,28 +87,7 @@ $__tabs = [
         <?php else: ?>
             <div class="memo-sample">
                 <?php foreach ($sample as $m): ?>
-                    <article class="memo">
-                        <header class="memo-head">
-                            <span class="memo-kicker"><?= __('Marking memo') ?></span>
-                            <span class="memo-meta">
-                                <span class="memo-period"><?= e($periodLabel ?? '') ?></span>
-                                <span class="memo-wh"><?= e($m['warehouse'] ?? '') ?></span>
-                            </span>
-                            <span class="memo-code"><?= e($m['code']) ?></span>
-                        </header>
-                        <div class="memo-body">
-                            <div class="memo-info">
-                                <div class="memo-row-name"><span class="memo-k"><?= __('Nama barang') ?></span><span class="memo-v"><?= e($m['name']) ?></span></div>
-                                <div class="memo-row-loc"><span class="memo-k"><?= __('Lokasi') ?></span><span class="memo-v"><?= e($m['location'] !== '' ? $m['location'] : 'Belum diatur') ?></span></div>
-                                <div class="memo-row-qty"><span class="memo-k">Total QTY</span><span class="memo-qty memo-qty-blank"><b>&nbsp;</b></span></div>
-                                <?php if (($m['group'] ?? '') !== ''): ?><div class="memo-row-remark"><span class="memo-k">Remark</span><span class="memo-v"><?= e($m['group']) ?></span></div><?php endif; ?>
-                            </div>
-                            <div class="memo-qr">
-                                <?= $m['qr'] ?>
-                                <small><?= e($m['code']) ?></small>
-                            </div>
-                        </div>
-                    </article>
+                    <?= \App\Core\View::partial('items/_memo_card', ['m' => $m, 'periodLabel' => $periodLabel ?? '']) ?>
                 <?php endforeach; ?>
             </div>
         <?php endif; ?>
@@ -147,7 +126,7 @@ $__tabs = [
     </div>
 
     <div class="table-wrap">
-        <table class="data">
+        <table class="data"><caption class="sr-only">Daftar barang untuk memo</caption>
             <thead>
                 <tr>
                     <th style="width:44px"><span class="sr-only"><?= __('Pilih') ?></span></th>

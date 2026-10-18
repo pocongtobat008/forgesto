@@ -86,7 +86,7 @@ $__disHasFilter = ! empty($filters['search']) || ! empty($filters['col']) || ! e
     ?>
 
     <div class="table-wrap">
-        <table class="data" id="discrepancies-table" data-colmgr-key="discrepancies-v1" data-colmgr-prefix="discrepancies">
+        <table class="data" id="discrepancies-table" data-colmgr-key="discrepancies-v1" data-colmgr-prefix="discrepancies"><caption class="sr-only">Daftar selisih stok</caption>
             <thead>
                 <tr>
 <?php $cfCol = $filters['col'] ?? []; $xfBtn = static fn (string $k, string $lbl): string => '<button type="button" class="xf-btn' . (! empty($cfCol[$k]) ? ' is-active' : '') . '" data-xf="' . $k . '" aria-label="' . e(__('Filter kolom :l', ['l' => __($lbl)])) . '" aria-haspopup="dialog" title="Filter">' . icon('filter') . '</button>'; ?>

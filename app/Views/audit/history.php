@@ -20,7 +20,7 @@ use App\Core\View;
         <form method="get" action="<?= url('audit/history') ?>" class="filters" id="hist-filter" style="display:flex;align-items:center;gap:.75rem;flex-wrap:wrap;margin:0;">
             <?php foreach (($filters['col'] ?? []) as $ck => $cvals): ?><?php foreach ((array) $cvals as $cv): ?><input type="hidden" name="col[<?= e($ck) ?>][]" value="<?= e($cv) ?>" class="col-hidden"><?php endforeach; ?><?php endforeach; ?>
             <div class="form-group" style="margin:0;">
-                <select id="group_id" name="group_id" data-auto-submit style="min-height:38px;">
+                <select id="group_id" name="group_id" data-auto-submit aria-label="<?= __('Group') ?>" style="min-height:38px;">
                     <option value=""><?= __('Semua group') ?></option>
                     <?php foreach ($groups as $group): ?>
                         <option value="<?= (int) $group['id'] ?>" <?= (int) ($filters['group_id'] ?? 0) === (int) $group['id'] ? 'selected' : '' ?>>
@@ -30,7 +30,7 @@ use App\Core\View;
                 </select>
             </div>
             <div class="form-group" style="margin:0;">
-                <select id="result" name="result" data-auto-submit style="min-height:38px;">
+                <select id="result" name="result" data-auto-submit aria-label="<?= __('Hasil audit') ?>" style="min-height:38px;">
                     <option value=""><?= __('Semua hasil') ?></option>
                     <option value="match" <?= ($filters['result'] ?? '') === 'match' ? 'selected' : '' ?>><?= __('Sesuai') ?></option>
                     <option value="discrepancy" <?= ($filters['result'] ?? '') === 'discrepancy' ? 'selected' : '' ?>><?= __('Selisih') ?></option>
@@ -41,7 +41,7 @@ use App\Core\View;
     </div>
 
     <div class="table-wrap">
-        <table class="data" id="audit-history-table" data-colmgr-key="audit-hist-v1" data-colmgr-prefix="audit-hist">
+        <table class="data" id="audit-history-table" data-colmgr-key="audit-hist-v1" data-colmgr-prefix="audit-hist"><caption class="sr-only">Riwayat audit</caption>
             <thead>
                 <tr>
 <?php $cfCol = $filters['col'] ?? []; $xfBtn = static fn (string $k, string $lbl): string => '<button type="button" class="xf-btn' . (! empty($cfCol[$k]) ? ' is-active' : '') . '" data-xf="' . $k . '" aria-label="' . e(__('Filter kolom :l', ['l' => __($lbl)])) . '" aria-haspopup="dialog" title="Filter">' . icon('filter') . '</button>'; ?>

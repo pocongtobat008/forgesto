@@ -156,12 +156,14 @@
 
   /* ------------------------------------------------------------- the pill */
   var ctrl = null;
+  var handleEl = null;
 
   function buildControl() {
     ctrl = document.createElement('div');
     ctrl.className = 'sf-vm';
     ctrl.setAttribute('role', 'region');
     ctrl.setAttribute('aria-label', 'Tampilan tabel');
+    ctrl.id = 'sf-vm';
 
     var lbl = document.createElement('span');
     lbl.className = 'sf-vm__lbl';
@@ -194,8 +196,52 @@
       document.body.appendChild(sp);
     }
 
+    /* --------------------------------------------------------- sembunyikan
+       Tombol chevron menyingkirkan pil sepenuhnya; yang tersisa hanya tombol
+       bulat kecil di sudut untuk memunculkannya kembali. Pilihan disimpan
+       supaya konsisten antar halaman dan saat reload. */
+    var collapseBtn = document.createElement('button');
+    collapseBtn.type = 'button';
+    collapseBtn.className = 'sf-vm__collapse';
+    collapseBtn.title = 'Sembunyikan';
+    collapseBtn.setAttribute('aria-label', 'Sembunyikan pemilih tampilan');
+    collapseBtn.innerHTML = '<svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 6.5 8 11l4.5-4.5"/></svg>';
+    ctrl.appendChild(collapseBtn);
+
+    var handle = document.createElement('button');
+    handle.type = 'button';
+    handle.className = 'sf-vm-handle';
+    handle.hidden = true;
+    handle.title = 'Tampilkan pemilih tampilan';
+    handle.setAttribute('aria-label', 'Tampilkan pemilih tampilan');
+    handle.setAttribute('aria-expanded', 'true');
+    handle.setAttribute('aria-controls', 'sf-vm');
+    handle.innerHTML = '<svg viewBox="0 0 16 16" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true"><path d="M2.5 5h7M12.5 5h1M2.5 11h1M6.5 11h7"/><circle cx="11" cy="5" r="1.6"/><circle cx="5" cy="11" r="1.6"/></svg>';
+
+    handleEl = handle;
+
+    function setCollapsed(v, moveFocus) {
+      ctrl.classList.toggle('is-collapsed', v);
+      if (v) { ctrl.setAttribute('inert', ''); ctrl.classList.remove('is-tucked'); }
+      else { ctrl.removeAttribute('inert'); ctrl.classList.remove('is-tucked'); }
+      handle.hidden = !v;
+      handle.setAttribute('aria-expanded', v ? 'false' : 'true');
+      try { localStorage.setItem('sf-vm-collapsed', v ? '1' : '0'); } catch (e) {}
+      if (moveFocus) {
+        if (v) handle.focus();
+        else (ctrl.querySelector('.sf-vm__btn[aria-pressed="true"]') ||
+              ctrl.querySelector('.sf-vm__btn') || ctrl).focus();
+      }
+    }
+
+    collapseBtn.addEventListener('click', function () { setCollapsed(true, true); });
+    handle.addEventListener('click', function () { setCollapsed(false, true); });
+
     document.body.appendChild(ctrl);
+    document.body.appendChild(handle);
     document.body.classList.add('sf-vm-ready');
+
+    try { if (localStorage.getItem('sf-vm-collapsed') === '1') setCollapsed(true, false); } catch (e) {}
   }
 
   function place() {
@@ -213,6 +259,8 @@
       }
     }
     ctrl.style.bottom = off + 'px';
+    /* tombol tampilkan ikut naik kalau ada bottom action bar di mobile */
+    if (handleEl) handleEl.style.bottom = 'calc(' + off + 'px + env(safe-area-inset-bottom, 0px))';
   }
 
   /* ==========================================================================
@@ -312,6 +360,66 @@
     setTimeout(fitAll, 2000);
   }
 
+  /* ------------------------------------------------------- auto-hide saat gulir
+     Pola yang sama dengan toolbar browser mobile:
+       • menggulir ke bawah  -> pil menyingkir (tidak menutupi grafik/kartu)
+       • menggulir ke atas   -> pil muncul lagi
+       • dekat atas halaman  -> selalu tampil
+       • dekat dasar halaman -> selalu tampil (di sana ada ruang spacer)
+       • fokus keyboard masuk ke pil -> tampil
+     Tidak ada timer "muncul sendiri": kalau pengguna berhenti membaca di tengah
+     halaman, pil tetap tersembunyi supaya konten di sudut kanan-bawah bersih.
+     Cukup geser ke atas sedikit untuk memunculkannya kembali. */
+  var HIDE_AFTER = 120;   /* px gulir minimum sebelum boleh menyingkir */
+  var DELTA = 8;          /* px untuk menentukan arah gulir */
+  var EDGE = 60;          /* jarak dari dasar halaman yang dianggap "di dasar" */
+
+  function initAutoHide() {
+    if (!ctrl || ctrl.__autoHide) return;
+    ctrl.__autoHide = true;
+
+    var tick = 0;   /* id timer throttle */
+
+    function show() { if (!ctrl.classList.contains('is-collapsed')) ctrl.classList.remove('is-tucked'); }
+    function hide() { if (!ctrl.classList.contains('is-collapsed')) ctrl.classList.add('is-tucked'); }
+
+    /* Posisi terakhir disimpan di elemen yang menggulir (html di desktop,
+       body di layout mobile). Disemai saat init supaya lompatan gulir pertama
+       -- PageDown, anchor, atau restore posisi -- tetap terbaca sebagai arah. */
+    function seed(el) { if (el) el.__sfVmY = el.scrollTop || 0; }
+    seed(document.scrollingElement || document.documentElement);
+    seed(document.body);
+
+    /* throttle pakai setTimeout, bukan requestAnimationFrame: rAF berhenti
+       total saat tab tidak terlihat dan itu bisa mengunci antrean selamanya */
+    function onScroll(e) {
+      var t = (e && e.target && e.target.nodeType === 1)
+        ? e.target
+        : (document.scrollingElement || document.documentElement);
+      if (tick) return;
+      tick = setTimeout(function () {
+        tick = 0;
+        var y = t.scrollTop || 0;
+        var prev = (typeof t.__sfVmY === 'number') ? t.__sfVmY : y;
+        var d = y - prev;
+        var max = (t.scrollHeight || 0) - (t.clientHeight || 0);
+        t.__sfVmY = y;
+        if (y <= HIDE_AFTER) show();
+        else if (max > 0 && y >= max - EDGE) show();
+        else if (d > DELTA) hide();
+        else if (d < -DELTA) show();
+      }, 60);
+    }
+
+    document.addEventListener('scroll', onScroll, { passive: true, capture: true });
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', show, { passive: true });
+
+    /* keyboard: begitu fokus masuk, pil wajib kelihatan */
+    ctrl.addEventListener('focusin', show);
+    ctrl.addEventListener('keydown', function (e) { if (e.key === 'Escape') show(); });
+  }
+
   /* --------------------------------------------------------------- events */
   var t = null;
   function schedule() {
@@ -326,6 +434,7 @@
     buildControl();
     applyMode(readMode());
     place();
+    initAutoHide();
     window.addEventListener('resize', function () { schedule(); scheduleFit(); }, { passive: true });
     window.addEventListener('scroll', function () { place(); }, { passive: true });
     window.addEventListener('storage', function (e) {

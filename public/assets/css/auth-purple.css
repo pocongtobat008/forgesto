@@ -1,0 +1,550 @@
+/* ==========================================================================
+   StockForge — Login (ungu & putih, panel ilustrasi)
+   Semua ukuran: HP portrait/landscape, tablet, desktop, layar sangat kecil.
+   ========================================================================== */
+
+.pp-page {
+    --pp-primary: #7b52cc;
+    --pp-primary-deep: #5b39a8;
+    --pp-primary-soft: #f3eeff;
+    --pp-ink: #241a38;
+    --pp-muted: #6f6787;
+    --pp-label: #7b7492;
+    --pp-line: #e7e1f3;
+    --pp-bg: #efe9ff;
+    --pp-radius: clamp(18px, 1.6vw, 28px);
+    --pp-gap: clamp(0px, 2.2vh, 26px);
+
+    min-height: 100svh;
+    min-height: 100dvh;
+    display: grid;
+    place-items: center;
+    padding: var(--pp-gap) clamp(0px, 2.4vw, 26px);
+    background:
+        radial-gradient(120% 90% at 50% 0%, #f8f5ff 0%, #efe9ff 52%, #e4d8ff 100%);
+    font-family: "Inter", "Segoe UI", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
+    color: var(--pp-ink);
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+}
+
+/* ---------- kartu / shell ---------- */
+.pp-shell {
+    width: 100%;
+    max-width: 1060px;
+    display: grid;
+    grid-template-columns: 1.04fr 1fr;
+    background: #fff;
+    border-radius: var(--pp-radius);
+    overflow: hidden;
+    box-shadow:
+        0 30px 70px -20px rgba(58, 27, 122, .30),
+        0 8px 24px -12px rgba(58, 27, 122, .18);
+    min-height: clamp(520px, 74svh, 668px);
+}
+
+/* ---------- panel ilustrasi ---------- */
+.pp-art {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    --pp-wave-h: clamp(64px, 11vh, 112px);
+    padding: clamp(18px, 2vw, 30px) clamp(18px, 2.2vw, 32px) 0;
+    background: linear-gradient(158deg, #8f68dd 0%, #7b52cc 46%, #5d3ab0 100%);
+    overflow: hidden;
+    isolation: isolate;
+}
+
+.pp-art::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background:
+        radial-gradient(55% 45% at 18% 12%, rgba(255, 255, 255, .22), transparent 70%),
+        radial-gradient(45% 40% at 92% 82%, rgba(255, 255, 255, .12), transparent 72%);
+    pointer-events: none;
+}
+
+.pp-brand {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: #fff;
+}
+
+.pp-brand-mark {
+    display: grid;
+    place-items: center;
+    width: 38px;
+    height: 38px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, .16);
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .28);
+    flex: 0 0 auto;
+}
+
+.pp-brand-mark svg { width: 21px; height: 21px; }
+
+.pp-brand-text { display: flex; flex-direction: column; line-height: 1.15; }
+.pp-brand-text b { font-size: 15px; font-weight: 700; letter-spacing: -.01em; }
+.pp-brand-text small { font-size: 11px; opacity: .78; letter-spacing: .04em; }
+
+.pp-fig {
+    position: relative;
+    z-index: 2;
+    flex: 1;
+    display: grid;
+    place-items: center;
+    padding: clamp(6px, 1.2vh, 16px) 0 calc(var(--pp-wave-h) + clamp(6px, 1.4vh, 16px));
+    min-height: 0;
+}
+
+.pp-illu {
+    width: 100%;
+    max-width: 430px;
+    height: auto;
+    max-height: 100%;
+    display: block;
+    filter: drop-shadow(0 18px 30px rgba(43, 18, 92, .22));
+}
+
+.pp-art-wave {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -1px;
+    width: 100%;
+    height: var(--pp-wave-h);
+    z-index: 1;
+    pointer-events: none;
+}
+
+/* ---------- panel form ---------- */
+.pp-form-panel {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: clamp(26px, 4.4vw, 56px) clamp(22px, 3.4vw, 48px);
+    background: #fff;
+}
+
+.pp-body {
+    width: 100%;
+    max-width: 380px;
+}
+
+.pp-hello {
+    margin: 0;
+    font-size: clamp(26px, 2.6vw, 34px);
+    font-weight: 800;
+    letter-spacing: -.02em;
+    line-height: 1.15;
+    color: var(--pp-ink);
+}
+
+.pp-sub {
+    margin: 6px 0 0;
+    font-size: 14px;
+    line-height: 1.5;
+    color: var(--pp-muted);
+}
+
+.pp-alert {
+    margin: 16px 0 0;
+    padding: 10px 12px;
+    border-radius: 10px;
+    font-size: 13px;
+    line-height: 1.45;
+    background: #eef4ff;
+    color: #1b4a8f;
+    border: 1px solid #d5e4fb;
+}
+.pp-alert--success { background: #eafaf0; color: #14663a; border-color: #c9eed9; }
+.pp-alert--error,
+.pp-alert--danger { background: #fdeeee; color: #8f1d1d; border-color: #f7d4d4; }
+
+.pp-form { margin: clamp(20px, 3vh, 30px) 0 0; }
+
+/* field garis bawah */
+.pp-field { position: relative; }
+
+.pp-field label {
+    display: block;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .09em;
+    text-transform: uppercase;
+    color: var(--pp-label);
+    margin-bottom: 6px;
+}
+
+.pp-field input {
+    display: block;
+    width: 100%;
+    padding: 9px 2px 11px;
+    border: 0;
+    border-bottom: 1.5px solid var(--pp-line);
+    border-radius: 0;
+    background: transparent;
+    font: inherit;
+    font-size: 16px;           /* 16px = tidak auto-zoom di iOS */
+    font-weight: 600;
+    letter-spacing: .01em;
+    color: var(--pp-ink);
+    caret-color: var(--pp-primary);
+    transition: border-color .18s ease, box-shadow .18s ease;
+    -webkit-appearance: none;
+    appearance: none;
+}
+
+.pp-field input::placeholder { color: #8f87a8; font-weight: 500; }
+.pp-field input:hover { border-bottom-color: #cfc6e6; }
+.pp-field input:focus {
+    outline: none;
+    border-bottom-color: var(--pp-primary);
+    box-shadow: 0 1.5px 0 0 var(--pp-primary);
+}
+.pp-field.is-error input { border-bottom-color: #e05a5a; box-shadow: 0 1.5px 0 0 #e05a5a; }
+
+.pp-error {
+    display: flex;
+    gap: 6px;
+    align-items: flex-start;
+    margin: 8px 0 0;
+    font-size: 12.5px;
+    line-height: 1.45;
+    font-weight: 600;
+    color: #c93b3b;
+}
+.pp-error svg { width: 15px; height: 15px; flex: 0 0 auto; margin-top: 1px; }
+
+.pp-hint {
+    margin: 8px 0 0;
+    font-size: 12px;
+    line-height: 1.5;
+    color: #6f6787;
+}
+
+.pp-row {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 14px;
+}
+
+.pp-forgot,
+.pp-link {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--pp-primary);
+    text-decoration: none;
+    border-radius: 6px;
+}
+.pp-forgot:hover,
+.pp-link:hover { color: var(--pp-primary-deep); text-decoration: underline; }
+.pp-forgot:focus-visible,
+.pp-link:focus-visible { outline: 2px solid var(--pp-primary); outline-offset: 3px; }
+
+/* tombol utama — pill (menimpa flat-material.css yang memaksa !important) */
+.pp-page .pp-btn {
+    display: block;
+    width: 100%;
+    margin: clamp(18px, 2.6vh, 26px) 0 0;
+    padding: 0 20px;
+    height: 52px;
+    border: 0 !important;
+    border-radius: 999px !important;
+    background: linear-gradient(135deg, #8a63da 0%, #7b52cc 100%) !important;
+    color: #fff !important;
+    font: inherit;
+    font-size: 15px !important;
+    font-weight: 700 !important;
+    letter-spacing: .01em;
+    cursor: pointer;
+    box-shadow: 0 12px 26px -8px rgba(123, 82, 204, .62);
+    transition: transform .16s ease, box-shadow .2s ease, filter .2s ease;
+}
+
+.pp-page .pp-btn:hover { filter: brightness(1.04); box-shadow: 0 16px 30px -8px rgba(123, 82, 204, .70); }
+.pp-page .pp-btn:active { transform: translateY(1px); box-shadow: 0 8px 18px -8px rgba(123, 82, 204, .60); }
+.pp-page .pp-btn:focus-visible { outline: 3px solid rgba(123, 82, 204, .45); outline-offset: 3px; }
+
+.pp-note {
+    margin: 16px 0 0;
+    padding: 12px 14px;
+    border-radius: 12px;
+    background: var(--pp-primary-soft);
+    border: 1px solid #e3d9fb;
+    font-size: 12.5px;
+    line-height: 1.55;
+    color: #574a7d;
+}
+
+.pp-foot {
+    display: none;
+    margin: 0;
+    text-align: center;
+    font-size: 11px;
+    letter-spacing: .02em;
+    color: #9d95b4;
+}
+
+.pp-reg {
+    margin: clamp(16px, 2.4vh, 24px) 0 0;
+    text-align: center;
+    font-size: 12.5px;
+    color: var(--pp-muted);
+}
+
+/* ---------- toast ---------- */
+.pp-toast {
+    position: fixed;
+    left: 50%;
+    bottom: 22px;
+    transform: translate(-50%, 14px);
+    max-width: min(92vw, 420px);
+    padding: 11px 16px;
+    border-radius: 12px;
+    background: #241a38;
+    color: #fff;
+    font-size: 13px;
+    line-height: 1.45;
+    text-align: center;
+    box-shadow: 0 16px 34px -10px rgba(20, 8, 45, .5);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .22s ease, transform .22s ease;
+    z-index: 60;
+}
+.pp-toast.is-on { opacity: 1; transform: translate(-50%, 0); }
+
+/* ==========================================================================
+   TABLET / LAYAR SEDANG  (<= 980px) — ilustrasi di atas, form di bawah
+   ========================================================================== */
+@media (max-width: 980px) {
+    .pp-shell {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto 1fr;
+        max-width: 560px;
+        min-height: 0;
+    }
+
+    .pp-art {
+        --pp-wave-h: clamp(46px, 7vh, 78px);
+        padding: clamp(16px, 3vw, 24px) clamp(18px, 4vw, 28px) 0;
+        min-height: clamp(180px, 26svh, 260px);
+        max-height: clamp(200px, 30svh, 300px);
+        justify-content: flex-start;
+    }
+
+    .pp-fig {
+        padding: 6px 0 calc(var(--pp-wave-h) + 10px);
+    }
+
+    .pp-illu { max-width: 330px; max-height: 200px; }
+    .pp-art-wave { height: var(--pp-wave-h); }
+
+    .pp-form-panel { padding: clamp(24px, 5vw, 40px) clamp(20px, 5vw, 40px) clamp(28px, 5vw, 44px); }
+    .pp-body { max-width: 420px; }
+}
+
+/* ==========================================================================
+   HP  (<= 620px) — full bleed, tanpa sudut membulat
+   ========================================================================== */
+@media (max-width: 620px) {
+    .pp-page { padding: 0; display: block; }
+
+    .pp-shell {
+        max-width: none;
+        border-radius: 0;
+        box-shadow: none;
+        min-height: 100svh;
+        min-height: 100dvh;
+    }
+
+    .pp-art { min-height: clamp(178px, 30svh, 268px); max-height: clamp(186px, 32svh, 286px); }
+
+    .pp-fig { padding: 4px 0 calc(var(--pp-wave-h) + 8px); }
+    .pp-illu { max-width: 290px; max-height: 170px; }
+    .pp-brand-text b { font-size: 14px; }
+
+    .pp-form-panel {
+        flex-direction: column;
+        align-items: stretch;
+        justify-content: flex-start;
+        padding: 28px 22px calc(20px + env(safe-area-inset-bottom, 0px));
+    }
+
+    .pp-body { margin: auto; }
+
+    .pp-form { margin-top: clamp(18px, 3.2vh, 38px); }
+    .pp-page .pp-btn { margin-top: clamp(18px, 3vh, 32px); }
+    .pp-reg { margin-top: clamp(16px, 2.8vh, 28px); }
+
+    .pp-foot {
+        display: block;
+        margin-top: auto;
+        padding-top: 22px;
+    }
+    .pp-hello { font-size: 26px; }
+    .pp-page .pp-btn { height: 50px; }
+}
+
+/* HP kecil / pendek (iPhone SE, Galaxy mini, dsb.) — rapatkan agar tetap 1 layar */
+@media (max-height: 680px) and (orientation: portrait) {
+    .pp-art { min-height: 150px; }
+    .pp-illu { max-height: 132px; max-width: 250px; }
+    .pp-brand-mark { width: 32px; height: 32px; border-radius: 10px; }
+    .pp-brand-mark svg { width: 18px; height: 18px; }
+    .pp-form-panel {
+        flex-direction: column;
+        align-items: stretch;
+        justify-content: flex-start;
+        padding: 20px 20px calc(16px + env(safe-area-inset-bottom, 0px));
+    }
+
+    .pp-body { margin: auto; }
+
+    .pp-foot { display: block; margin-top: auto; padding-top: 18px; }
+    .pp-hello { font-size: 23px; }
+    .pp-sub { font-size: 13px; }
+    .pp-form { margin-top: 14px; }
+    .pp-hint { font-size: 11.5px; margin-top: 6px; }
+    .pp-row { margin-top: 8px; }
+    .pp-page .pp-btn { height: 46px; margin-top: 14px; }
+    .pp-foot {
+    display: none;
+    margin: 0;
+    text-align: center;
+    font-size: 11px;
+    letter-spacing: .02em;
+    color: #9d95b4;
+}
+
+.pp-reg { margin-top: 12px; }
+}
+
+/* ==========================================================================
+   HP LANDSCAPE / LAYAR PENDEK — dua kolom sempit, form tetap terlihat
+   ========================================================================== */
+@media (orientation: landscape) and (max-height: 620px) {
+    .pp-page { padding: 0; display: block; }
+
+    .pp-shell {
+        grid-template-columns: minmax(190px, 38%) 1fr;
+        max-width: none;
+        border-radius: 0;
+        box-shadow: none;
+        min-height: 100svh;
+        min-height: 100dvh;
+    }
+
+    .pp-art {
+        padding: 14px 16px 0;
+        min-height: 0;
+        max-height: none;
+        justify-content: flex-start;
+    }
+
+    .pp-brand-mark { width: 32px; height: 32px; border-radius: 10px; }
+    .pp-brand-mark svg { width: 18px; height: 18px; }
+    .pp-brand-text b { font-size: 13px; }
+    .pp-brand-text small { display: none; }
+
+    .pp-fig { padding: 2px 0 calc(var(--pp-wave-h) + 6px); }
+    .pp-illu { max-width: 260px; max-height: 46vh; }
+    .pp-art { --pp-wave-h: 42px; }
+
+    .pp-form-panel {
+        align-items: flex-start;
+        overflow-y: auto;
+        padding: 18px 22px 20px;
+    }
+
+    .pp-body { max-width: 400px; margin: auto; }
+    .pp-hello { font-size: 22px; }
+    .pp-sub { font-size: 13px; }
+    .pp-form { margin-top: 12px; }
+    .pp-row { margin-top: 8px; }
+    .pp-hint { margin-top: 6px; }
+    .pp-page .pp-btn { height: 46px; margin-top: 12px; }
+    .pp-foot {
+    display: none;
+    margin: 0;
+    text-align: center;
+    font-size: 11px;
+    letter-spacing: .02em;
+    color: #9d95b4;
+}
+
+.pp-reg { margin-top: 12px; }
+}
+
+/* layar sangat kecil / pendek: sembunyikan ilustrasi, form penuh */
+@media (max-height: 340px) and (orientation: landscape) {
+    .pp-fig { display: none; }
+    .pp-art { display: none; }
+    .pp-shell { grid-template-columns: 1fr; }
+    .pp-form-panel { align-items: center; }
+}
+
+/* ==========================================================================
+   TEMA GELAP
+   ========================================================================== */
+[data-theme="dark"] .pp-page,
+html[data-theme="dark"] .pp-page {
+    --pp-ink: #f1ecff;
+    --pp-muted: #a79ec4;
+    --pp-label: #8f86ac;
+    --pp-line: #33284d;
+    --pp-primary-soft: #241a3d;
+    background: radial-gradient(120% 90% at 50% 0%, #1c1430 0%, #150f26 55%, #100b1d 100%);
+}
+
+[data-theme="dark"] .pp-shell,
+html[data-theme="dark"] .pp-shell {
+    background: #1b1529;
+    box-shadow: 0 30px 70px -24px rgba(0, 0, 0, .8);
+}
+
+[data-theme="dark"] .pp-form-panel,
+html[data-theme="dark"] .pp-form-panel { background: #1b1529; }
+
+[data-theme="dark"] .pp-field input,
+html[data-theme="dark"] .pp-field input { color: #f1ecff; }
+
+[data-theme="dark"] .pp-field input::placeholder,
+html[data-theme="dark"] .pp-field input::placeholder { color: #8b83a6; }
+
+[data-theme="dark"] .pp-hint,
+html[data-theme="dark"] .pp-hint { color: #a79ec4; }
+
+[data-theme="dark"] .pp-foot,
+html[data-theme="dark"] .pp-foot { color: #8b83a6; }
+
+[data-theme="dark"] .pp-field label,
+html[data-theme="dark"] .pp-field label { color: #9a91b8; }
+
+[data-theme="dark"] .pp-note,
+html[data-theme="dark"] .pp-note { color: #cbbff0; border-color: #352a55; }
+
+[data-theme="dark"] .pp-alert,
+html[data-theme="dark"] .pp-alert { background: #1d2740; border-color: #2b3b5c; color: #bcd4f8; }
+
+[data-theme="dark"] .pp-art,
+html[data-theme="dark"] .pp-art { background: linear-gradient(158deg, #4a2f86 0%, #3d2470 46%, #2b1854 100%); }
+
+/* kurangi animasi bila pengguna memintanya */
+@media (prefers-reduced-motion: reduce) {
+    .pp-page .pp-btn,
+    .pp-field input,
+    .pp-toast { transition: none; }
+    .pp-page .pp-btn:hover { transform: none; }
+}
+
+/* cetak / aksesibilitas teks besar */
+@media (prefers-contrast: more) {
+    .pp-field input { border-bottom-width: 2px; }
+    .pp-hint { color: #6f6787; }
+}

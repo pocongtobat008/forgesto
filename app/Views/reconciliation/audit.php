@@ -124,7 +124,7 @@ $actionBadge = static fn (string $a): string => match (true) {
     </div>
 
     <div class="table-wrap recon-table-wrap">
-        <table class="data" id="audit-table" data-colmgr-key="recon-audit-v1" data-colmgr-prefix="recon-audit">
+        <table class="data" id="audit-table" data-colmgr-key="recon-audit-v1" data-colmgr-prefix="recon-audit"><caption class="sr-only">Rincian rekonsiliasi</caption>
             <thead>
                 <tr>
                     <th data-col="time"><?= __('Waktu') ?></th>

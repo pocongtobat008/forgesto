@@ -11,7 +11,10 @@ use App\Core\Session;
 use App\Models\User;
 
 /**
- * Login memakai ID Karyawan (WExxxxxx) + password.
+ * Login memakai Nomor Karyawan saja (tanpa password).
+ *
+ * Alur: ID Karyawan → cari akun di tabel users (kolom username = employee_id)
+ *       → cek is_active → buat sesi.
  */
 class AuthController extends Controller
 {
@@ -27,23 +30,18 @@ class AuthController extends Controller
         ], 'layouts/blank');
     }
 
-    /** Proses login. */
+    /** Proses login (ID Karyawan saja). */
     public function login(): string
     {
         $this->verifyCsrf();
 
         $employeeId = strtoupper(trim(Request::string('employee_id')));
-        $password   = Request::string('password');
 
         $errors = [];
         if ($employeeId === '') {
-            $errors['employee_id'] = 'ID Karyawan wajib diisi.';
+            $errors['employee_id'] = 'Nomor Karyawan wajib diisi.';
         } elseif (preg_match('/^[A-Z0-9._-]{3,32}$/', $employeeId) !== 1) {
-            // Terima ID Karyawan format WExxxxxx maupun akun admin legacy.
-            $errors['employee_id'] = 'Format ID Karyawan tidak valid (contoh: WE100001).';
-        }
-        if ($password === '') {
-            $errors['password'] = 'Password wajib diisi.';
+            $errors['employee_id'] = 'Format Nomor Karyawan tidak valid (contoh: WE100001).';
         }
 
         if ($errors !== []) {
@@ -51,20 +49,33 @@ class AuthController extends Controller
         }
 
         $userModel = new User();
-        $user = $userModel->findByUsername($employeeId);
+        $user      = $userModel->findByUsername($employeeId);
 
-        if ($user === null || ! password_verify($password, (string) $user['password'])) {
-            return $this->renderLogin(['employee_id' => 'ID Karyawan atau password salah.'], $employeeId);
+        if ($user === null) {
+            return $this->renderLogin(
+                ['employee_id' => 'Nomor Karyawan ' . $employeeId . ' tidak terdaftar. Hubungi admin.'],
+                $employeeId
+            );
         }
 
         if ((int) $user['is_active'] !== 1) {
-            return $this->renderLogin(['employee_id' => 'Akun tidak aktif. Hubungi administrator.'], $employeeId);
+            return $this->renderLogin(
+                ['employee_id' => 'Akun tidak aktif. Hubungi admin.'],
+                $employeeId
+            );
         }
 
         // Mulai sesi login.
         self::regenerateSession();
         Session::put('user_id', (int) $user['id']);
         Auth::reset();
+
+        // Catat waktu login terakhir (best-effort, tidak menggagalkan login).
+        try {
+            $userModel->query('UPDATE users SET last_login_at = NOW() WHERE id = ?', [(int) $user['id']]);
+        } catch (\Throwable) {
+            // abaikan
+        }
 
         flash('success', 'Selamat datang, ' . (string) $user['name'] . '.');
 

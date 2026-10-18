@@ -1,0 +1,172 @@
+/* ==========================================================================
+   Quick search di topbar — HP & tablet portrait (< 768px)
+   --------------------------------------------------------------------------
+   Masalah: .topbar-center (Spotlight) di-display:none pada <768px, sehingga
+   satu-satunya jalan membuka pencarian cepat adalah Ctrl+K — mustahil di HP.
+
+   Solusi: tombol di samping hamburger (kiri topbar).
+     • 480–767px : pill dengan label, mengisi sisa ruang
+     • < 480px   : ikon saja 38px (ruang kanan dipakai pill Gudang)
+
+   Catatan: app punya rule global `button { display:inline-flex !important }`
+   (lapisan form/tailwind), jadi display WAJIB pakai !important di sini.
+   ========================================================================== */
+
+.topbar-search-mob { display: none !important; }
+
+@media (max-width: 767px) {
+  .topbar-left {
+    gap: .35rem !important;
+    min-width: 0 !important;
+  }
+
+  .topbar-search-mob {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    gap: .4rem !important;
+    flex: 1 1 auto;
+    min-width: 44px;
+    max-width: none;
+    height: 38px !important;
+    min-height: 38px !important;
+    max-height: 38px !important;
+    margin: 0 .1rem 0 .15rem !important;
+    padding: 0 .6rem !important;
+    border: 1px solid var(--border);
+    border-radius: 999px !important;
+    background: var(--surface-2);
+    color: var(--text-faint);
+    font: inherit;
+    font-size: .78rem !important;
+    line-height: 1 !important;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    transition: background var(--dur-1) var(--ease-out), border-color var(--dur-1);
+    order: 3; /* tampil SETELAH logo, bukan sebelum */
+  }
+
+  .topbar-search-mob .tsm-icon {
+    display: inline-flex;
+    flex: 0 0 auto;
+  }
+  .topbar-search-mob .tsm-icon svg {
+    width: 16px;
+    height: 16px;
+  }
+  .topbar-search-mob .tsm-label {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    text-align: left;
+  }
+
+  .topbar-search-mob:hover { background: var(--surface-3); color: var(--text-muted); }
+  .topbar-search-mob:active { transform: translateY(1px); }
+  .topbar-search-mob:focus-visible {
+    outline: 2px solid var(--brand-500);
+    outline-offset: 2px;
+  }
+}
+
+/* < 480px: ikon saja — pill Gudang + notif + avatar sudah memakai ruang kanan */
+@media (max-width: 479px) {
+  .topbar-search-mob {
+    flex: 0 0 38px !important;
+    width: 38px !important;
+    min-width: 38px !important;
+    justify-content: center !important;
+    padding: 0 !important;
+  }
+  .topbar-search-mob .tsm-label { display: none !important; }
+}
+
+/* --------------------------------------------------------------------------
+   Spotlight (command palette) di layar sentuh
+   - legenda keyboard (↑↓ / ↵ / Esc / Ctrl B) tidak relevan → sembunyikan
+   - daftar bisa discroll penuh, tidak terpotong di tengah item
+   -------------------------------------------------------------------------- */
+
+@media (max-width: 767px) {
+  .palette-backdrop {
+    padding: 3.2rem .6rem max(.6rem, env(safe-area-inset-bottom)) !important;
+    align-items: flex-start !important;
+  }
+  .palette {
+    max-height: calc(100dvh - 4rem);
+    display: flex !important;
+    flex-direction: column;
+  }
+  .palette-input-wrap {
+    padding: .7rem .8rem !important;
+    gap: .5rem !important;
+  }
+  .palette-input {
+    font-size: 16px !important; /* cegah auto-zoom iOS */
+  }
+  .palette-input::placeholder {
+    text-overflow: ellipsis;
+  }
+  .palette-input-wrap kbd,
+  .palette-item kbd,
+  .palette-foot {
+    display: none !important;
+  }
+  .palette-list {
+    max-height: none !important;
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 1rem !important;
+  }
+  .palette-item {
+    padding: .62rem .6rem !important; /* tap target lebih lega */
+  }
+  .palette-item .pi-sub {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
+
+
+@media (max-width: 767px) {
+  /* iOS Safari auto-zoom kalau input < 16px — cegah saat kolom kode difokus */
+  .pscan-code,
+  .pscan-stepper input,
+  .pscan-note {
+    font-size: 16px !important;
+  }
+
+  /* "Ctrl K" tidak relevan di HP */
+  .pscan-hint kbd { display: none !important; }
+
+  /* Notch / gesture bar: jangan sampai tombol Simpan ketutup */
+  .pscan {
+    padding: .5rem .5rem max(.5rem, env(safe-area-inset-bottom)) !important;
+  }
+}
+
+/* Tablet/layar sentuh: hint "Ctrl K" di pill tengah tidak relevan */
+@media (pointer: coarse) {
+  .topbar .topbar-search kbd { display: none !important; }
+}
+
+/* Tablet portrait (768–1023px): pill Spotlight tadinya kosong (label disembunyikan),
+   jadi terlihat seperti kolom tanpa teks. Tampilkan labelnya. */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .topbar .topbar-search {
+    justify-content: flex-start !important;
+    padding-inline: .8rem !important;
+  }
+  .topbar .topbar-search .ts-label {
+    display: inline-block !important;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: .78rem !important;
+  }
+}

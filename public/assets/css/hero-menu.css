@@ -24,25 +24,25 @@
 .sf-hero[data-tone="gold"]    { --fg-grad: linear-gradient(100deg, rgba(26,16,0,.42) 0%, rgba(26,16,0,.14) 56%, rgba(26,16,0,0) 100%), linear-gradient(125deg, #a16207 0%, #78350f 48%, #eab308 100%); }
 
 /* ---------- 2 · Ilustrasi flat per menu ---------- */
-.sf-hero[data-art="dashboard"]      { --fg-ill: url("../img/hero-flat.svg?v=20261017e"); }
-.sf-hero[data-art="items"]          { --fg-ill: url("../img/hero-items.svg?v=20261017e"); }
-.sf-hero[data-art="groups"]         { --fg-ill: url("../img/hero-groups.svg"); }
-.sf-hero[data-art="audit"]          { --fg-ill: url("../img/hero-audit.svg?v=20261017e"); }
-.sf-hero[data-art="discrepancies"]  { --fg-ill: url("../img/hero-discrepancies.svg"); }
-.sf-hero[data-art="reconciliation"] { --fg-ill: url("../img/hero-reconciliation.svg"); }
-.sf-hero[data-art="progress"]       { --fg-ill: url("../img/hero-progress.svg?v=20261017e"); }
-.sf-hero[data-art="devices"]        { --fg-ill: url("../img/hero-devices.svg"); }
-.sf-hero[data-art="users"]          { --fg-ill: url("../img/hero-users.svg"); }
-.sf-hero[data-art="masterdata"]     { --fg-ill: url("../img/hero-masterdata.svg"); }
-.sf-hero[data-art="exports"]        { --fg-ill: url("../img/hero-exports.svg"); }
-.sf-hero[data-art="activity"]       { --fg-ill: url("../img/hero-activity.svg"); }
-.sf-hero[data-art="notifications"]  { --fg-ill: url("../img/hero-notifications.svg"); }
-.sf-hero[data-art="profile"]        { --fg-ill: url("../img/hero-profile.svg"); }
-.sf-hero[data-art="warehouses"]     { --fg-ill: url("../img/hero-warehouses.svg"); }
-.sf-hero[data-art="locations"]      { --fg-ill: url("../img/hero-locations.svg"); }
-.sf-hero[data-art="import"]         { --fg-ill: url("../img/hero-import.svg"); }
-.sf-hero[data-art="rules"]          { --fg-ill: url("../img/hero-rules.svg"); }
-.sf-hero[data-art="book"]           { --fg-ill: url("../img/hero-book.svg"); }
+.sf-hero[data-art="dashboard"]      { --fg-ill: url("../img/hero-flat.svg?v=20261018d"); }
+.sf-hero[data-art="items"]          { --fg-ill: url("../img/hero-items.svg?v=20261018d"); }
+.sf-hero[data-art="groups"]         { --fg-ill: url("../img/hero-groups.svg?v=20261018d"); }
+.sf-hero[data-art="audit"]          { --fg-ill: url("../img/hero-audit.svg?v=20261018d"); }
+.sf-hero[data-art="discrepancies"]  { --fg-ill: url("../img/hero-discrepancies.svg?v=20261018d"); }
+.sf-hero[data-art="reconciliation"] { --fg-ill: url("../img/hero-reconciliation.svg?v=20261018d"); }
+.sf-hero[data-art="progress"]       { --fg-ill: url("../img/hero-progress.svg?v=20261018d"); }
+.sf-hero[data-art="devices"]        { --fg-ill: url("../img/hero-devices.svg?v=20261018d"); }
+.sf-hero[data-art="users"]          { --fg-ill: url("../img/hero-users.svg?v=20261018d"); }
+.sf-hero[data-art="masterdata"]     { --fg-ill: url("../img/hero-masterdata.svg?v=20261018d"); }
+.sf-hero[data-art="exports"]        { --fg-ill: url("../img/hero-exports.svg?v=20261018d"); }
+.sf-hero[data-art="activity"]       { --fg-ill: url("../img/hero-activity.svg?v=20261018d"); }
+.sf-hero[data-art="notifications"]  { --fg-ill: url("../img/hero-notifications.svg?v=20261018d"); }
+.sf-hero[data-art="profile"]        { --fg-ill: url("../img/hero-profile.svg?v=20261018d"); }
+.sf-hero[data-art="warehouses"]     { --fg-ill: url("../img/hero-warehouses.svg?v=20261018d"); }
+.sf-hero[data-art="locations"]      { --fg-ill: url("../img/hero-locations.svg?v=20261018d"); }
+.sf-hero[data-art="import"]         { --fg-ill: url("../img/hero-import.svg?v=20261018d"); }
+.sf-hero[data-art="rules"]          { --fg-ill: url("../img/hero-rules.svg?v=20261018d"); }
+.sf-hero[data-art="book"]           { --fg-ill: url("../img/hero-book.svg?v=20261018d"); }
 
 /* ---------- 3 · Judul halaman tidak diulang di bawah hero ---------- */
 /* Hero sudah memuat judul + deskripsi konteks; blok kiri .page-head

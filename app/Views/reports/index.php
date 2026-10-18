@@ -48,6 +48,9 @@ foreach ($cValues as $v) {
 }
 $barW  = 44;
 $gap   = 36;
+if ($n > 0 && $n < 6) {
+    $gap = 36 + (int) round((6 - $n) * 22); // sedikit periode -> renggangkan
+}
 $plotH = 140;
 $top   = 26;
 $vw    = max(360, $n * ($barW + $gap) + $gap);
@@ -136,9 +139,10 @@ $baseY = $top + $plotH;
             <p class="muted" style="margin:0;"><?= __('Belum ada data untuk digambarkan.') ?></p>
         <?php else: ?>
             <div style="overflow-x:auto;">
-                <svg viewBox="0 0 <?= $vw ?> <?= $baseY + 42 ?>" width="<?= $vw ?>" height="<?= $baseY + 42 ?>"
+                <svg class="sf-chart" viewBox="0 0 <?= $vw ?> <?= $baseY + 42 ?>"
+                     width="<?= $vw ?>" height="<?= $baseY + 42 ?>"
                      role="img" aria-label="<?= __('Grafik nilai selisih per tahun buku') ?>"
-                     style="max-width:100%;height:auto;display:block;">
+                     style="width:<?= $vw ?>px;max-width:100%;height:auto;display:block;margin-inline:auto;">
                     <?php for ($g = 0; $g <= 3; $g++): ?>
                         <?php $gy = $top + ($plotH / 3) * $g; ?>
                         <line x1="0" y1="<?= round($gy, 1) ?>" x2="<?= $vw ?>" y2="<?= round($gy, 1) ?>"
@@ -185,7 +189,7 @@ $baseY = $top + $plotH;
         <span class="badge badge-muted"><?= count($years) ?> <?= __('tahun buku') ?></span>
     </div>
     <div class="table-wrap">
-        <table class="data">
+        <table class="data"><caption class="sr-only">Hasil setiap tahun buku</caption>
             <thead>
                 <tr>
                     <th><?= __('Tahun buku') ?></th>
@@ -313,7 +317,7 @@ $baseY = $top + $plotH;
             </div>
 
             <div class="table-wrap" style="margin-bottom:1.25rem;">
-                <table class="data">
+                <table class="data"><caption class="sr-only">Report versus tahun buku</caption>
                     <thead>
                         <tr>
                             <th><?= __('Metrik') ?></th>
@@ -362,7 +366,7 @@ $baseY = $top + $plotH;
 
             <h3 style="font-size:.95rem;margin:0 0 .6rem;"><?= __('Selisih per group') ?></h3>
             <div class="table-wrap">
-                <table class="data">
+                <table class="data"><caption class="sr-only">Selisih per group</caption>
                     <thead>
                         <tr>
                             <th><?= __('Group') ?></th>

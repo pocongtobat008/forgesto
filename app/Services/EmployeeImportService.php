@@ -275,7 +275,7 @@ class EmployeeImportService
      *
      * @return 'created'|'updated'
      */
-    private function upsert(array $data, int $actorId): string
+    public function upsert(array $data, int $actorId): string
     {
         $pdo = Database::connection();
 

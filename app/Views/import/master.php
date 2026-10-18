@@ -17,7 +17,7 @@ $labels = ['master' => 'Master (1 sheet)', 'gudang' => 'Gudang', 'group' => 'Gro
 <div class="card">
     <div class="card-header"><h2><?= __('Ringkasan per sheet') ?></h2></div>
     <div class="table-wrap">
-        <table class="data">
+        <table class="data"><caption class="sr-only">Pratinjau data master</caption>
             <thead>
                 <tr>
                     <th><?= __('Sheet') ?></th>

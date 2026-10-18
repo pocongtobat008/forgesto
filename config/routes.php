@@ -78,6 +78,10 @@ $router->get('/users/edit/{id}', 'UserController@edit');
 $router->post('/users/{id}', 'UserController@update');
 $router->post('/users/{id}/delete', 'UserController@destroy');
 
+// ID karyawan massal (Observer & Auditor)
+$router->get('/employee-ids', 'EmployeeIdController@index');
+$router->post('/employee-ids', 'EmployeeIdController@store');
+
 // User Rules & Permissions (Power Admin Maintenance)
 $router->get('/user-rules', 'UserRuleController@index');
 $router->post('/user-rules/save', 'UserRuleController@save');

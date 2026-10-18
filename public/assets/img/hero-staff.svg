@@ -1,4 +1,5 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 260 220" aria-hidden="true" focusable="false">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 260 220" aria-hidden="true" focusable="false" data-norm="staff">
+  <g transform="translate(13.76 19.50) scale(0.9053)">
   <!-- aura -->
   <circle cx="130" cy="108" r="94" fill="#ffffff" opacity=".10"/>
   <circle cx="130" cy="108" r="64" fill="#ffffff" opacity=".07"/>
@@ -82,4 +83,5 @@
   <path d="M52 40l3.4 7.6 7.6 3.4-7.6 3.4L52 62l-3.4-7.6L41 51l7.6-3.4z" fill="#ffffff" opacity=".45"/>
   <circle cx="216" cy="128" r="4" fill="#ffffff" opacity=".34"/>
   <circle cx="186" cy="36" r="5" fill="#ffd166" opacity=".85"/>
+</g>
 </svg>

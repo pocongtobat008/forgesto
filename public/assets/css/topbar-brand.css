@@ -1,0 +1,114 @@
+/* ==========================================================================
+   TOPBAR BRAND LOCKUP — presisi & bernapas   (Pass 10 · 18 Okt 2026)
+   --------------------------------------------------------------------------
+   MASALAH
+   Lockup brand dibuat 2 baris (nama di atas, pill periode di bawah). Tinggi
+   total terukur 61.4px di dalam topbar 60px  →  kolomnya MENGALIR KELUAR
+   header: .tb-name mulai di y = -1.2px (terpotong di garis atas) dan pill
+   berakhir di y = 60.2px (menempel garis bawah). Penyebab pembengkakan:
+   a11y-fixes.css memberi .tb-period-sub/.tb-period-text min-height:32px +
+   padding-block:4px, dan .tb-name 1.05rem/1.15 = 19.3px.
+
+   PERBAIKAN
+   Lockup jadi SATU BARIS: [logo 30] 11 [StockForge] 10 [pill Okt'26 22px].
+   Tinggi blok 30px → sisa 15px di atas & 15px di bawah di topbar 60px.
+   Pill periode dikembalikan ke ukuran badge (22px, teks 10.5px).
+   Mobile <=767px tetap disembunyikan oleh sf-ui.css (.topbar .topbar-brand-col
+   display:none) — selector di sini sengaja tanpa prefix .topbar agar
+   specificity-nya lebih rendah dan tidak membatalkan aturan itu.
+   ========================================================================== */
+
+.topbar-brand-wrap {
+  display: inline-flex !important;
+  align-items: center !important;
+  align-self: center !important;
+  gap: 11px !important;
+  height: auto !important;
+  min-height: 0 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+.topbar-brand-wrap .topbar-brand {
+  display: inline-flex !important;
+  align-items: center !important;
+  height: 30px !important;
+}
+
+.topbar-brand-wrap .topbar-logo {
+  display: block !important;
+  width: 30px !important;
+  height: 30px !important;
+  border-radius: 8px;
+}
+
+/* jarak toggle → brand dirapatkan: ikon 18px di dalam tombol 38px membuat
+   jarak optis jadi 20px, terlalu jauh dibanding logo→nama (11px) */
+.topbar-left { gap: 6px !important; }
+
+/* kolom → baris */
+.topbar-brand-col {
+  display: inline-flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  gap: 10px !important;
+  min-height: 0 !important;
+  line-height: 1 !important;
+}
+
+.topbar-brand-col .tb-brand-title {
+  display: inline-flex !important;
+  align-items: center !important;
+  min-height: 0 !important;
+  gap: 0 !important;
+}
+
+.topbar-brand-col .tb-name {
+  font-size: 15.5px !important;
+  font-weight: 700 !important;
+  letter-spacing: -.015em !important;
+  line-height: 1 !important;
+  white-space: nowrap;
+}
+
+/* pill periode: badge ringkas, bukan tombol 32–44px */
+.topbar-brand-col .tb-period-sub {
+  min-height: 0 !important;
+  min-width: 0 !important;
+  height: 22px !important;
+  padding: 0 7px !important;
+  gap: 5px !important;
+  font-size: 10.5px !important;
+  font-weight: 650 !important;
+  line-height: 1 !important;
+  border-radius: 6px !important;
+  box-shadow: none !important;
+}
+
+.topbar-brand-col .tb-period-sub .tb-period-text {
+  min-height: 0 !important;
+  padding: 0 !important;
+  line-height: 1 !important;
+  font-size: 10.5px !important;
+  font-weight: 700 !important;
+  letter-spacing: .02em !important;
+}
+
+.topbar-brand-col .tb-period-sub .env-dot {
+  width: 6px !important;
+  height: 6px !important;
+  flex: 0 0 6px !important;
+}
+
+/* layar 768–900px: chip tetap ringkas (a11y-fixes menaikkan min-height ke 44px) */
+@media (min-width: 768px) and (max-width: 900px) {
+  .topbar-brand-col .tb-period-sub { height: 22px !important; min-height: 22px !important; }
+}
+
+/* <=860px: pill periode disembunyikan agar search bar tidak terhimpit
+   (di 768px search hanya tersisa 116px kalau pill tetap tampil).
+   Info periode tetap tersedia di sidebar (.sf-year-badge) & halaman Tahun Buku. */
+@media (max-width: 860px) {
+  .topbar-brand-col .tb-period-sub { display: none !important; }
+}

@@ -153,7 +153,7 @@
 <div class="card">
     <div class="card-header"><h2><?= __('Riwayat Import') ?></h2></div>
     <div class="table-wrap">
-        <table class="data">
+        <table class="data"><caption class="sr-only">Riwayat import</caption>
             <thead>
                 <tr>
                     <th><?= __('File') ?></th>
@@ -184,7 +184,7 @@
                             <td class="t-center"><?= (int) $log['failed_rows'] ?></td>
                             <td class="t-center"><span class="badge <?= $badge ?>"><?= e(ucfirst((string) $log['status'])) ?></span></td>
                             <td class="t-center" style="min-width:110px;">
-                                <div class="progress-mini" role="progressbar" aria-valuenow="<?= (int) $log['progress'] ?>" aria-valuemin="0" aria-valuemax="100" title="<?= (int) $log['progress'] ?>%">
+                                <div class="progress-mini" role="progressbar" aria-label="<?= __('Progres') ?>" aria-valuenow="<?= (int) $log['progress'] ?>" aria-valuemin="0" aria-valuemax="100" title="<?= (int) $log['progress'] ?>%">
                                     <span style="width:<?= max(0, min(100, (int) $log['progress'])) ?>%"></span>
                                 </div>
                                 <span class="text-sm faint"><?= (int) $log['progress'] ?>%</span>

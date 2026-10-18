@@ -15,7 +15,7 @@ if ($canAdmin && $deletable !== []):
     </div>
     <div class="by-body">
     <div class="table-wrap">
-        <table class="data">
+        <table class="data"><caption class="sr-only">Periode yang akan dihapus</caption>
             <thead><tr><th><?= __('Periode') ?></th><th class="col-hide-tablet"><?= __('Catatan') ?></th><th class="t-right"><?= __('Aksi') ?></th></tr></thead>
             <tbody>
             <?php foreach ($deletable as $d): ?>

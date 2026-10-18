@@ -54,11 +54,15 @@ $pageTitle = $title ?? 'Dashboard';
     <!-- View mode: kartu / tabel untuk semua table.data (semua breakpoint) -->
     <link rel="stylesheet" href="<?= asset_v('css/sf-viewmode.css') ?>">
     <link rel="stylesheet" href="<?= asset_v('css/money-fit.css') ?>">
+    <link rel="stylesheet" href="<?= asset_v('css/palette-scan.css') ?>">
     <link rel="stylesheet" href="<?= asset_v('css/sf-usermenu.css') ?>">
     <link rel="stylesheet" href="<?= asset_v('css/sf-rowdetail.css') ?>">
     <link rel="stylesheet" href="<?= asset_v('css/sf-tables.css') ?>">
     <!-- A11y & Polish Layer - WAJIB paling akhir (menang atas semua lapisan) -->
     <link rel="stylesheet" href="<?= asset_v('css/a11y-fixes.css') ?>">
+    <link rel="stylesheet" href="<?= asset_v('css/a11y-pass2.css') ?>">
+    <link rel="stylesheet" href="<?= asset_v('css/topbar-brand.css') ?>">
+    <link rel="stylesheet" href="<?= asset_v('css/topbar-quicksearch.css') ?>">
     <script>try{var __v=localStorage.getItem('sf:viewmode'),__q=new URLSearchParams(location.search).get('view');if(__q==='cards'||__q==='table'||__q==='auto')__v=__q;if(__v==='cards'||__v==='table')document.documentElement.setAttribute('data-view',__v);}catch(e){}</script>
     <?= $headExtra ?? '' ?>
 
@@ -148,7 +152,7 @@ $pageTitle = $title ?? 'Dashboard';
                     $currentPath = trim(App\Core\Request::path(), '/');
                     $pathTitles = [
                         'dashboard'            => __('Dashboard'),
-                        'items'                => __('Data STO'),
+                        'items'                => __('Observer'),
                         'items/create'         => __('Tambah Data STO'),
                         'items/memo'           => __('Marking Memo'),
                         'items/memo_index'     => __('Marking Memo'),
@@ -164,6 +168,7 @@ $pageTitle = $title ?? 'Dashboard';
                         'locations'            => __('Lokasi'),
                         'devices'              => __('Device'),
                         'users'                => __('Pengguna'),
+                        'employee-ids'         => __('ID Karyawan'),
                         'user-rules'           => __('Aturan Menu'),
                         'activity'             => __('Aktivitas'),
                         'import'               => __('Impor Data'),
@@ -192,6 +197,7 @@ $pageTitle = $title ?? 'Dashboard';
 
     <script src="<?= asset_v('js/app.js') ?>"></script>
     <script src="<?= asset_v('js/spotlight.js') ?>"></script>
+    <script src="<?= asset_v('js/palette-scan.js') ?>"></script>
     <script src="<?= asset_v('js/sf-ui.js') ?>"></script>
     <script src="<?= asset_v('js/notif-popup.js') ?>"></script>
     <script src="<?= asset_v('js/wh-modal.js') ?>"></script>

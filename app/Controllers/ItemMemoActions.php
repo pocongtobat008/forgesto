@@ -217,18 +217,45 @@ trait ItemMemoActions
             }
             $this->ensureGroupAccess((int) $item['group_id']);
             $memos[] = [
-                'id'       => (int) $item['id'],
-                'code'     => (string) $item['code'],
-                'name'     => (string) $item['name'],
-                'location' => (string) ($item['location_name'] ?? ''),
-                'warehouse' => $this->warehouseNameForGroup((int) $item['group_id']),
-                'group'    => (string) ($item['group_name'] ?? ''),
-                'qty'      => '',
-                'qr'       => $this->qrSvg((string) $item['code']),
+                'id'            => (int) $item['id'],
+                'code'          => (string) $item['code'],
+                'name'          => (string) $item['name'],
+                'id_barang'     => $this->idBarang($item),
+                'sub_inventory' => (string) ($item['sub_inventory'] ?? ''),
+                'category'      => (string) ($item['category'] ?? ''),
+                'unit'          => (string) ($item['unit'] ?? ''),
+                'location'      => (string) ($item['location_name'] ?? ''),
+                'device'        => (string) ($item['device_name'] ?? ''),
+                'warehouse'     => $this->warehouseNameForGroup((int) $item['group_id']),
+                'group'         => (string) ($item['group_name'] ?? ''),
+                'observers'     => (string) ($item['observers'] ?? ''),
+                'auditors'      => (string) ($item['auditors'] ?? ''),
+                'qty'           => '',
+                'qr'            => $this->qrSvg((string) $item['code']),
             ];
         }
 
         return $memos;
+    }
+
+    /**
+     * ID barang cetak. Pakai kolom id_barang bila ada; kalau kosong susun
+     * seperti aturan gudang: WE1 + kode + sub inventory + lokasi.
+     *
+     * @param array<string,mixed> $item
+     */
+    protected function idBarang(array $item): string
+    {
+        $stored = trim((string) ($item['id_barang'] ?? ''));
+        if ($stored !== '') {
+            return $stored;
+        }
+
+        $parts = 'WE1' . (string) ($item['code'] ?? '')
+            . (string) ($item['sub_inventory'] ?? '')
+            . (string) ($item['location_code'] ?? '');
+
+        return str_replace(' ', '', $parts);
     }
 
     protected function countScalar(string $sql, array $bind): int

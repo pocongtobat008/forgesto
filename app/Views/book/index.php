@@ -109,7 +109,7 @@ $statusClass = $active === null ? '' : ($isClosed ? 'badge-danger' : 'badge-succ
     </div><div class="by-body">
         <div class="card-body" style="padding:1.25rem 1.35rem !important;">
     <div class="table-wrap">
-        <table class="data" id="book-table" data-colmgr-key="book-v1" data-colmgr-prefix="book">
+        <table class="data" id="book-table" data-colmgr-key="book-v1" data-colmgr-prefix="book"><caption class="sr-only">Riwayat periode tutup buku</caption>
             <thead>
                 <tr>
                     <th data-col="period"><?= __('Periode') ?></th>

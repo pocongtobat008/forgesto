@@ -479,7 +479,7 @@ require __DIR__ . '/../partials/progress_overview.php'; ?>
         } else if (!d.top || d.top.length === 0) {
             html += '<p class="prg-d-muted">' + esc(L.noTop) + '</p>';
         } else {
-            html += '<div class="prg-d-table-wrap"><table class="prg-d-table"><thead><tr>' +
+            html += '<div class="prg-d-table-wrap"><table class="prg-d-table"><caption class="sr-only">' + esc(L.top) + '</caption><thead><tr>' +
                     '<th>' + esc(L.count) + '</th><th class="t-right">' + esc(L.diffQty) + '</th>' +
                     (d.diff.visible ? '<th class="t-right">' + esc(L.diffAmt) + '</th>' : '') +
                     '</tr></thead><tbody>';

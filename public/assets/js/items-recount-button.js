@@ -133,6 +133,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     function showToast(message, type = 'info') {
+        if (window.sfAnnounce) window.sfAnnounce(message, type);
         const toast = document.createElement('div');
         toast.className = `sf-toast sf-toast-${type}`;
         toast.textContent = message;

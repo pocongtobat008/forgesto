@@ -1,0 +1,68 @@
+/* ==================================================================
+   a11y-pass2.css — lapisan kontras teks (WCAG AA)
+   Dimuat paling akhir agar menang cascade. Nilai eksplisit (bukan var)
+   supaya tidak terpengaruh cache CSS lama di CDN.
+   ================================================================== */
+
+/* ---------- teks status: terang ---------- */
+html[data-theme="light"] .text-success,
+html[data-theme="light"] .is-pos,
+html[data-theme="light"] .diff-pill.is-pos,
+html[data-theme="light"] .diff-pill.is-pos *,
+html[data-theme="light"] .sf-prog-pct.is-success,
+html[data-theme="light"] .stat-value.is-pos,
+html[data-theme="light"] .alert-success,
+html[data-theme="light"] .alert-success * { color: #0b7a56 !important; }
+
+html[data-theme="light"] .text-danger,
+html[data-theme="light"] .is-neg,
+html[data-theme="light"] .diff-pill.is-neg,
+html[data-theme="light"] .diff-pill.is-neg *,
+html[data-theme="light"] .stat-value.is-neg,
+html[data-theme="light"] .alert-danger,
+html[data-theme="light"] .alert-danger * { color: #c92a2a !important; }
+
+/* ---------- teks status: gelap ---------- */
+html[data-theme="dark"] .text-success,
+html[data-theme="dark"] .is-pos,
+html[data-theme="dark"] .diff-pill.is-pos,
+html[data-theme="dark"] .diff-pill.is-pos *,
+html[data-theme="dark"] .sf-prog-pct.is-success,
+html[data-theme="dark"] .stat-value.is-pos,
+html[data-theme="dark"] .alert-success,
+html[data-theme="dark"] .alert-success * { color: #38d9a9 !important; }
+
+html[data-theme="dark"] .text-danger,
+html[data-theme="dark"] .is-neg,
+html[data-theme="dark"] .diff-pill.is-neg,
+html[data-theme="dark"] .diff-pill.is-neg *,
+html[data-theme="dark"] .stat-value.is-neg,
+html[data-theme="dark"] .alert-danger,
+html[data-theme="dark"] .alert-danger * { color: #ff8787 !important; }
+
+/* ---------- tombol outline success/danger ---------- */
+html[data-theme="light"] .btn-success.btn-outline,
+html[data-theme="light"] .content .btn-success.btn-outline { color: #0b7a56 !important; }
+html[data-theme="light"] .btn-danger.btn-outline,
+html[data-theme="light"] .content .btn-danger.btn-outline { color: #c92a2a !important; }
+
+/* ---------- chip/pill non-aktif: slate-600 (kontras 7.4:1 di #f1f5f9) ---------- */
+html[data-theme="light"] .sf-mat-preset:not(.is-active),
+html[data-theme="light"] .recon-pg-btn:not(.is-current),
+html[data-theme="light"] .mrm-role-tab:not(.is-active) { color: #475569 !important; }
+
+html[data-theme="dark"] .sf-mat-preset:not(.is-active),
+html[data-theme="dark"] .recon-pg-btn:not(.is-current),
+html[data-theme="dark"] .mrm-role-tab:not(.is-active) { color: #adb5bd !important; }
+
+/* ---------- diff-pill: latar tint 15% menurunkan kontras → pakai tone lebih gelap ---------- */
+html[data-theme="light"] .diff-pill.is-pos,
+html[data-theme="light"] .diff-pill.is-pos * { color: #076b4b !important; }
+html[data-theme="light"] .diff-pill.is-neg,
+html[data-theme="light"] .diff-pill.is-neg * { color: #a61e1e !important; }
+
+/* ---- 9. Grafik data vs safety-net ikon ----
+   app.css punya svg{width:16px;height:16px} untuk ikon.
+   SVG grafik yang dirender inline harus ikut lebar kontainer, bukan 16px. */
+svg.sf-chart { width: auto; height: auto; flex: 0 1 auto; }
+@media print { svg.sf-chart { max-width: 100% !important; } }

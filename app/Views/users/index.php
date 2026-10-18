@@ -63,7 +63,7 @@ $roleBadge = static fn (string $role): string => match ($role) {
     </div>
         <div class="card-body" style="padding:1.25rem 1.35rem !important;">
     <div class="table-wrap">
-        <table class="data" id="users-table" data-colmgr-key="users-v1" data-colmgr-prefix="users">
+        <table class="data" id="users-table" data-colmgr-key="users-v1" data-colmgr-prefix="users"><caption class="sr-only">Daftar pengguna</caption>
             <thead>
                 <tr>
                     <th data-col="name" class="xf-th"><span class="xf-label"><?= __('Nama') ?></span><?= $xfBtn('name', 'Nama') ?></th>
@@ -113,7 +113,7 @@ $roleBadge = static fn (string $role): string => match ($role) {
                                     <form method="post" action="<?= url('users/' . (int) $user['id'] . '/delete') ?>"
                                           data-confirm="<?= e(__('Hapus user :name?', ['name' => $user['name']])) ?>" style="display:inline;">
                                         <?= csrf_field() ?>
-                                        <button type="submit" class="btn btn-danger btn-xs"><?= icon('trash') ?></button>
+                                        <button type="submit" class="btn btn-danger btn-xs" aria-label="<?= __('Hapus user') ?>"><?= icon('trash') ?></button>
                                     </form>
                                 </div>
                             </td>

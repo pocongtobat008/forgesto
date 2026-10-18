@@ -82,7 +82,7 @@ $selected = array_map('intval', (array) ($oldGroups ?? $selectedGroups));
                 <div class="card-header"><h2><?= __('Role Akses') ?></h2></div>
                 <div class="card-body">
                     <div class="form-group">
-                        <select name="role" id="role">
+                        <select name="role" id="role" aria-label="<?= __('Role Akses') ?>">
                             <?php foreach ($roles as $key => $label): ?>
                                 <option value="<?= e($key) ?>" <?= $value('role', 'observer') === $key ? 'selected' : '' ?>><?= e($label) ?></option>
                             <?php endforeach; ?>

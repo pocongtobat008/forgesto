@@ -57,6 +57,14 @@ if ($bp) {
             </span>
         </button>
 
+        <!-- Pencarian cepat (HP & tablet portrait < 768px).
+             Di desktop tombol ini display:none; Spotlight tetap di tengah topbar. -->
+        <button type="button" class="topbar-search-mob" data-palette-open
+                aria-label="<?= __('Buka pencarian cepat') ?>" title="<?= __('Pencarian cepat') ?>">
+            <span class="tsm-icon" aria-hidden="true"><?= icon('search') ?></span>
+            <span class="tsm-label"><?= __('Cari barang, halaman, aksi…') ?></span>
+        </button>
+
         <!-- Brand Block: Logo + Name STO on top, Active Tahun Buku directly underneath -->
         <div class="topbar-brand-wrap">
             <a href="<?= url('dashboard') ?>" class="topbar-brand" aria-label="<?= e(config('app.name')) ?>">

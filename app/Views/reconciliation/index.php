@@ -579,7 +579,7 @@ $gtCond = $gt['diff_qty'] > 0 ? 'plus' : ($gt['diff_qty'] < 0 ? 'minus' : 'match
         </div>
     </div>
     <div class="table-wrap recon-table-wrap">
-        <table class="data" id="recon-table" data-colmgr-key="recon-v1" data-colmgr-prefix="recon">
+        <table class="data" id="recon-table" data-colmgr-key="recon-v1" data-colmgr-prefix="recon"><caption class="sr-only">Daftar rekonsiliasi</caption>
             <?php $cfCol = $filters['col'] ?? []; $xfBtn = static fn (string $k, string $lbl): string => '<button type="button" class="xf-btn' . (! empty($cfCol[$k]) ? ' is-active' : '') . '" data-xf="' . $k . '" aria-label="' . e(__('Filter kolom :l', ['l' => __($lbl)])) . '" aria-haspopup aria-haspopup="dialog" title="Filter">' . icon('filter') . '</button>'; ?>
 <!-- RNG_V1 -->
 <thead>
@@ -1259,21 +1259,32 @@ document.addEventListener('DOMContentLoaded', function () {
     if (pop.parentElement !== document.body) { document.body.appendChild(pop); }
     var r = btn.getBoundingClientRect();
     var w = pop.offsetWidth || 300;
-    var h = pop.offsetHeight || 220;
     var vw = document.documentElement.clientWidth || window.innerWidth;
     var vh = window.innerHeight || document.documentElement.clientHeight;
     var gap = 6, pad = 8;
     var left = r.left;
     if (left + w > vw - pad) { left = vw - pad - w; }
     if (left < pad) { left = pad; }
-    // Pilih sisi (bawah/atas) yang muat, lalu batasi tinggi popup agar
-    // tidak menutupi tombol pemicu dan tidak keluar dari viewport.
+
+    // Ukur tinggi natural TANPA batas (dulu maxHeight lama ikut terukur
+    // sehingga tinggi popup terkunci pada isi sebelumnya).
+    pop.style.maxHeight = 'none';
+    pop.style.overflowY = 'visible';
+    var h = pop.offsetHeight || 220;
+
     var below = (vh - pad) - (r.bottom + gap);
     var above = (r.top - gap) - pad;
-    var openUp = (below < Math.min(h, 260)) && (above > below);
-    var avail = Math.max(140, Math.min(h, openUp ? above : below));
-    pop.style.maxHeight = Math.round(avail) + "px";
-    pop.style.overflowY = "auto";
+    var openUp = (below < h) && (above > below);
+    var room = openUp ? above : below;
+    if (room < h && ((openUp ? below : above) > room)) {
+      openUp = !openUp;
+      room = openUp ? above : below;
+    }
+    var avail = Math.min(h, Math.max(120, room));
+    if (avail < h) {
+      pop.style.maxHeight = Math.round(avail) + 'px';
+      pop.style.overflowY = 'auto';
+    }
     var top = openUp ? (r.top - gap - avail) : (r.bottom + gap);
     if (top + avail > vh - pad) { top = Math.max(pad, vh - pad - avail); }
     if (top < pad) { top = pad; }

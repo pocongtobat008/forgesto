@@ -97,7 +97,7 @@ $isSto   = $tab === 'sto';
             <?= icon('search') ?>
             <input type="search" name="q" value="<?= e($q) ?>" autocomplete="off" placeholder="<?= __('Cari kode atau nama item...') ?>" aria-label="<?= __('Cari item periode') ?>">
         </div>
-        <select name="group_id" class="btn" style="min-height:44px;max-width:220px;">
+        <select name="group_id" class="btn" aria-label="<?= __('Group') ?>" style="min-height:44px;max-width:220px;">
             <option value="0"><?= __('Semua group') ?></option>
             <?php foreach ($groups as $g): ?>
                 <option value="<?= (int) $g['id'] ?>" <?= $groupId === (int) $g['id'] ? 'selected' : '' ?>><?= e($g['name']) ?></option>
@@ -110,7 +110,7 @@ $isSto   = $tab === 'sto';
     </form>
 
     <div class="table-wrap">
-        <table class="data">
+        <table class="data"><caption class="sr-only">Lembar kerja hitung fisik</caption>
             <thead>
                 <tr>
                     <th><?= __('Kode') ?></th>

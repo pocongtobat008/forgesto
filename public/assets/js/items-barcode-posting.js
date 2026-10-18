@@ -1019,6 +1019,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     function showToast(message, type = "info") {
+        if (window.sfAnnounce) window.sfAnnounce(message, type);
         const existing = document.querySelectorAll(".sf-toast");
         existing.forEach(t => t.remove());
 
