@@ -75,22 +75,27 @@ class GroupController extends Controller
         $this->verifyCsrf();
 
         $this->validate([
-            'code'         => 'required|max:50|unique:groups,code',
-            'name'         => 'required|max:150',
-            'sto_id'       => 'nullable|integer|exists:sto,id',
-            'warehouse_id' => 'required|integer|exists:warehouses,id',
+            'code'            => 'required|max:50|unique:groups,code',
+            'name'            => 'required|max:150',
+            'sto_id'          => 'nullable|integer|exists:sto,id',
+            'warehouse_id'    => 'required|integer|exists:warehouses,id',
+            'pic_employee_id' => 'nullable|max:80',
+            'pic_name'        => 'nullable|max:150',
         ], [
             'code' => 'Kode group', 'name' => 'Nama group', 'sto_id' => 'STO', 'warehouse_id' => 'Gudang',
+            'pic_employee_id' => 'ID PIC', 'pic_name' => 'Nama PIC',
         ]);
 
         $group = new Group();
         $id = $group->insert([
-            'code'         => strtoupper(Request::string('code')),
-            'name'         => Request::string('name'),
-            'description'  => Request::string('description') ?: null,
-            'sto_id'       => Request::int('sto_id') ?: null,
-            'warehouse_id' => Request::int('warehouse_id') ?: null,
-            'is_active'    => Request::has('is_active') ? 1 : 0,
+            'code'           => strtoupper(Request::string('code')),
+            'name'           => Request::string('name'),
+            'description'    => Request::string('description') ?: null,
+            'sto_id'         => Request::int('sto_id') ?: null,
+            'warehouse_id'   => Request::int('warehouse_id') ?: null,
+            'pic_employee_id' => $this->picEmployeeId(),
+            'pic_name'       => $this->picName(),
+            'is_active'      => Request::has('is_active') ? 1 : 0,
         ]);
 
         (new ActivityLog())->record('create', 'group', $id, 'Menambah group ' . Request::string('name'), $id);
@@ -189,21 +194,26 @@ class GroupController extends Controller
         }
 
         $this->validate([
-            'code'         => 'required|max:50|unique:groups,code,' . $id,
-            'name'         => 'required|max:150',
-            'sto_id'       => 'nullable|integer|exists:sto,id',
-            'warehouse_id' => 'required|integer|exists:warehouses,id',
+            'code'            => 'required|max:50|unique:groups,code,' . $id,
+            'name'            => 'required|max:150',
+            'sto_id'          => 'nullable|integer|exists:sto,id',
+            'warehouse_id'    => 'required|integer|exists:warehouses,id',
+            'pic_employee_id' => 'nullable|max:80',
+            'pic_name'        => 'nullable|max:150',
         ], [
             'code' => 'Kode group', 'name' => 'Nama group', 'sto_id' => 'STO', 'warehouse_id' => 'Gudang',
+            'pic_employee_id' => 'ID PIC', 'pic_name' => 'Nama PIC',
         ]);
 
         $group->updateById($id, [
-            'code'         => strtoupper(Request::string('code')),
-            'name'         => Request::string('name'),
-            'description'  => Request::string('description') ?: null,
-            'sto_id'       => Request::int('sto_id') ?: null,
-            'warehouse_id' => Request::int('warehouse_id') ?: null,
-            'is_active'    => Request::has('is_active') ? 1 : 0,
+            'code'           => strtoupper(Request::string('code')),
+            'name'           => Request::string('name'),
+            'description'    => Request::string('description') ?: null,
+            'sto_id'         => Request::int('sto_id') ?: null,
+            'warehouse_id'   => Request::int('warehouse_id') ?: null,
+            'pic_employee_id' => $this->picEmployeeId(),
+            'pic_name'       => $this->picName(),
+            'is_active'      => Request::has('is_active') ? 1 : 0,
         ]);
 
         (new ActivityLog())->record('update', 'group', $id, 'Mengubah group ' . Request::string('name'), $id);
@@ -251,6 +261,37 @@ class GroupController extends Controller
             'from'      => $total === 0 ? 0 : $offset + 1,
             'to'        => min($offset + $perPage, $total),
         ];
+    }
+
+    /** ID karyawan PIC group (kosong -> null). */
+    private function picEmployeeId(): ?string
+    {
+        $id = strtoupper(trim((string) Request::string('pic_employee_id')));
+
+        return $id === '' ? null : $id;
+    }
+
+    /**
+     * Nama PIC: pakai input form; bila kosong tetapi ID diisi, ambil dari
+     * master karyawan agar tampilan konsisten.
+     */
+    private function picName(): ?string
+    {
+        $name = trim((string) Request::string('pic_name'));
+        if ($name !== '') {
+            return $name;
+        }
+
+        $id = $this->picEmployeeId();
+        if ($id === null) {
+            return null;
+        }
+
+        $stmt = \App\Core\Database::connection()->prepare('SELECT name FROM employees WHERE UPPER(employee_id) = ? LIMIT 1');
+        $stmt->execute([$id]);
+        $found = $stmt->fetchColumn();
+
+        return $found === false ? null : (string) $found;
     }
 }
 /* I18N5-CTRL */

@@ -28,15 +28,17 @@ $switcherEnabled = (bool) config('app.auth.dev_switcher', true);
 <div class="page-head has-hero">
     <div>
         <h1><?= __('Profil &amp; Akses') ?></h1>
-        <p>Role aktif, kemampuan akses, dan pengalihan user untuk pengujian.</p>
+        <p><?= ! empty($showAdminPanels)
+            ? __('Role aktif, kemampuan akses, dan pengalihan user untuk pengujian.')
+            : __('Role aktif dan group yang dapat Anda akses.') ?></p>
     </div>
 </div>
 
-<?php if (! $switcherEnabled): ?>
+<?php if (! empty($showAdminPanels) && ! $switcherEnabled): ?>
     <div class="alert alert-info"><?= icon('info') ?><div><?= __('Pengalihan user sedang dimatikan.') ?></div></div>
 <?php endif; ?>
 
-<div class="grid grid-main">
+<div class="grid<?= ! empty($showAdminPanels) ? ' grid-main' : '' ?>">
     <div>
         <div class="card">
             <div class="card-header">
@@ -57,19 +59,46 @@ $switcherEnabled = (bool) config('app.auth.dev_switcher', true);
 
                 <div class="divider"></div>
 
-                <h3 class="mb-1"><?= __('Group yang dapat diakses') ?></h3>
-                <?php if (in_array($current['role'] ?? '', ['poweradmin', 'adminsto'], true)): ?>
-                    <span class="badge badge-brand"><?= __('Semua group') ?></span>
-                <?php elseif ($groups === []): ?>
-                    <span class="faint text-sm"><?= __('Belum ada group didelegasikan.') ?></span>
-                <?php else: ?>
-                    <div class="chip-group">
-                        <?php foreach ($groups as $group): ?>
-                            <span class="chip"><?= e($group['code']) ?> &middot; <?= e($group['name']) ?></span>
-                        <?php endforeach; ?>
+                <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1.25rem;align-items:start;">
+                    <div>
+                        <h3 class="mb-1"><?= __('Group yang dapat diakses') ?></h3>
+                        <?php if (in_array($current['role'] ?? '', ['poweradmin', 'adminsto'], true)): ?>
+                            <span class="badge badge-brand"><?= __('Semua group') ?></span>
+                        <?php elseif ($groups === []): ?>
+                            <span class="faint text-sm"><?= __('Belum ada group didelegasikan.') ?></span>
+                        <?php else: ?>
+                            <div class="chip-group">
+                                <?php foreach ($groups as $group): ?>
+                                    <span class="chip"><?= e($group['code']) ?> &middot; <?= e($group['name']) ?></span>
+                                <?php endforeach; ?>
+                            </div>
+                        <?php endif; ?>
                     </div>
-                <?php endif; ?>
 
+                    <?php if (empty($showAdminPanels)): ?>
+                    <div>
+                        <h3 class="mb-1"><?= __('Tablet Anda') ?></h3>
+                        <?php if (! empty($device)): ?>
+                            <div class="cell-title"><?= e((string) $device['code']) ?> &middot; <?= e((string) $device['name']) ?></div>
+                            <div class="cell-sub">
+                                <span class="badge <?= ($device['status'] ?? 'free') === 'in_use' ? 'badge-warning' : 'badge-success' ?>">
+                                    <?= ($device['status'] ?? 'free') === 'in_use' ? __('Dipakai') : __('Free') ?>
+                                </span>
+                                <?php if (($device['status'] ?? 'free') === 'in_use'): ?>
+                                    <span class="text-sm faint"><?= __('aktif sejak') ?> <?= e(date('d/m H:i', strtotime((string) ($device['in_use_at'] ?? 'now')))) ?></span>
+                                <?php endif; ?>
+                            </div>
+                            <p class="text-sm faint" style="margin-top:.35rem;">
+                                <?= __('Status berubah menjadi "Dipakai" saat Anda masuk dan kembali "Free" setelah keluar.') ?>
+                            </p>
+                        <?php else: ?>
+                            <span class="faint text-sm"><?= __('Belum ada tablet terdaftar untuk ID Anda. Hubungi admin.') ?></span>
+                        <?php endif; ?>
+                    </div>
+                    <?php endif; ?>
+                </div>
+
+                <?php if (! empty($showAdminPanels)): ?>
                 <div class="divider"></div>
 
                 <h3 class="mb-1"><?= __('Kemampuan akses') ?></h3>
@@ -87,10 +116,12 @@ $switcherEnabled = (bool) config('app.auth.dev_switcher', true);
                         </li>
                     <?php endforeach; ?>
                 </ul>
+                <?php endif; ?>
             </div>
         </div>
     </div>
 
+    <?php if (! empty($showAdminPanels)): ?>
     <div>
         <div class="card">
             <div class="card-header">
@@ -131,4 +162,5 @@ $switcherEnabled = (bool) config('app.auth.dev_switcher', true);
             </div>
         </div>
     </div>
+    <?php endif; ?>
 </div>

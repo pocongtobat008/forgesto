@@ -13,6 +13,9 @@ use RuntimeException;
  *   gudang -> group -> petugas -> lokasi -> tablet -> item
  * Setiap sheet opsional. Urutan dijamin supaya relasi (FK by code) selalu sudah ada.
  *
+ * Sheet 'group' tidak wajib: bila tidak ada, group dibuat dari group_code +
+ * group_name pada sheet master/karyawan.
+ *
  * Mode dry-run: seluruh proses dijalankan di dalam transaksi lalu di-ROLLBACK,
  * sehingga laporan akurat tanpa menulis apa pun.
  */
@@ -29,6 +32,23 @@ class MasterWorkbookImportService
     
     private int $progressSeq = 0;
     private ?string $progressFile = null;
+
+    /**
+     * Peta group_code -> petugas & device, dibangun dari sheet 'karyawan'.
+     * Dipakai supaya sheet 'master' tidak perlu lagi memuat kolom petugas/device:
+     * semuanya di-mapping lewat group_code.
+     *
+     * @var array<string, array{device_code:string, device_name:string, auditors:list<string>, observers:list<string>}>
+     */
+    private array $groupStaff = [];
+
+    /** Penugasan petugas yang sudah diproses (role|employee|group) agar tidak diulang tiap baris. */
+    private array $petugasDone = [];
+
+    /** Device per group yang sudah diproses (group|device) agar upsert tidak diulang tiap baris. */
+    private array $tabletDone = [];
+
+
 
     public function __construct(private ?ItemImportService $items = null)
     {
@@ -83,6 +103,8 @@ class MasterWorkbookImportService
         foreach ($present as $s) {
             $this->report[$s] = ['created' => 0, 'updated' => 0, 'failed' => 0, 'errors' => []];
         }
+        // 'periode' bukan sheet (diturunkan dari sheet master) tapi tetap dilaporkan.
+        $this->report['periode'] = ['created' => 0, 'updated' => 0, 'failed' => 0, 'errors' => []];
 
         if ($present === []) {
             throw new RuntimeException('Tidak ada sheet yang dikenali. Nama sheet harus salah satu dari: ' . implode(', ', self::SHEETS) . '.');
@@ -91,21 +113,46 @@ class MasterWorkbookImportService
         $pdo = Database::connection();
         $pdo->beginTransaction();
         try {
-            // Sheet 'karyawan' WAJIB diproses lebih dulu: jadi sumber lookup
-            // employee_id -> name untuk sheet 'master' dan 'petugas'.
+            // Gudang yang disebut di sheet 'master' dibuat lebih dulu supaya sheet
+            // 'group' (dan baris master itu sendiri) langsung bisa menempel ke gudangnya.
+            if (isset($sheets['master'])) {
+                $this->preCreateWarehouses($sheets['master'], $userId);
+            }
+
+            // Sheet 'group' opsional. Bila tidak ada, group diturunkan dari
+            // group_code + group_name di sheet master/karyawan (tidak perlu sheet group).
+            if (! isset($sheets['group'])) {
+                $this->ensureGroupsFromSheets($sheets, $userId);
+            }
+
+            // Urutan: gudang -> group -> karyawan -> master.
+            // Group harus ada sebelum karyawan (keanggotaan) dan sebelum master (lokasi/item).
+            foreach (['gudang', 'group'] as $s) {
+                if (isset($sheets[$s])) {
+                    foreach ($sheets[$s] as $i => $row) {
+                        $this->{'row' . ucfirst($s)}($row, $i + 2, $userId);
+                    }
+                    unset($sheets[$s]);
+                }
+            }
+
+            // Sheet 'karyawan': sumber lookup employee_id -> name dan peta
+            // group -> petugas & device untuk sheet 'master'.
             if (isset($sheets['karyawan'])) {
                 $this->report['karyawan'] = (new EmployeeImportService())->importRows($sheets['karyawan'], $userId);
+                $this->buildGroupStaffMap($sheets['karyawan']);
+                // PIC group boleh ditulis di kolom pic_employee_id sheet karyawan
+                // (sekali per group); dijalankan setelah karyawan ada supaya namanya ketemu.
+                $this->applyGroupPicFromKaryawan($sheets['karyawan']);
+                unset($sheets['karyawan']);
             }
 
             if (isset($sheets['master'])) {
                 $this->importMaster($sheets['master'], $userId, $defaultGroupId);
-                $present = array_values(array_unique(array_merge(
-                    isset($sheets['karyawan']) ? ['karyawan'] : [],
-                    ['master']
-                )));
-                $sheets = [];
+                unset($sheets['master']);
             }
-            foreach (['gudang', 'group', 'petugas', 'lokasi', 'tablet'] as $s) {
+
+            foreach (['petugas', 'lokasi', 'tablet'] as $s) {
                 if (isset($sheets[$s])) {
                     foreach ($sheets[$s] as $i => $row) {
                         $this->{'row' . ucfirst($s)}($row, $i + 2, $userId);
@@ -130,6 +177,30 @@ class MasterWorkbookImportService
             $pdo->commit();
         }
 
+        // Section 'master' hanya berisi error baris; sembunyikan bila kosong.
+        if (isset($this->report['master'])
+            && $this->report['master']['created'] === 0
+            && $this->report['master']['updated'] === 0
+            && $this->report['master']['failed'] === 0) {
+            unset($this->report['master']);
+        }
+
+        // Daftar sheet untuk laporan HARUS konsisten dengan kunci yang ada di
+        // $this->report: kalau tidak, view mengakses kunci yang tidak ada
+        // (mis. 'master' yang baru di-unset di atas) dan memunculkan warning.
+        $order   = array_merge(['periode'], self::SHEETS);
+        $present = array_values(array_filter($order, function (string $s): bool {
+            if (! isset($this->report[$s])) {
+                return false;
+            }
+            // 'periode' bukan sheet: tampilkan hanya bila benar-benar menyentuh data.
+            if ($s === 'periode') {
+                return $this->report[$s]['created'] > 0 || $this->report[$s]['updated'] > 0;
+            }
+
+            return true;
+        }));
+
         return ['dry_run' => $dryRun, 'sheets' => $present, 'report' => $this->report];
     }
 
@@ -141,9 +212,8 @@ class MasterWorkbookImportService
      */
     private function importMaster(array $rows, int $userId, ?int $defaultGroupId): void
     {
-        foreach (['periode', 'gudang', 'group', 'petugas', 'lokasi', 'tablet', 'item'] as $s) {
-            $this->report[$s] = ['created' => 0, 'updated' => 0, 'failed' => 0, 'errors' => []];
-        }
+        // Jangan reset counter sheet lain: sheet 'gudang' & 'group' sudah diproses
+        // sebelum master, angkanya harus tetap terlihat di laporan.
         $itemRows = [];
         $total = count($rows);
         $processedPeriods = []; // Track processed periods to avoid duplicates
@@ -205,16 +275,38 @@ class MasterWorkbookImportService
             // Resolve group: try code first, fallback to name
             $groupCodeOrName = $g('group_kode') ?: $g('group_nama');
             $groupResolved = $groupCodeOrName !== '' ? $this->resolveGroupByCodeOrName($groupCodeOrName) : null;
+            // Group WAJIB sudah ada di database (tidak dibuat otomatis): lokasi & item
+            // tidak bisa ditempel ke group yang belum ada, jadi baris dilaporkan gagal
+            // dengan pesan yang jelas alih-alih error berlapis di bawah.
+            $groupMissing = false;
+            if ($groupCodeOrName === '') {
+                $groupMissing = true;
+                $this->fail('master', $line, 'group_code kosong. Isi group_code (kode group yang sudah ada di menu Group) agar lokasi & item bisa diimport.');
+            } elseif ($groupResolved === null) {
+                $groupMissing = true;
+                $this->fail('master', $line, "group '{$groupCodeOrName}' tidak ada di database. Buat group dengan kode tersebut di menu Group (kode harus sama persis), lalu import ulang.");
+            }
             $groupCode = $groupResolved ? $groupResolved[1] : '';
             
             if ($g('gudang_kode') !== '') {
                 $this->rowGudang(['code' => $g('gudang_kode'), 'name' => $g('gudang_nama'), 'city' => $g('gudang_kota'), 'address' => $g('gudang_alamat')], $line, $userId);
             }
-            if ($groupCode !== '') {
+            if (! $groupMissing && $groupCode !== '') {
                 $this->rowGroup(['group_code' => $groupCode, 'name' => $g('group_nama') ?: $groupCodeOrName, 'gudang_code' => $g('gudang_kode'), 'description' => $g('group_deskripsi')], $line, $userId);
             }
-            foreach (['observer' => $g('petugas_observer_id'), 'audit' => $g('petugas_auditor_id')] as $role => $employeeId) {
-                if ($employeeId !== '') {
+            // Petugas & device: mapping lewat group_code dari sheet 'karyawan'.
+            // Kolom lama di sheet 'master' (auditor_employee_id / observer_employee_id /
+            // device_code / device_name) tetap didukung bila masih ada isinya.
+            $staff = $this->staffForGroup($groupCode, $groupCodeOrName);
+            $auditorIds  = $g('petugas_auditor_id')  !== '' ? [$g('petugas_auditor_id')]  : ($staff['auditors']  ?? []);
+            $observerIds = $g('petugas_observer_id') !== '' ? [$g('petugas_observer_id')] : ($staff['observers'] ?? []);
+            $gid = $this->groupIdFor($groupCode);
+            foreach ($groupMissing ? [] : ['observer' => $observerIds, 'audit' => $auditorIds] as $role => $employeeIds) {
+                foreach ($employeeIds as $employeeId) {
+                    $doneKey = $role . '|' . $employeeId . '|' . (string) $gid;
+                    if (isset($this->petugasDone[$doneKey])) {
+                        continue;
+                    }
                     // Nama di-lookup dari master karyawan. Bila tidak ada, tolak baris
                     // supaya tidak lahir petugas "hantu" tanpa data karyawan.
                     $employeeName = $this->employeeName($employeeId);
@@ -222,6 +314,7 @@ class MasterWorkbookImportService
                         $this->fail('petugas', $line, "ID Karyawan {$role} '{$employeeId}' tidak ada di master karyawan. Tambahkan sheet 'karyawan' atau import karyawan lebih dulu.");
                         continue;
                     }
+                    $this->petugasDone[$doneKey] = true;
                     $this->rowPetugas([
                         'username' => $employeeId,
                         'name' => $employeeName,
@@ -230,7 +323,6 @@ class MasterWorkbookImportService
                         'group_codes' => '',
                     ], $line, $userId);
                     // Tambah keanggotaan group tanpa menghapus group lain milik user ini.
-                    $gid = $this->groupIdFor($groupCode);
                     $uid = $this->scalar('SELECT id FROM users WHERE username=? LIMIT 1', [$employeeId]);
                     if ($gid !== null && $uid !== null) {
                         Database::connection()->prepare('INSERT IGNORE INTO user_groups (user_id,group_id,created_at) VALUES (?,?,NOW())')
@@ -238,7 +330,7 @@ class MasterWorkbookImportService
                     }
                 }
             }
-            if ($g('lokasi_kode') !== '') {
+            if (! $groupMissing && $g('lokasi_kode') !== '') {
                 $this->rowLokasi([
                     'group_code' => $groupCode,
                     'location_code' => $g('lokasi_kode'),
@@ -246,17 +338,38 @@ class MasterWorkbookImportService
                     'address' => '',
                 ], $line, $userId);
             }
+            // Device: kolom lama di sheet 'master' + semua device group dari sheet 'karyawan'.
+            $deviceRows = [];
             if ($g('tablet_kode') !== '') {
+                $deviceRows[] = [
+                    'code' => $g('tablet_kode'),
+                    'name' => $g('tablet_nama') ?: $g('tablet_kode'),
+                    'employee' => '',
+                    'type' => $g('tablet_tipe'),
+                    'serial' => $g('tablet_serial'),
+                ];
+            }
+            foreach ($staff['devices'] ?? [] as $dev) {
+                $deviceRows[] = $dev + ['type' => '', 'serial' => ''];
+            }
+            $tabletKode = $deviceRows !== [] ? $deviceRows[0]['code'] : '';
+            foreach ($groupMissing ? [] : $deviceRows as $dev) {
+                $tabletKey = $groupCode . '|' . $dev['code'];
+                if (isset($this->tabletDone[$tabletKey])) {
+                    continue;
+                }
+                $this->tabletDone[$tabletKey] = true;
                 $this->rowTablet([
                     'group_code' => $groupCode,
                     'location_code' => $g('lokasi_kode'),
-                    'device_code' => $g('tablet_kode'),
-                    'name' => $g('tablet_nama') ?: $g('tablet_kode'),
-                    'type' => $g('tablet_tipe'),
-                    'serial_number' => $g('tablet_serial'),
+                    'device_code' => $dev['code'],
+                    'name' => $dev['name'] ?: $dev['code'],
+                    'type' => $dev['type'],
+                    'serial_number' => $dev['serial'],
+                    'employee_id' => $dev['employee'] ?? '',
                 ], $line, $userId);
             }
-            if ($g('item_kode') !== '' || $g('item_nama') !== '') {
+            if (! $groupMissing && ($g('item_kode') !== '' || $g('item_nama') !== '')) {
                 $itemRows[] = [
                     'group_code' => $groupCode, 
                     'code' => $g('item_kode'), 
@@ -270,7 +383,7 @@ class MasterWorkbookImportService
                     'unit_price' => $g('item_harga'), 
                     'expected_qty' => $g('item_stok'),
                     'location_code' => $g('lokasi_kode'), 
-                    'device_code' => $g('tablet_kode'),
+                    'device_code' => $tabletKode,
                 ];
             }
         }
@@ -284,30 +397,223 @@ class MasterWorkbookImportService
         return $this->items ??= new ItemImportService();
     }
 
+    /* ---------- mapping group -> petugas & device (dari sheet karyawan) ---------- */
+
+    /**
+     * Bangun peta group_code -> { device_code, device_name, auditors[], observers[] }
+     * dari sheet 'karyawan'. Inilah pengganti kolom petugas & device yang dulu
+     * ditulis ulang di setiap baris sheet 'master'.
+     *
+     * Aturan:
+     *   - device: baris pertama (paling atas) yang punya device_code untuk group tsb.
+     *   - auditor: karyawan role 'audit' pada group tsb.
+     *   - observer: karyawan role 'observer' (atau role kosong) pada group tsb.
+     *
+     * @param list<array<string,string>> $rows
+     */
+    private function buildGroupStaffMap(array $rows): void
+    {
+        $this->groupStaff = [];
+        foreach ($rows as $r) {
+            $gcode = strtoupper(trim((string) ($r['group_code'] ?? $r['kode_group'] ?? $r['group'] ?? '')));
+            if ($gcode === '') {
+                continue;
+            }
+            $employeeId = trim((string) ($r['employee_id'] ?? $r['id_karyawan'] ?? $r['id'] ?? $r['nik'] ?? ''));
+            $role = strtolower(trim((string) ($r['role'] ?? $r['peran'] ?? '')));
+            $deviceCode = trim((string) ($r['device_code'] ?? $r['tablet_kode'] ?? $r['kode_device'] ?? ''));
+            $deviceName = trim((string) ($r['device_name'] ?? $r['tablet_nama'] ?? $r['nama_device'] ?? ''));
+
+            $entry = $this->groupStaff[$gcode] ?? ['device_code' => '', 'device_name' => '', 'devices' => [], 'auditors' => [], 'observers' => []];
+            if ($deviceCode !== '') {
+                // Satu group bisa punya beberapa device (tablet auditor & observer).
+                if (! in_array($deviceCode, array_column($entry['devices'], 'code'), true)) {
+                    $entry['devices'][] = [
+                        'code' => $deviceCode,
+                        'name' => $deviceName !== '' ? $deviceName : $deviceCode,
+                        'employee' => $employeeId,
+                    ];
+                }
+                if ($entry['device_code'] === '') {
+                    $entry['device_code'] = $deviceCode;
+                    $entry['device_name'] = $deviceName;
+                }
+            }
+            if ($employeeId !== '') {
+                if ($role === '') {
+                    $role = 'observer';
+                }
+                if ($role === 'audit' && ! in_array($employeeId, $entry['auditors'], true)) {
+                    $entry['auditors'][] = $employeeId;
+                }
+                if ($role === 'observer' && ! in_array($employeeId, $entry['observers'], true)) {
+                    $entry['observers'][] = $employeeId;
+                }
+            }
+            $this->groupStaff[$gcode] = $entry;
+        }
+    }
+
+    /**
+     * @return array{device_code:string, device_name:string, devices:list<array{code:string,name:string,employee:string}>, auditors:list<string>, observers:list<string>}|null
+     */
+    private function staffForGroup(string $groupCode, string $fallback = ''): ?array
+    {
+        foreach ([$groupCode, $fallback] as $key) {
+            $k = strtoupper(trim($key));
+            if ($k !== '' && isset($this->groupStaff[$k])) {
+                return $this->groupStaff[$k];
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Buat gudang yang belum ada dari kolom warehouse_code di sheet 'master'.
+     * Dipakai supaya satu file bisa berisi sheet 'group' + 'master' sekaligus.
+     */
+    private function preCreateWarehouses(array $rows, int $userId): void
+    {
+        $seen = [];
+        foreach ($rows as $r) {
+            $code = strtoupper(trim((string) ($r['warehouse_code'] ?? $r['gudang_kode'] ?? $r['gudang'] ?? '')));
+            if ($code === '' || isset($seen[$code])) {
+                continue;
+            }
+            $seen[$code] = true;
+            if ($this->scalar('SELECT id FROM warehouses WHERE UPPER(code)=? LIMIT 1', [$code]) !== null) {
+                continue;
+            }
+            $name = trim((string) ($r['warehouse_name'] ?? $r['gudang_nama'] ?? '')) ?: $code;
+            $this->rowGudang(['code' => $code, 'name' => $name, 'city' => '', 'address' => ''], 0, $userId);
+        }
+    }
+
+    /**
+     * Sheet 'group' opsional. Bila tidak ada (atau hanya sebagian), group dibuat
+     * dari data yang sudah ada di sheet lain:
+     *   - master  : group_code + group_name + warehouse_code
+     *   - karyawan: group_code
+     * Nama group hanya dirapikan bila nama lama masih sama dengan kodenya.
+     */
+    private function ensureGroupsFromSheets(array $sheets, int $userId): void
+    {
+        $wanted = [];
+        foreach ($sheets['master'] ?? [] as $row) {
+            $code = $this->up($row, 'group_code');
+            if ($code === '') {
+                continue;
+            }
+            $wanted[$code] ??= ['name' => '', 'wh' => ''];
+            if ($wanted[$code]['name'] === '') {
+                $wanted[$code]['name'] = $this->v($row, 'group_name');
+            }
+            if ($wanted[$code]['wh'] === '') {
+                $wanted[$code]['wh'] = $this->up($row, 'warehouse_code');
+            }
+        }
+        foreach ($sheets['karyawan'] ?? [] as $row) {
+            $code = $this->up($row, 'group_code');
+            if ($code !== '' && ! isset($wanted[$code])) {
+                $wanted[$code] = ['name' => '', 'wh' => ''];
+            }
+        }
+        if ($wanted === []) {
+            return;
+        }
+
+        if (! isset($this->report['group'])) {
+            $this->report['group'] = ['created' => 0, 'updated' => 0, 'failed' => 0, 'errors' => []];
+        }
+        $this->touch('group');
+
+        $pdo = Database::connection();
+        foreach ($wanted as $code => $meta) {
+            $existing = $pdo->prepare('SELECT id, name FROM `groups` WHERE UPPER(code)=? LIMIT 1');
+            $existing->execute([$code]);
+            $row = $existing->fetch(\PDO::FETCH_ASSOC);
+            $whId = $meta['wh'] !== ''
+                ? $this->scalar('SELECT id FROM warehouses WHERE UPPER(code)=? LIMIT 1', [$meta['wh']])
+                : null;
+
+            if ($row === false) {
+                $name = $meta['name'] !== '' ? $meta['name'] : $code;
+                try {
+                    $pdo->prepare('INSERT INTO `groups` (warehouse_id,code,name,is_active,created_at,updated_at) VALUES (?,?,?,1,NOW(),NOW())')
+                        ->execute([$whId, $code, $name]);
+                    $this->ok('group', 'created');
+                } catch (\Throwable $e) {
+                    $this->fail('group', 0, "group '{$code}' gagal dibuat: " . $e->getMessage());
+                }
+                continue;
+            }
+
+            $oldName = (string) ($row['name'] ?? '');
+            $newName = $meta['name'];
+            if ($newName !== '' && strcasecmp($oldName, $newName) !== 0 && strcasecmp($oldName, $code) === 0) {
+                $pdo->prepare('UPDATE `groups` SET name=?, updated_at=NOW() WHERE id=?')
+                    ->execute([$newName, (int) $row['id']]);
+                $this->ok('group', 'updated');
+            }
+        }
+    }
+
+    /**
+     * PIC group dari sheet karyawan: kolom pic_employee_id (opsional).
+     * Satu baris per group sudah cukup; nama diambil dari tabel employees.
+     */
+    private function applyGroupPicFromKaryawan(array $rows): void
+    {
+        $picked = [];
+        foreach ($rows as $row) {
+            $code = $this->up($row, 'group_code');
+            $pic = $this->up($row, 'pic_employee_id');
+            if ($code === '' || $pic === '' || isset($picked[$code])) {
+                continue;
+            }
+            $picked[$code] = $pic;
+        }
+        if ($picked === []) {
+            return;
+        }
+
+        $pdo = Database::connection();
+        foreach ($picked as $code => $pic) {
+            $name = $this->employeeName($pic);
+            $pdo->prepare('UPDATE `groups` SET pic_employee_id=?, pic_name=COALESCE(?,pic_name), updated_at=NOW() WHERE UPPER(code)=? AND (pic_employee_id IS NULL OR UPPER(pic_employee_id)<>?)')
+                ->execute([$pic, $name, $code, $pic]);
+        }
+    }
+
     /* ---------- periode ---------- */
     private function rowPeriode(array $row, int $line, int $userId): void
     {
-        $month = trim($row['audit_month'] ?? '');
-        $start = trim($row['audit_start'] ?? '');
-        $end = trim($row['audit_end'] ?? '');
-        
-        if ($month === '' || $start === '' || $end === '') {
-            $this->fail('periode', $line, 'audit_month, audit_start, dan audit_end wajib diisi.');
+        $month = trim((string) ($row['audit_month'] ?? ''));
+        $start = $this->normaliseDate((string) ($row['audit_start'] ?? ''));
+        $end   = $this->normaliseDate((string) ($row['audit_end'] ?? ''));
+
+        if ($month === '' && $start !== '') {
+            $month = substr($start, 0, 7);
+        }
+        if ($month === '' || ! preg_match('/^\d{4}-\d{2}$/', $month)) {
+            $this->fail('periode', $line, 'audit_month wajib diisi dengan format YYYY-MM (misal: 2025-09).');
             return;
         }
-        
-        // Validate format YYYY-MM
-        if (!preg_match('/^\d{4}-\d{2}$/', $month)) {
-            $this->fail('periode', $line, 'audit_month harus format YYYY-MM (misal: 2026-10).');
-            return;
+
+        [$defStart, $defEnd] = $this->monthBounds($month);
+
+        // Tanggal start/end boleh kosong atau tidak konsisten dengan bulannya
+        // (file nyata sering berisi 2025-10-01 s/d 2025-09-31): pakai batas bulan.
+        if ($start === '' || $end === '' || substr($start, 0, 7) !== $month || substr($end, 0, 7) !== $month) {
+            $start = $defStart;
+            $end = $defEnd;
         }
-        
-        // Validate date format YYYY-MM-DD
-        if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $start) || !preg_match('/^\d{4}-\d{2}-\d{2}$/', $end)) {
-            $this->fail('periode', $line, 'audit_start dan audit_end harus format YYYY-MM-DD.');
-            return;
+        if ($start > $end) {
+            $start = $defStart;
+            $end = $defEnd;
         }
-        
+
         $pdo = Database::connection();
         
         // Check if period already exists
@@ -377,15 +683,23 @@ class MasterWorkbookImportService
                 { $this->fail('group', $line, "gudang_code '{$wh}' tidak ditemukan (isi sheet gudang dulu)."); return; }
             }
         }
+        // PIC group (opsional): employee_id + nama. Bila hanya ID diisi, nama
+        // diambil dari master karyawan supaya konsisten.
+        $picId = trim((string) ($row['pic_employee_id'] ?? $row['pic_id'] ?? $row['id_pic'] ?? ''));
+        $picName = trim((string) ($row['pic_name'] ?? $row['nama_pic'] ?? ''));
+        if ($picId !== '' && $picName === '') {
+            $picName = (string) ($this->employeeName($picId) ?? '');
+        }
+
         $pdo = Database::connection();
         $id = $this->scalar('SELECT id FROM `groups` WHERE UPPER(code)=? LIMIT 1', [$code]);
         if ($id === null) {
-            $pdo->prepare('INSERT INTO `groups` (warehouse_id,code,name,description,is_active,created_at,updated_at) VALUES (?,?,?,?,1,NOW(),NOW())')
-                ->execute([$whId, $code, $name, $this->v($row, 'description') ?: null]);
+            $pdo->prepare('INSERT INTO `groups` (warehouse_id,code,name,description,pic_employee_id,pic_name,is_active,created_at,updated_at) VALUES (?,?,?,?,?,?,1,NOW(),NOW())')
+                ->execute([$whId, $code, $name, $this->v($row, 'description') ?: null, $picId ?: null, $picName ?: null]);
             $this->ok('group', 'created');
         } else {
-            $pdo->prepare('UPDATE `groups` SET name=?, warehouse_id=COALESCE(?,warehouse_id), description=COALESCE(NULLIF(?,""),description), updated_at=NOW() WHERE id=?')
-                ->execute([$name, $whId, $this->v($row, 'description'), (int) $id]);
+            $pdo->prepare('UPDATE `groups` SET name=?, warehouse_id=COALESCE(?,warehouse_id), description=COALESCE(NULLIF(?,""),description), pic_employee_id=COALESCE(NULLIF(?,""),pic_employee_id), pic_name=COALESCE(NULLIF(?,""),pic_name), updated_at=NOW() WHERE id=?')
+                ->execute([$name, $whId, $this->v($row, 'description'), $picId, $picName, (int) $id]);
             $this->ok('group', 'updated');
         }
     }
@@ -477,26 +791,78 @@ class MasterWorkbookImportService
         if ($gid === null) {
             { $this->fail('tablet', $line, "group '{$gcode}' tidak ditemukan atau bukan wewenang Anda."); return; }
         }
-        $locId = $this->scalar('SELECT id FROM locations WHERE group_id=? AND UPPER(code)=? LIMIT 1', [$gid, $lcode]);
+        $locId = $lcode !== ''
+            ? $this->scalar('SELECT id FROM locations WHERE group_id=? AND UPPER(code)=? LIMIT 1', [$gid, $lcode])
+            : null;
+        if ($locId === null) {
+            // Device tetap bisa dipasang walau baris tidak menyebut lokasi:
+            // tempel ke lokasi pertama group tsb.
+            $locId = $this->scalar('SELECT id FROM locations WHERE group_id=? ORDER BY id LIMIT 1', [$gid]);
+        }
         if ($locId === null) {
             { $this->fail('tablet', $line, "location_code '{$lcode}' tidak ada di group {$gcode}."); return; }
         }
         $type = $this->v($row, 'type') ?: 'tablet';
         $serial = $this->v($row, 'serial_number') ?: null;
+
+        // Pemilik device (opsional): employee_id dari sheet karyawan -> users.id.
+        $employee = strtoupper(trim((string) ($row['employee_id'] ?? '')));
+        $ownerId = $employee !== '' ? $this->scalar('SELECT id FROM users WHERE UPPER(username)=? LIMIT 1', [$employee]) : null;
+
         $pdo = Database::connection();
         $id = $this->scalar('SELECT id FROM devices WHERE UPPER(code)=? LIMIT 1', [$dcode]);
         if ($id === null) {
-            $pdo->prepare('INSERT INTO devices (location_id,code,name,type,serial_number,is_active,created_at,updated_at) VALUES (?,?,?,?,?,1,NOW(),NOW())')
-                ->execute([(int) $locId, $dcode, $name, $type, $serial]);
+            $pdo->prepare('INSERT INTO devices (location_id,code,name,type,serial_number,user_id,is_active,created_at,updated_at) VALUES (?,?,?,?,?,?,1,NOW(),NOW())')
+                ->execute([(int) $locId, $dcode, $name, $type, $serial, $ownerId !== null ? (int) $ownerId : null]);
             $this->ok('tablet', 'created');
         } else {
-            $pdo->prepare('UPDATE devices SET location_id=?, name=?, type=?, serial_number=COALESCE(?,serial_number), updated_at=NOW() WHERE id=?')
-                ->execute([(int) $locId, $name, $type, $serial, (int) $id]);
+            $pdo->prepare('UPDATE devices SET location_id=?, name=?, type=?, serial_number=COALESCE(?,serial_number), user_id=COALESCE(?,user_id), updated_at=NOW() WHERE id=?')
+                ->execute([(int) $locId, $name, $type, $serial, $ownerId !== null ? (int) $ownerId : null, (int) $id]);
             $this->ok('tablet', 'updated');
         }
     }
 
     /* ---------- helpers ---------- */
+
+    /** Normalisasi tanggal dari Excel: DateTime, serial number, atau teks. */
+    private function normaliseDate(string $raw): string
+    {
+        $raw = trim($raw);
+        if ($raw === '') {
+            return '';
+        }
+
+        // Serial number Excel (mis. 45931) -> tanggal.
+        if (preg_match('/^\d+(\.\d+)?$/', $raw)) {
+            $ts = (int) round(((float) $raw - 25569) * 86400);
+            return gmdate('Y-m-d', $ts);
+        }
+
+        // Ambil bagian tanggal dari "2025-10-01 00:00:00" / "2025-10-01T00:00:00".
+        if (preg_match('/^(\d{4})-(\d{2})-(\d{2})/', $raw, $m)) {
+            [$y, $mo, $d] = [(int) $m[1], (int) $m[2], (int) $m[3]];
+            $max = (int) (new \DateTimeImmutable(sprintf('%04d-%02d-01', $y, $mo)))->format('t');
+            $d = max(1, min($d, $max)); // 2025-09-31 -> 2025-09-30
+
+            return sprintf('%04d-%02d-%02d', $y, $mo, $d);
+        }
+
+        // Format Indonesia d/m/Y.
+        if (preg_match('#^(\d{1,2})/(\d{1,2})/(\d{4})$#', $raw, $m)) {
+            return sprintf('%04d-%02d-%02d', (int) $m[3], (int) $m[2], (int) $m[1]);
+        }
+
+        return '';
+    }
+
+    /** @return array{0:string,1:string} tanggal awal & akhir bulan (Y-m-d). */
+    private function monthBounds(string $month): array
+    {
+        $first = new \DateTimeImmutable($month . '-01');
+
+        return [$first->format('Y-m-01'), $first->format('Y-m-t')];
+    }
+
     /**
      * Lookup nama karyawan dari master karyawan (tabel employees).
      * Mengembalikan nama bila ditemukan & aktif, selain itu null.
@@ -571,14 +937,31 @@ class MasterWorkbookImportService
         return strtoupper($this->v($row, $k));
     }
 
+    /** Pastikan struktur laporan lengkap walau sheet tidak ada di daftar awal. */
+    private function touch(string $sheet): void
+    {
+        if (! isset($this->report[$sheet])) {
+            $this->report[$sheet] = ['created' => 0, 'updated' => 0, 'failed' => 0, 'errors' => []];
+        }
+    }
+
     private function ok(string $sheet, string $kind): void
     {
-        $this->report[$sheet][$kind]++;
+        $this->touch($sheet);
+        $this->report[$sheet][$kind] = ($this->report[$sheet][$kind] ?? 0) + 1;
     }
 
     private function fail(string $sheet, int $line, string $msg): void
     {
+        $this->touch($sheet);
         $this->report[$sheet]['failed']++;
-        $this->report[$sheet]['errors'][] = "{$sheet} baris {$line}: {$msg}";
+        // Batasi daftar error agar laporan tetap ringan saat ribuan baris gagal
+        // (jumlah 'failed' tetap dihitung penuh).
+        $n = count($this->report[$sheet]['errors']);
+        if ($n < 100) {
+            $this->report[$sheet]['errors'][] = "{$sheet} baris {$line}: {$msg}";
+        } elseif ($n === 100) {
+            $this->report[$sheet]['errors'][] = '… daftar error dipotong (lihat jumlah gagal).';
+        }
     }
 }

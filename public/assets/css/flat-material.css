@@ -1339,3 +1339,14 @@ html body .audit-tabs .tab-pill.is-active * .tab-count {
         display: none !important;
     }
 }
+
+/* ===== Tombol muat ulang Informasi (tanpa logout) ===== */
+.card-header .sf-info-tools {
+  display: inline-flex;
+  align-items: center;
+  gap: .6rem;
+  margin-left: auto;
+}
+.card-header .sf-info-tools #info-updated { white-space: nowrap; }
+.btn.is-spinning > svg { animation: sf-spin .9s linear infinite; }
+@keyframes sf-spin { to { transform: rotate(360deg); } }

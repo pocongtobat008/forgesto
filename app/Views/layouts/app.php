@@ -206,8 +206,11 @@ $pageTitle = $title ?? 'Dashboard';
     <script src="<?= asset_v('js/money-fit.js') ?>" defer></script>
     <script src="<?= asset_v('js/table-colmgr.js') ?>"></script>
     <script src="<?= asset_v('js/sf-viewmode.js') ?>" defer></script>
+    <script src="<?= asset_v('js/sf-scrollkeep.js') ?>" defer></script>
     <!-- Expand/collapse + detail baris untuk semua tabel data -->
     <script src="<?= asset_v('js/sf-tables-expand.js') ?>" defer></script>
+    <!-- Muat ulang Informasi/notifikasi di tempat (tanpa logout) -->
+    <script src="<?= asset_v('js/info-refresh.js') ?>" defer></script>
     <?= $bodyExtra ?? '' ?>
 </body>
 </html>

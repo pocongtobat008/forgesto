@@ -101,9 +101,20 @@ $isAdminUser     = in_array(\App\Core\Auth::role(), ['poweradmin', 'adminsto'], 
             </form>
             <?php endif; ?>
             <?php if (empty($isReadOnly)): ?>
-            <form method="post" class="recon-sync-form" action="<?= url('reconciliation/sync') ?>" data-confirm="<?= e(__('Sinkronkan data rekonsiliasi terbaru dari master item?')) ?>">
+            <form method="post" class="recon-sync-form" action="<?= url('reconciliation/recalculate') ?>"
+                  data-confirm="<?= e(__('Hitung ulang qty stock, selisih, dan nilai semua baris yang tampil dari master item? Baris yang sudah diverifikasi tidak diubah.')) ?>">
                 <?= csrf_field() ?>
-                <button type="submit" class="btn btn-outline btn-sm"><?= icon('refresh') ?> Sinkronisasi Data</button>
+                <input type="hidden" name="return_to" value="<?= e($returnTo) ?>">
+                <input type="hidden" name="include_missing" value="1">
+                <?php foreach (['group_id', 'direction', 'status', 'search', 'highlight', 'min_diff', 'stage'] as $__rk): ?>
+                    <?php if (isset($_GET[$__rk]) && $_GET[$__rk] !== ''): ?>
+                        <input type="hidden" name="<?= e($__rk) ?>" value="<?= e((string) $_GET[$__rk]) ?>">
+                    <?php endif; ?>
+                <?php endforeach; ?>
+                <button type="submit" class="btn btn-outline btn-sm"
+                        title="<?= e(__('Hitung ulang qty stock, selisih, dan nilai dari master item tanpa logout')) ?>">
+                    <?= icon('calculator') ?> Hitung Ulang
+                </button>
             </form>
             <?php endif; ?>
         <?php endif; ?>
@@ -437,7 +448,7 @@ $gtCond = $gt['diff_qty'] > 0 ? 'plus' : ($gt['diff_qty'] < 0 ? 'minus' : 'match
 <!-- ====================================================================== -->
 <div>
     <div class="flex flex-wrap gap-md items-center justify-between" style="margin-bottom:1rem;" >
-        <form method="get" action="<?= url('reconciliation') ?>" class="flex flex-wrap gap-sm items-center" style="margin:0;" id="recon-filter">
+        <form method="get" action="<?= url('reconciliation') ?>#recon-table-wrap" class="flex flex-wrap gap-sm items-center" style="margin:0;" id="recon-filter">
             <?php foreach (($filters['col'] ?? []) as $ck => $cvals): ?><?php foreach ((array) $cvals as $cv): ?><input type="hidden" name="col[<?= e($ck) ?>][]" value="<?= e($cv) ?>" class="col-hidden"><?php endforeach; ?><?php endforeach; ?>
             <div class="form-group" style="margin:0;">
                 <select name="group_id" onchange="this.form.submit()" aria-label="<?= __('Filter Group') ?>" style="font-size:.82rem;padding:.35rem .6rem;">
@@ -480,7 +491,7 @@ $gtCond = $gt['diff_qty'] > 0 ? 'plus' : ($gt['diff_qty'] < 0 ? 'minus' : 'match
             </div>
 
             <?php if (! empty($filters['group_id']) || ! empty($filters['direction']) || ! empty($filters['status']) || ! empty($filters['search']) || ! empty($activeHighlight) || $activeMinDiff || ! empty($filters['stage'])): ?>
-                <a href="<?= url('reconciliation') ?>" class="btn btn-outline btn-xs" title="<?= __('Reset filter') ?>"><?= icon('x') ?> Reset</a>
+                <a href="<?= url('reconciliation') ?>#recon-table-wrap" class="btn btn-outline btn-xs" title="<?= __('Reset filter') ?>"><?= icon('x') ?> Reset</a>
             <?php endif; ?>
 
             <div class="form-group" style="margin:0;">
@@ -512,19 +523,19 @@ $gtCond = $gt['diff_qty'] > 0 ? 'plus' : ($gt['diff_qty'] < 0 ? 'minus' : 'match
         <div class="recon-quickbar-left">
             <span class="recon-quickbar-label"><?= icon('filter') ?> Filter cepat:</span>
             <a class="recon-chip <?= ($activeHighlight === 'minus' && $activeMinDiff) ? 'is-active' : '' ?>"
-               href="<?= url('reconciliation?' . query(['highlight' => 'minus', 'min_diff' => '10jt', 'page' => null])) ?>">
+               href="<?= url('reconciliation?' . query(['highlight' => 'minus', 'min_diff' => '10jt', 'page' => null])) ?>#recon-table-wrap">
                 <span class="recon-chip-dot is-minus"></span>
                 Defisit &gt; Rp10jt
                 <span class="recon-chip-count js-mat-chip" data-count-key="minus"><?= (int) ($totals['minus_items_big'] ?? 0) ?></span>
             </a>
             <a class="recon-chip <?= ($activeHighlight === 'plus' && $activeMinDiff) ? 'is-active' : '' ?>"
-               href="<?= url('reconciliation?' . query(['highlight' => 'plus', 'min_diff' => '10jt', 'page' => null])) ?>">
+               href="<?= url('reconciliation?' . query(['highlight' => 'plus', 'min_diff' => '10jt', 'page' => null])) ?>#recon-table-wrap">
                 <span class="recon-chip-dot is-plus"></span>
                 Surplus &gt; Rp10jt
                 <span class="recon-chip-count js-mat-chip" data-count-key="plus"><?= (int) ($totals['plus_items_big'] ?? 0) ?></span>
             </a>
             <?php if (! empty($activeHighlight) || $activeMinDiff): ?>
-                <a class="recon-chip is-clear" href="<?= url('reconciliation?' . query(['highlight' => null, 'min_diff' => null, 'page' => null])) ?>">
+                <a class="recon-chip is-clear" href="<?= url('reconciliation?' . query(['highlight' => null, 'min_diff' => null, 'page' => null])) ?>#recon-table-wrap">
                     <?= icon('x') ?> Bersihkan
                 </a>
             <?php endif; ?>
@@ -538,11 +549,19 @@ $gtCond = $gt['diff_qty'] > 0 ? 'plus' : ($gt['diff_qty'] < 0 ? 'minus' : 'match
                 $__rcClearQs = http_build_query($__rcKeep);
             ?>
             <?php if ($__rcActive): ?>
-                <a class="btn btn-ghost btn-icon-only recon-clear-all" href="<?= url('reconciliation') ?><?= $__rcClearQs !== '' ? '?' . $__rcClearQs : '' ?>" aria-label="<?= __('Hapus semua filter') ?>" title="<?= __('Hapus semua filter (sort & jumlah baris tetap)') ?>"><?= icon('x') ?></a>
+                <a class="btn btn-ghost btn-icon-only recon-clear-all" href="<?= url('reconciliation') ?><?= $__rcClearQs !== '' ? '?' . $__rcClearQs : '' ?>#recon-table-wrap" aria-label="<?= __('Hapus semua filter') ?>" title="<?= __('Hapus semua filter (sort & jumlah baris tetap)') ?>"><?= icon('x') ?></a>
             <?php endif; ?>
         </div>
 
         <?php if ($isAdminUser): ?>
+            <div class="recon-quickbar-actions">
+            <?php if (empty($isReadOnly)): ?>
+            <button type="button" class="btn btn-brand btn-sm" id="qe-open"
+                    title="<?= e(__('Mode cepat: isi hasil hitung banyak item sekaligus tanpa scroll')) ?>"
+                    accesskey="q">
+                <?= icon('zap') ?> <span>Mode Cepat</span>
+            </button>
+            <?php endif; ?>
             <form method="post" action="<?= url('reconciliation/bulk-recheck') ?>" class="recon-bulk" id="recon-bulk-form">
                 <?= csrf_field() ?>
                 <input type="hidden" name="return_to" value="<?= e($returnTo) ?>">
@@ -559,6 +578,22 @@ $gtCond = $gt['diff_qty'] > 0 ? 'plus' : ($gt['diff_qty'] < 0 ? 'minus' : 'match
                     <?= icon('refresh') ?> <span id="recon-bulk-label"><?= $bigFilterActive ? 'Kirim semua hasil filter ke Petugas' : 'Kirim 0 terpilih ke Petugas' ?></span>
                 </button>
             </form>
+            <form method="post" action="<?= url('reconciliation/recalculate') ?>" class="recon-bulk" id="recon-recalc-form"
+                  data-confirm="<?= e(__('Hitung ulang angka baris terpilih dari master item? Baris yang sudah diverifikasi tidak diubah.')) ?>">
+                <?= csrf_field() ?>
+                <input type="hidden" name="return_to" value="<?= e($returnTo) ?>">
+                <span id="recon-recalc-ids" hidden></span>
+                <?php foreach (['group_id', 'direction', 'status', 'search', 'highlight', 'min_diff', 'stage'] as $bk): ?>
+                    <?php if (! empty($filters[$bk])): ?>
+                        <input type="hidden" name="<?= $bk ?>" value="<?= e((string) $filters[$bk]) ?>">
+                    <?php endif; ?>
+                <?php endforeach; ?>
+                <button type="submit" class="btn btn-outline btn-sm" id="recon-recalc-btn"
+                        title="<?= e(__('Hitung ulang qty stock, selisih, dan nilai dari master item')) ?>" disabled>
+                    <?= icon('calculator') ?> <span id="recon-recalc-label">Hitung ulang 0 terpilih</span>
+                </button>
+            </form>
+            </div>
         <?php endif; ?>
     </div>
 
@@ -571,15 +606,15 @@ $gtCond = $gt['diff_qty'] > 0 ? 'plus' : ($gt['diff_qty'] < 0 ? 'minus' : 'match
     <div class="table-toolbar" style="display:flex;gap:.55rem;margin-bottom:.75rem;margin-left:auto;justify-content:flex-end;align-items:center;">
         <button type="button" class="btn btn-info btn-icon-only" id="recon-adv-btn" aria-label="<?= __('Buka pencarian lanjutan') ?>" title="<?= __('Pencarian lanjutan') ?>"><?= icon('filter') ?></button>
         <?php if ($__reconHasFilter): ?>
-            <a class="btn btn-ghost btn-icon-only col-clear-all" href="<?= url('reconciliation') ?>" aria-label="<?= __('Hapus semua filter') ?>" title="<?= __('Hapus semua filter') ?>"><?= icon('x') ?></a>
+            <a class="btn btn-ghost btn-icon-only col-clear-all" href="<?= url('reconciliation') ?>#recon-table-wrap" aria-label="<?= __('Hapus semua filter') ?>" title="<?= __('Hapus semua filter') ?>"><?= icon('x') ?></a>
         <?php endif; ?>
         <div class="col-mgr" id="col-mgr">
             <button type="button" class="btn btn-ghost btn-icon-only" id="col-mgr-btn" aria-expanded="false" aria-label="<?= __('Sesuaikan kolom') ?>" title="<?= __('Sesuaikan kolom') ?>"><?= icon('layers') ?></button>
             <div class="col-mgr-panel" id="col-mgr-panel" hidden></div>
         </div>
     </div>
-    <div class="table-wrap recon-table-wrap">
-        <table class="data" id="recon-table" data-colmgr-key="recon-v1" data-colmgr-prefix="recon"><caption class="sr-only">Daftar rekonsiliasi</caption>
+    <div class="table-wrap recon-table-wrap" id="recon-table-wrap">
+        <table class="data" id="recon-table" data-colmgr-key="recon-v2" data-colmgr-prefix="recon" data-colmgr-preset="kode,nama,loc,stok,hitung,selqty,status" data-qty-count="<?= $canSeeStockQty ? 3 : 2 ?>"><caption class="sr-only">Daftar rekonsiliasi</caption>
             <?php $cfCol = $filters['col'] ?? []; $xfBtn = static fn (string $k, string $lbl): string => '<button type="button" class="xf-btn' . (! empty($cfCol[$k]) ? ' is-active' : '') . '" data-xf="' . $k . '" aria-label="' . e(__('Filter kolom :l', ['l' => __($lbl)])) . '" aria-haspopup aria-haspopup="dialog" title="Filter">' . icon('filter') . '</button>'; ?>
 <!-- RNG_V1 -->
 <thead>
@@ -604,10 +639,10 @@ $gtCond = $gt['diff_qty'] > 0 ? 'plus' : ($gt['diff_qty'] < 0 ? 'minus' : 'match
                     <th data-col="catatan" class="xf-th"><span class="xf-label"><?= __('Catatan') ?></span><?= '<button type="button" class="xf-btn rng-btn' . ((!empty($filters["txt"]["catatan"])) ? ' is-active' : '') . '" data-rng="catatan" data-kind="txt" aria-label="Filter Catatan" title="Filter">' . icon('filter') . '</button>' ?></th>
                     <th class="t-right xf-th" data-col="harga"><span class="xf-label"><?= __('Harga Satuan') ?></span><?= $xfBtn('harga', 'Harga Satuan') ?></th>
                     <?php if ($canSeeStockQty): ?>
-                        <th class="t-center mono xf-th" data-col="stok"><span class="xf-label"><?= __('Stok Buku') ?></span><?= $xfBtn('stok', 'Stok Buku') ?></th>
+                        <th class="t-center mono xf-th" data-col="stok" title="<?= __('Stok buku (qty sistem)') ?>"><span class="xf-label"><?= __('Sistem') ?></span><?= $xfBtn('stok', 'Sistem') ?></th>
                     <?php endif; ?>
-                    <th class="t-center mono xf-th" data-col="hitung"><span class="xf-label"><?= __('Hasil Hitung') ?></span><?php if ($canSeeStockQty): ?><?= $xfBtn('hitung', 'Hasil Hitung') ?><?php endif; ?></th>
-                    <th class="t-center mono xf-th" data-col="selqty"><span class="xf-label"><?= __('Selisih Qty') ?></span><?= '<button type="button" class="xf-btn rng-btn' . ((!empty($filters["rng"]["selqty"])) ? ' is-active' : '') . '" data-rng="selqty" data-kind="rng" aria-label="Filter Selisih Qty" title="Filter">' . icon('filter') . '</button>' ?></th>
+                    <th class="t-center mono xf-th" data-col="hitung" title="<?= __('Qty hasil hitung petugas') ?>"><span class="xf-label"><?= __('Hitung') ?></span><?php if ($canSeeStockQty): ?><?= $xfBtn('hitung', 'Hasil Hitung') ?><?php endif; ?></th>
+                    <th class="t-center mono xf-th" data-col="selqty" title="<?= __('Selisih = qty hitung − qty sistem') ?>"><span class="xf-label"><?= __('Selisih') ?></span><?= '<button type="button" class="xf-btn rng-btn' . ((!empty($filters["rng"]["selqty"])) ? ' is-active' : '') . '" data-rng="selqty" data-kind="rng" aria-label="Filter Selisih Qty" title="Filter">' . icon('filter') . '</button>' ?></th>
                     <th class="t-right mono xf-th" data-col="selnil"><span class="xf-label"><?= __('Selisih Nilai (Amount)') ?></span><?= '<button type="button" class="xf-btn rng-btn' . ((!empty($filters["rng"]["selnil"])) ? ' is-active' : '') . '" data-rng="selnil" data-kind="rng" aria-label="Filter Selisih Nilai" title="Filter">' . icon('filter') . '</button>' ?></th>
                     <th class="t-center xf-th" data-col="status"><span class="xf-label"><?= __('Status') ?></span><?= $xfBtn('status', 'Status') ?></th>
                     <th class="t-right" data-col="aksi"><?= __('Aksi') ?></th>
@@ -633,6 +668,11 @@ $gtCond = $gt['diff_qty'] > 0 ? 'plus' : ($gt['diff_qty'] < 0 ? 'minus' : 'match
                         $stg       = $stageMap[(int) $r['item_id']] ?? null;
                         ?>
                         <tr class="recon-row"
+                            data-id="<?= (int) $r['id'] ?>"
+                            data-stock="<?= (int) $r['stock_qty'] ?>"
+                            data-counted="<?= (int) $r['counted_qty'] ?>"
+                            data-unit="<?= e($r['unit'] ?? 'pcs') ?>"
+                            data-status="<?= e((string) $r['status']) ?>"
                             data-code="<?= strtolower(e($r['item_code'])) ?>"
                             data-name="<?= strtolower(e($r['item_name'])) ?>"
                             data-group="<?= strtolower(e($r['group_name'])) ?>"
@@ -652,7 +692,7 @@ $gtCond = $gt['diff_qty'] > 0 ? 'plus' : ($gt['diff_qty'] < 0 ? 'minus' : 'match
                                 </td>
                             <?php endif; ?>
                             <td data-label="<?= __('Kode') ?>" data-col="kode">
-                                <span class="code-badge mono"><span class="code-badge-prefix"><?= e(explode('-', (string) $r['item_code'])[0]) ?></span><?= e(substr((string) $r['item_code'], strlen(explode('-', (string) $r['item_code'])[0]))) ?></span>
+                                <span class="code-badge mono" title="<?= e((string) $r['item_code']) ?>"><span class="code-badge-prefix"><?= e(explode('-', (string) $r['item_code'])[0]) ?></span><span class="code-badge-val"><?= e(substr((string) $r['item_code'], strlen(explode('-', (string) $r['item_code'])[0]))) ?></span></span>
                             </td>
                             <td data-label="<?= __('Nama Item') ?>" class="col-name" data-col="nama" title="<?= e($r['item_name']) ?>">
                                 <div class="cell-stack">
@@ -678,23 +718,26 @@ $gtCond = $gt['diff_qty'] > 0 ? 'plus' : ($gt['diff_qty'] < 0 ? 'minus' : 'match
                                 <?= format_rupiah((float) $r['unit_price']) ?>
                             </td>
                             <?php if ($canSeeStockQty): ?>
-                                <td data-label="<?= __('Stok Buku') ?>" data-col="stok" class="t-center mono tabular font-bold">
-                                    <?= (int) $r['stock_qty'] ?>
+                                <td data-label="<?= __('Qty Sistem') ?>" data-col="stok" class="t-center mono tabular font-bold qcell qcell-sys">
+                                    <span class="qcell-lbl"><?= __('Sistem') ?></span>
+                                    <span class="qcell-val"><?= (int) $r['stock_qty'] ?></span>
                                 </td>
                             <?php endif; ?>
-                            <td data-label="<?= __('Hasil Hitung') ?>" data-col="hitung" class="t-center mono tabular font-bold text-brand-cell">
-                                <?= (int) $r['counted_qty'] ?>
+                            <td data-label="<?= __('Qty Hitung') ?>" data-col="hitung" class="t-center mono tabular font-bold text-brand-cell qcell qcell-count">
+                                <span class="qcell-lbl"><?= __('Hitung') ?></span>
+                                <span class="qcell-val"><?= (int) $r['counted_qty'] ?></span>
                             </td>
-                            <td data-label="<?= __('Selisih Qty') ?>" data-col="selqty" class="t-center mono tabular">
-                                <?php if ($canSeeStockQty): ?>
-                                    <span class="badge <?= $dirBadge($direction) ?>">
+                            <td data-label="<?= __('Selisih') ?>" data-col="selqty" class="t-center mono tabular qcell qcell-diff <?= $canSeeStockQty ? ($direction === 'plus' ? 'is-plus' : ($direction === 'minus' ? 'is-minus' : 'is-zero')) : '' ?>">
+                                <span class="qcell-lbl"><?= __('Selisih') ?></span>
+                                <span class="qcell-val">
+                                    <?php if ($canSeeStockQty): ?>
                                         <?= $diffQty > 0 ? '+' : '' ?><?= $diffQty ?>
-                                    </span>
-                                <?php else: ?>
-                                    <span class="badge <?= $dirBadge($direction) ?>">
-                                        <?= $direction === 'match' ? 'Cocok' : ($direction === 'plus' ? __('Lebih') : __('Kurang')) ?>
-                                    </span>
-                                <?php endif; ?>
+                                    <?php else: ?>
+                                        <span class="badge <?= $dirBadge($direction) ?>">
+                                            <?= $direction === 'match' ? 'Cocok' : ($direction === 'plus' ? __('Lebih') : __('Kurang')) ?>
+                                        </span>
+                                    <?php endif; ?>
+                                </span>
                             </td>
                             <td data-label="<?= __('Selisih Nilai') ?>" data-col="selnil" class="t-right mono tabular font-bold <?= $diffAmt < 0 ? 'text-danger' : ($diffAmt > 0 ? 'text-success' : 'muted') ?>">
                                 <?= format_rupiah($diffAmt, true) ?>
@@ -756,6 +799,19 @@ $gtCond = $gt['diff_qty'] > 0 ? 'plus' : ($gt['diff_qty'] < 0 ? 'minus' : 'match
                                             <?= icon('refresh') ?>
                                         </button>
                                     </form>
+                                    <form method="post"
+                                          action="<?= url('reconciliation/' . (int) $r['id'] . '/recalculate') ?>"
+                                          class="js-row-recalc"
+                                          data-confirm="<?= e(__('Hitung ulang angka :code dari master item?', ['code' => $r['item_code']])) ?>"
+                                          style="margin:0;display:inline;">
+                                        <?= csrf_field() ?>
+                                        <input type="hidden" name="return_to" value="<?= e($returnTo) ?>">
+                                        <button type="submit" class="btn-icon btn-icon-calc"
+                                                title="<?= e(__('Hitung ulang angka dari master item')) ?>"
+                                                aria-label="Hitung ulang <?= e($r['item_code']) ?>">
+                                            <?= icon('calculator') ?>
+                                        </button>
+                                    </form>
                                     <?php endif; ?>
                                 </div>
 
@@ -783,7 +839,7 @@ $gtCond = $gt['diff_qty'] > 0 ? 'plus' : ($gt['diff_qty'] < 0 ? 'minus' : 'match
                 'highlight' => $_GET['highlight'] ?? null, 'min_diff' => $_GET['min_diff'] ?? null,
                 'stage' => $_GET['stage'] ?? null, 'sort' => $_GET['sort'] ?? null,
                 'per_page' => $pp, 'page' => $p,
-            ], static fn ($v) => $v !== null && $v !== '')));
+            ], static fn ($v) => $v !== null && $v !== ''))) . '#recon-table-wrap';
         };
         // Rentang nomor: halaman 1, terakhir, dan sekitar halaman aktif (elipsis di antaranya).
         $pageNums = [];
@@ -792,7 +848,7 @@ $gtCond = $gt['diff_qty'] > 0 ? 'plus' : ($gt['diff_qty'] < 0 ? 'minus' : 'match
         }
     ?>
     <div class="card-footer recon-pager" id="recon-pager">
-        <form method="get" action="<?= url('reconciliation') ?>" class="recon-pager-size" id="recon-pp-form">
+        <form method="get" action="<?= url('reconciliation') ?>#recon-table-wrap" class="recon-pager-size" id="recon-pp-form">
             <?php foreach (($filters['col'] ?? []) as $ck => $cvals): ?><?php foreach ((array) $cvals as $cv): ?><input type="hidden" name="col[<?= e($ck) ?>][]" value="<?= e($cv) ?>"><?php endforeach; ?><?php endforeach; ?>
             <?php foreach (['group_id', 'direction', 'status', 'search', 'highlight', 'min_diff', 'stage', 'sort'] as $__k): ?>
                 <?php if (isset($_GET[$__k]) && $_GET[$__k] !== ''): ?>
@@ -812,7 +868,7 @@ $gtCond = $gt['diff_qty'] > 0 ? 'plus' : ($gt['diff_qty'] < 0 ? 'minus' : 'match
             <button type="submit" class="btn btn-outline btn-xs recon-pp-apply" id="recon-pp-apply" <?= $isCustomPp ? '' : 'hidden' ?>>Terapkan</button>
             <span class="text-xs muted recon-pager-total">Total <?= $totalRows ?> item</span>
         </form>
-        <?php $__allQs = []; foreach ($_GET as $__k => $__v) { if ($__k === 'page' || $__k === 'all' || $__k === 'per_page' || $__v === '' || $__v === null) continue; $__allQs[$__k] = $__v; } $__allShow = (($_GET['all'] ?? '') === '1'); $__allHref = url('reconciliation') . '?' . http_build_query($__allShow ? array_merge($__allQs, ['per_page' => $pp ?? 50]) : array_merge($__allQs, ['all' => '1'])); ?>
+        <?php $__allQs = []; foreach ($_GET as $__k => $__v) { if ($__k === 'page' || $__k === 'all' || $__k === 'per_page' || $__v === '' || $__v === null) continue; $__allQs[$__k] = $__v; } $__allShow = (($_GET['all'] ?? '') === '1'); $__allHref = url('reconciliation') . '?' . http_build_query($__allShow ? array_merge($__allQs, ['per_page' => $pp ?? 50]) : array_merge($__allQs, ['all' => '1'])) . '#recon-table-wrap'; ?>
         <a class="pg-switch<?= $__allShow ? ' is-on' : '' ?>" href="<?= e($__allHref) ?>" role="switch" aria-checked="<?= $__allShow ? 'true' : 'false' ?>">
             <span class="pg-switch-track" aria-hidden="true"><span class="pg-switch-thumb"></span></span>
             <span><?= __('Tampilkan semua') ?></span>
@@ -1054,6 +1110,10 @@ document.addEventListener('sf:ready', initRowActions);
     var bulkLabel = document.getElementById('recon-bulk-label');
     var scopeEl  = document.getElementById('recon-bulk-scope');
     var rowChecks = Array.prototype.slice.call(document.querySelectorAll('.recon-row-check'));
+    var recalcForm  = document.getElementById('recon-recalc-form');
+    var recalcBtn   = document.getElementById('recon-recalc-btn');
+    var recalcLabel = document.getElementById('recon-recalc-label');
+    var recalcIds   = document.getElementById('recon-recalc-ids');
     if (!bulkForm || rowChecks.length === 0) return;
 
     var filterActive = bulkBtn && bulkBtn.getAttribute('data-filter-active') === '1';
@@ -1088,6 +1148,12 @@ document.addEventListener('sf:ready', initRowActions);
                 ? ('Kirim ' + n + ' terpilih ke Petugas')
                 : (filterActive ? 'Kirim semua hasil filter ke Petugas' : 'Kirim 0 terpilih ke Petugas');
         }
+        if (recalcBtn) recalcBtn.disabled = (n === 0 && !filterActive);
+        if (recalcLabel) {
+            recalcLabel.textContent = n > 0
+                ? ('Hitung ulang ' + n + ' terpilih')
+                : (filterActive ? 'Hitung ulang hasil filter' : 'Hitung ulang 0 terpilih');
+        }
     }
 
     if (checkAll) {
@@ -1114,6 +1180,24 @@ document.addEventListener('sf:ready', initRowActions);
         if (n === 0 && !filterActive) { e.preventDefault(); return; }
         if (scopeEl) scopeEl.value = n > 0 ? 'ids' : 'filter';
     });
+
+    // Hitung ulang: salin baris terpilih ke form recalc (0 terpilih = ikut filter).
+    if (recalcForm) {
+        recalcForm.addEventListener('submit', function (e) {
+            var n = selected().length;
+            if (n === 0 && !filterActive) { e.preventDefault(); return; }
+            if (recalcIds) {
+                recalcIds.innerHTML = '';
+                selected().forEach(function (c) {
+                    var inp = document.createElement('input');
+                    inp.type = 'hidden';
+                    inp.name = 'ids[]';
+                    inp.value = c.value;
+                    recalcIds.appendChild(inp);
+                });
+            }
+        });
+    }
 })();
 </script>
 
@@ -1391,3 +1475,85 @@ $asMax = 12;
 $asToggleId = 'recon-adv-btn';
 require __DIR__ . '/../partials/advanced-search.php';
 ?>
+
+<?php if ($isAdminUser && empty($isReadOnly)): ?>
+<!-- ====================================================================== -->
+<!-- 7. MODE CEPAT — input hasil hitung banyak item tanpa scroll tabel      -->
+<!-- ====================================================================== -->
+<div class="qe-backdrop" id="qe-panel" hidden>
+    <div class="qe-sheet" role="dialog" aria-modal="true" aria-labelledby="qe-title">
+        <div class="qe-head">
+            <h3 id="qe-title"><?= icon('zap') ?> <?= __('Mode Cepat &mdash; Input Hasil Hitung') ?></h3>
+            <button type="button" class="qe-x" id="qe-close" aria-label="<?= e(__('Tutup')) ?>"><?= icon('x') ?></button>
+        </div>
+
+        <div class="qe-searchbar">
+            <div class="qe-find" id="qe-find">
+                <span class="qe-find-ico" aria-hidden="true"><?= icon('search') ?></span>
+                <input type="search" id="qe-search" class="qe-search"
+                       placeholder="<?= e(__('Cari kode, nama, group, lokasi, kategori&hellip;')) ?>" autocomplete="off"
+                       enterkeyhint="search" spellcheck="false"
+                       aria-label="<?= e(__('Cari di seluruh isi tabel rekonsiliasi')) ?>">
+                <button type="button" class="qe-find-clear" id="qe-find-clear" hidden
+                        aria-label="<?= e(__('Bersihkan pencarian')) ?>"><?= icon('x') ?></button>
+            </div>
+            <p class="qe-hintline">
+                <kbd>Enter</kbd> <?= __('item berikutnya') ?> &middot;
+                <kbd>Ctrl</kbd>+<kbd>Enter</kbd> <?= __('simpan') ?> &middot;
+                <?= __('tempel satu kolom angka dari Excel juga bisa') ?>
+            </p>
+        </div>
+
+        <div class="qe-tools">
+            <button type="button" class="qe-gbtn" id="qe-gbtn" aria-expanded="false" aria-controls="qe-gmenu">
+                <?= icon('layers') ?> <span id="qe-gcount"><?= __('Semua group') ?></span> <?= icon('chev-down') ?>
+            </button>
+            <button type="button" class="qe-gbtn qe-onlybtn" id="qe-only" aria-pressed="false"
+                    title="<?= e(__('Hanya tampilkan baris yang sedang diedit')) ?>">
+                <?= icon('edit') ?> <span><?= __('Hanya yang diedit') ?></span> <b id="qe-only-n">0</b>
+            </button>
+            <div class="qe-gmenu" id="qe-gmenu" hidden></div>
+
+            <span class="qe-filterinfo" id="qe-filterinfo"></span>
+
+            <button type="button" class="qe-gear" id="qe-gear" aria-expanded="false" aria-controls="qe-uipop"
+                    title="<?= e(__('Pengaturan tampilan daftar')) ?>" aria-label="<?= e(__('Pengaturan tampilan daftar')) ?>">
+                <?= icon('settings') ?>
+            </button>
+            <div class="qe-uipop" id="qe-uipop" hidden>
+                <div class="qe-uipop-h"><?= __('Tampilan daftar') ?></div>
+                <div class="qe-uipop-row">
+                    <span><?= __('Kepadatan') ?></span>
+                    <div class="qe-seg" role="group" aria-label="<?= e(__('Kepadatan baris')) ?>">
+                        <button type="button" data-density="cozy"><?= __('Nyaman') ?></button>
+                        <button type="button" data-density="compact"><?= __('Rapat') ?></button>
+                    </div>
+                </div>
+                <label class="qe-uipop-chk">
+                    <input type="checkbox" id="qe-ui-meta" checked>
+                    <?= __('Tampilkan stok &amp; selisih') ?>
+                </label>
+                <label class="qe-uipop-chk">
+                    <input type="checkbox" id="qe-ui-group" checked>
+                    <?= __('Tampilkan nama group') ?>
+                </label>
+            </div>
+        </div>
+
+        <form id="qe-form" method="post" action="<?= url('reconciliation/quick-count') ?>">
+            <?= csrf_field() ?>
+            <div class="qe-list" id="qe-list"></div>
+            <div class="qe-foot">
+                <span class="qe-count" id="qe-count"><?= __('0 item tampil') ?></span>
+                <span class="qe-stat" id="qe-stat"></span>
+                <span class="spacer"></span>
+                <button type="button" class="btn btn-outline btn-sm" id="qe-cancel"><?= __('Tutup') ?></button>
+                <button type="submit" class="btn btn-brand btn-sm" id="qe-save" disabled>
+                    <?= icon('check') ?> <span id="qe-save-label"><?= __('Simpan') ?></span>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+<script src="<?= asset_v('js/recon-quick.js') ?>"></script>
+<?php endif; ?>

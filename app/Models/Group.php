@@ -12,7 +12,7 @@ class Group extends Model
     // `groups` is a reserved word in MySQL 8, so it is always quoted.
     protected string $table = '`groups`';
 
-    protected array $fillable = ['sto_id', 'warehouse_id', 'code', 'name', 'description', 'is_active'];
+    protected array $fillable = ['sto_id', 'warehouse_id', 'code', 'name', 'description', 'pic_employee_id', 'pic_name', 'is_active'];
 
     /**
      * Groups enriched with their warehouse, STO code, item counts and the
@@ -32,6 +32,7 @@ class Group extends Model
         'sto'       => 'sto_code',
         'racks'     => 'location_count',
         'items'     => 'item_count',
+        'pic'       => 'pic_name',
         'status'    => 'is_active',
     ];
 

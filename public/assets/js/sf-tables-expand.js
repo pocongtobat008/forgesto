@@ -341,6 +341,34 @@
             '<span class="cov-pct">' + esc(f.v) + '</span></div>';
     }
 
+
+    /* --- kunci scroll yang TIDAK menghilangkan posisi ---------------------
+       html.rd-lock saja (tanpa body) + simpan/restore posisi sebagai jaring
+       pengaman, supaya tutup popup detail tidak melompat ke atas. */
+    var __lockY = null, __lockBodyY = 0, __bodyLocked = false;
+    function lockPage() {
+        __lockY = window.pageYOffset || document.documentElement.scrollTop || 0;
+        __lockBodyY = document.body.scrollTop || 0;
+        var sbw = window.innerWidth - document.documentElement.clientWidth;
+        document.documentElement.style.setProperty('--rd-sbw', (sbw > 0 ? sbw : 0) + 'px');
+        document.documentElement.classList.add('rd-lock');
+        /* di mobile <body> yang jadi scroller → kunci juga, posisinya dipulihkan saat unlock */
+        /* body hanya jadi scroller kalau <html> sendiri tidak bisa discroll (mobile) */
+        __bodyLocked = document.documentElement.scrollHeight <= window.innerHeight + 2 &&
+                       document.body.scrollHeight > window.innerHeight + 4;
+        if (__bodyLocked) document.documentElement.classList.add('rd-lock-body');
+    }
+    function unlockPage() {
+        document.documentElement.classList.remove('rd-lock');
+        document.documentElement.classList.remove('rd-lock-body');
+        document.documentElement.style.removeProperty('--rd-sbw');
+        if (__bodyLocked) { document.body.scrollTop = __lockBodyY; __bodyLocked = false; }
+        if (__lockY !== null && Math.abs((window.pageYOffset || 0) - __lockY) > 1) {
+            try { window.scrollTo(0, __lockY); } catch (e) {}
+        }
+        __lockY = null;
+    }
+
     function openDrawer(row) {
         var table = row.closest('table');
         if (!table) return;
@@ -428,7 +456,7 @@
         }
 
         lastFocus = document.activeElement;
-        document.documentElement.classList.add('rd-lock');
+        lockPage();
         row.classList.add('is-active-row');
         void drawer.offsetHeight;
         drawer.classList.add('is-open');
@@ -440,7 +468,7 @@
         if (!drawer) return;
         drawer.classList.remove('is-open');
         backdrop.classList.remove('is-open');
-        document.documentElement.classList.remove('rd-lock');
+        unlockPage();
         if (activeRow) { activeRow.classList.remove('is-active-row'); activeRow = null; }
         if (lastFocus && lastFocus.focus) { try { lastFocus.focus({ preventScroll: true }); } catch (e) {} }
     }
@@ -591,8 +619,25 @@
             toggleRow(table, row, btn);
         });
 
-        /* posisi tetap: elemen pertama sel konten, sejajar vertikal dengan isi */
-        host.insertBefore(btn, host.firstChild);
+        /* Chevron + isi dibungkus DIV flex DI DALAM sel.
+           Penting: <td> TIDAK boleh display:flex — kalau flex, sel berhenti
+           jadi table-cell, tingginya tidak ikut baris dan menyisakan ruang
+           kosong di bawah kode. */
+        var wrap = null;
+        for (var c = 0; c < host.children.length; c++) {
+            if (host.children[c].classList.contains('rd-flex')) { wrap = host.children[c]; break; }
+        }
+        if (!wrap) {
+            wrap = document.createElement('div');
+            wrap.className = 'rd-flex';
+            var mainEl = null;
+            for (var d = 0; d < host.children.length; d++) {
+                if (host.children[d].classList.contains('rd-hostmain')) { mainEl = host.children[d]; break; }
+            }
+            if (mainEl) { host.insertBefore(wrap, mainEl); wrap.appendChild(mainEl); }
+            else { host.appendChild(wrap); }
+        }
+        wrap.insertBefore(btn, wrap.firstChild);
     }
 
     function wireTable(table) {

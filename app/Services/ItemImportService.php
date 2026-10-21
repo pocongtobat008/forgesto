@@ -401,11 +401,40 @@ class ItemImportService
         return $id === false ? null : (int) $id;
     }
 
+    /**
+     * Angka dari Excel bisa berupa desimal (8308.256) atau format ribuan
+     * (1.234,5 / 1,234.5). Jangan sekadar membuang titik/koma: itu membuat
+     * 8308.256 menjadi 8.308.256 (1000x). Bulatkan ke bilangan bulat terdekat
+     * dan jaga agar tetap masuk rentang kolom INT.
+     */
     private function toInt(string $value): int
     {
-        $clean = preg_replace('/[^0-9\-]/', '', $value) ?? '0';
+        $clean = preg_replace('/[^0-9\-,\.]/', '', $value) ?? '0';
+        if ($clean === '' || $clean === '-') {
+            return 0;
+        }
 
-        return (int) $clean;
+        $hasComma = strpos($clean, ',') !== false;
+        $hasDot = strpos($clean, '.') !== false;
+
+        if ($hasComma && $hasDot) {
+            // Pemisah desimal = simbol yang muncul terakhir.
+            $clean = strrpos($clean, ',') > strrpos($clean, '.')
+                ? str_replace(['.', ','], ['', '.'], $clean)
+                : str_replace(',', '', $clean);
+        } elseif ($hasComma) {
+            $clean = str_replace(',', '.', $clean);
+        }
+
+        $num = (float) $clean;
+        if ($num > 2147483647) {
+            return 2147483647;
+        }
+        if ($num < -2147483648) {
+            return -2147483648;
+        }
+
+        return (int) round($num);
     }
 
     /**

@@ -147,33 +147,33 @@ $curAuditStatus = is_array($filters['audit_status'] ?? null)
 <!-- 2. Quick Filter Chips & Toolbar                                        -->
 <!-- ====================================================================== -->
 <div class="tab-pills-wrap mb-3" style="display:flex;gap:.5rem;flex-wrap:wrap;align-items:center;">
-    <a href="<?= url('master-data') ?>" class="tab-pill <?= empty($filters['count_status']) && empty($filters['audit_status']) ? 'is-active' : '' ?>">
+    <a href="<?= url('master-data') ?>#master-table-wrap" class="tab-pill <?= empty($filters['count_status']) && empty($filters['audit_status']) ? 'is-active' : '' ?>">
         <?= __('Semua Data') ?> <span class="tab-count"><?= (int) ($summary['total'] ?? 0) ?></span>
     </a>
-    <a href="<?= url('master-data?count_status[]=pending') ?>" class="tab-pill <?= $curCountStatus === 'pending' ? 'is-active' : '' ?>">
+    <a href="<?= url('master-data?count_status[]=pending') ?>#master-table-wrap" class="tab-pill <?= $curCountStatus === 'pending' ? 'is-active' : '' ?>">
         <?= __('Belum dihitung') ?> <span class="tab-count"><?= (int) ($summary['not_counted'] ?? 0) ?></span>
     </a>
-    <a href="<?= url('master-data?count_status[]=counted') ?>" class="tab-pill <?= $curCountStatus === 'counted' ? 'is-active' : '' ?>">
+    <a href="<?= url('master-data?count_status[]=counted') ?>#master-table-wrap" class="tab-pill <?= $curCountStatus === 'counted' ? 'is-active' : '' ?>">
         <?= __('Sudah dihitung') ?> <span class="tab-count"><?= (int) ($summary['counted'] ?? 0) ?></span>
     </a>
-    <a href="<?= url('master-data?count_status[]=posted') ?>" class="tab-pill <?= $curCountStatus === 'posted' ? 'is-active' : '' ?>">
+    <a href="<?= url('master-data?count_status[]=posted') ?>#master-table-wrap" class="tab-pill <?= $curCountStatus === 'posted' ? 'is-active' : '' ?>">
         <?= __('Terposting') ?> <span class="tab-count"><?= (int) ($summary['posted'] ?? 0) ?></span>
     </a>
-    <a href="<?= url('master-data?count_status[]=audited') ?>" class="tab-pill <?= $curCountStatus === 'audited' ? 'is-active' : '' ?>">
+    <a href="<?= url('master-data?count_status[]=audited') ?>#master-table-wrap" class="tab-pill <?= $curCountStatus === 'audited' ? 'is-active' : '' ?>">
         <?= __('Diaudit') ?> <span class="tab-count"><?= (int) ($summary['audited'] ?? 0) ?></span>
     </a>
-    <a href="<?= url('master-data?audit_status[]=resolved') ?>" class="tab-pill <?= $curAuditStatus === 'resolved' ? 'is-active' : '' ?>">
+    <a href="<?= url('master-data?audit_status[]=resolved') ?>#master-table-wrap" class="tab-pill <?= $curAuditStatus === 'resolved' ? 'is-active' : '' ?>">
         <?= __('Selesai') ?> <span class="tab-count"><?= (int) ($summary['resolved'] ?? 0) ?></span>
     </a>
     <?php if ((int) ($summary['discrepancy'] ?? 0) > 0): ?>
-    <a href="<?= url('master-data?audit_status[]=discrepancy') ?>" class="tab-pill <?= $curAuditStatus === 'discrepancy' ? 'is-active' : '' ?>" style="color:var(--danger,#e53e3e);">
+    <a href="<?= url('master-data?audit_status[]=discrepancy') ?>#master-table-wrap" class="tab-pill <?= $curAuditStatus === 'discrepancy' ? 'is-active' : '' ?>" style="color:var(--danger,#e53e3e);">
         <?= __('Ada Selisih') ?> <span class="tab-count"><?= (int) $summary['discrepancy'] ?></span>
     </a>
     <?php endif; ?>
 </div>
 
 <div class="card mb-3" style="padding:1rem;">
-    <form method="get" action="<?= url('master-data') ?>" id="master-filter" class="table-toolbar" style="display:flex;gap:.75rem;flex-wrap:wrap;align-items:center;">
+    <form method="get" action="<?= url('master-data') ?>#master-table-wrap" id="master-filter" class="table-toolbar" style="display:flex;gap:.75rem;flex-wrap:wrap;align-items:center;">
         <div class="search-input-wrap" style="flex:1;min-width:220px;max-width:360px;">
             <input type="search" name="search" class="input" placeholder="<?= __('Cari kode, nama, kategori...') ?>" value="<?= e((string) ($filters['search'] ?? '')) ?>" aria-label="<?= __('Pencarian') ?>">
         </div>
@@ -207,7 +207,7 @@ $curAuditStatus = is_array($filters['audit_status'] ?? null)
         <div class="table-toolbar" style="margin-left:auto;display:flex;gap:.55rem;align-items:center;">
             <button type="button" class="btn btn-info btn-icon-only" id="master-adv-btn" aria-label="<?= __('Buka pencarian lanjutan') ?>" title="<?= __('Pencarian lanjutan') ?>"><?= icon('filter') ?></button>
             <?php if (! empty($filters['search']) || ! empty($filters['group_id']) || ! empty($filters['count_status']) || ! empty($filters['audit_status']) || ! empty($filters['col']) || ! empty($filters['adv'])): ?>
-                <a href="<?= url('master-data') ?>" class="btn btn-ghost btn-icon-only col-clear-all" aria-label="<?= __('Hapus semua filter') ?>" title="<?= __('Hapus semua filter') ?>"><?= icon('x') ?></a>
+                <a href="<?= url('master-data') ?>#master-table-wrap" class="btn btn-ghost btn-icon-only col-clear-all" aria-label="<?= __('Hapus semua filter') ?>" title="<?= __('Hapus semua filter') ?>"><?= icon('x') ?></a>
             <?php endif; ?>
             <div class="col-mgr" id="master-colmgr">
                 <button type="button" class="btn btn-ghost btn-icon-only" id="master-colmgr-btn" aria-expanded="false" aria-label="<?= __('Sesuaikan kolom') ?>" title="<?= __('Sesuaikan kolom') ?>">
@@ -229,7 +229,7 @@ $curAuditStatus = is_array($filters['audit_status'] ?? null)
 <!-- 3. Tabel Master Data                                                   -->
 <!-- ====================================================================== -->
 <div class="card">
-    <div class="table-wrap">
+    <div class="table-wrap" id="master-table-wrap">
 <?php
 $cfCol = $filters['col'] ?? [];
 $xfBtn = static fn (string $k, string $lbl): string => '<button type="button" class="xf-btn' . (! empty($cfCol[$k]) ? ' is-active' : '') . '" data-xf="' . $k . '" aria-label="' . e(__( 'Filter kolom :l', ['l' => __($lbl)])) . '" aria-haspopup="dialog" title="Filter">' . icon('filter') . '</button>';
@@ -283,8 +283,8 @@ $xfBtn = static fn (string $k, string $lbl): string => '<button type="button" cl
                         <tr class="master-row">
                             <td class="t-center text-secondary mono" data-col="no"><?= $rowNo ?></td>
                             <td data-label="<?= __('Kode') ?>" data-col="code">
-                                <a href="<?= url('items/' . (int) $row['id']) ?>" class="code-badge mono" style="text-decoration:none;">
-                                    <?= e($row['code']) ?>
+                                <a href="<?= url('items/' . (int) $row['id']) ?>" class="code-badge mono" style="text-decoration:none;" title="<?= e($row['code']) ?>">
+                                    <span class="code-badge-val"><?= e($row['code']) ?></span>
                                 </a>
                             </td>
                             <td data-label="<?= __('Nama Item') ?>" data-col="name">

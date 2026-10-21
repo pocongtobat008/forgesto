@@ -695,3 +695,50 @@
     /* dialogs that submit via JS (e.g. reconciliation row modal) already manage
        their own button label; make their submit buttons spin too by tagging them */
 })();
+
+
+/* ---------------------------------------------------------------------------
+   Ingat posisi scroll antar-refresh DI HALAMAN YANG SAMA.
+   Masalah: tab / chip filter di atas tabel me-reload halaman, browser selalu
+   kembali ke paling atas, jadi user harus scroll ribuan px lagi ke tabel.
+   Solusi: simpan posisi sebelum navigasi ke URL dengan path sama, lalu
+   pulihkan setelah halaman baru selesai render.
+--------------------------------------------------------------------------- */
+(function () {
+    var KEY = 'sto:scroll:' + location.pathname;
+
+    function savePos() {
+        try { sessionStorage.setItem(KEY, String(Math.round(window.pageYOffset || window.scrollY || 0))); } catch (e) {}
+    }
+
+    /* klik link yang pindah ke URL sama (beda query) = tab/chip filter */
+    document.addEventListener('click', function (ev) {
+        if (ev.defaultPrevented || ev.button || ev.metaKey || ev.ctrlKey || ev.shiftKey || ev.altKey) return;
+        var a = ev.target && ev.target.closest ? ev.target.closest('a[href]') : null;
+        if (!a || a.target || a.hasAttribute('download')) return;
+        var href = a.getAttribute('href') || '';
+        if (!href || href.charAt(0) === '#') return;
+        var u;
+        try { u = new URL(a.href, location.href); } catch (e) { return; }
+        if (u.pathname === location.pathname && u.search !== location.search) savePos();
+    }, true);
+
+    /* submit form di halaman ini (mis. simpan hitung) juga diingat */
+    document.addEventListener('submit', function () { savePos(); }, true);
+
+    var saved;
+    try { saved = sessionStorage.getItem(KEY); } catch (e) { saved = null; }
+    if (saved === null) return;
+    try { sessionStorage.removeItem(KEY); } catch (e) {}
+    var y = parseInt(saved, 10);
+    if (!(y > 120)) return;
+
+    function apply() {
+        try { window.scrollTo(0, y); } catch (e) {}
+    }
+    apply();
+    if (document.readyState !== 'complete') window.addEventListener('load', apply);
+    if (window.requestAnimationFrame) window.requestAnimationFrame(apply);
+    setTimeout(apply, 120);
+    setTimeout(apply, 400);
+})();

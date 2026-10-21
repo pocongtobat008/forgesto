@@ -152,12 +152,12 @@ class ImportController extends Controller
     public function templateMaster(): void
     {
         $this->authorize('import_data');
-        $path = dirname(__DIR__, 2) . '/public/templates/stockforge-master-v3.xlsx';
+        $path = dirname(__DIR__, 2) . '/public/templates/stockforge-master-v6.xlsx';
         if (! is_file($path)) {
             $this->abort(404, 'Template master belum tersedia.');
         }
         header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-        header('Content-Disposition: attachment; filename="stockforge-master-v3.xlsx"');
+        header('Content-Disposition: attachment; filename="stockforge-master-v6.xlsx"');
         header('Content-Length: ' . filesize($path));
         readfile($path);
         exit;
@@ -243,12 +243,12 @@ class ImportController extends Controller
     public function templateXlsx(): void
     {
         $this->authorize('import_data');
-        $path = dirname(__DIR__, 2) . '/public/templates/stockforge-master-v3.xlsx';
+        $path = dirname(__DIR__, 2) . '/public/templates/stockforge-master-v6.xlsx';
         if (! is_file($path)) {
             $this->abort(404, 'Template belum tersedia.');
         }
         header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-        header('Content-Disposition: attachment; filename="stockforge-master-v3.xlsx"');
+        header('Content-Disposition: attachment; filename="stockforge-master-v6.xlsx"');
         header('Content-Length: ' . filesize($path));
         readfile($path);
         exit;

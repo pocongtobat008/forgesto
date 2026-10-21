@@ -426,6 +426,94 @@ class Reconciliation extends Model
     }
 
     /**
+     * MODE CEPAT — daftar ringkas untuk panel input lapangan.
+     *
+     * Sengaja tidak memakai listDetailed(): kolom yang diambil sedikit, tanpa
+     * subquery observer/auditor, dan LIMIT/OFFSET dikerjakan SQL. Dengan begitu
+     * panel tetap ringan walau data sudah ribuan baris.
+     *
+     * @param array{q?:string,gids?:array<int,int>} $filters
+     * @return array<int, array>
+     */
+    public function quickList(array $filters, int $limit = 80, int $offset = 0): array
+    {
+        [$where, $bindings] = $this->quickWhere($filters);
+        $limit  = max(1, min(200, $limit));
+        $offset = max(0, $offset);
+
+        return $this->query(
+            "SELECT r.id, r.group_id, r.counted_qty, r.stock_qty, r.difference, r.diff_amount,
+                    r.direction, r.status,
+                    i.code AS item_code, i.name AS item_name, i.unit, i.category,
+                    g.name AS group_name, COALESCE(l.name, '-') AS location_name
+               FROM reconciliation r
+               JOIN items i ON i.id = r.item_id
+               JOIN `groups` g ON g.id = r.group_id
+               LEFT JOIN locations l ON l.id = i.location_id" . $where .
+            ' ORDER BY i.code ASC LIMIT ' . $limit . ' OFFSET ' . $offset,
+            $bindings
+        );
+    }
+
+    /**
+     * MODE CEPAT — jumlah total baris yang cocok (untuk info "x dari y").
+     *
+     * @param array{q?:string,gids?:array<int,int>} $filters
+     */
+    public function quickTotal(array $filters): int
+    {
+        [$where, $bindings] = $this->quickWhere($filters);
+        $rows = $this->query(
+            "SELECT COUNT(*) AS n
+               FROM reconciliation r
+               JOIN items i ON i.id = r.item_id
+               JOIN `groups` g ON g.id = r.group_id
+               LEFT JOIN locations l ON l.id = i.location_id" . $where,
+            $bindings
+        );
+        return (int) ($rows[0]['n'] ?? 0);
+    }
+
+    /**
+     * WHERE yang dipakai bersama oleh quickList() dan quickTotal().
+     *
+     * @param array{q?:string,gids?:array<int,int>} $filters
+     * @return array{0:string,1:array}
+     */
+    private function quickWhere(array $filters): array
+    {
+        $clauses = [
+            "((i.count_status IN ('audited','reconciled') AND i.audit_status IN ('audited','resolved')) OR r.recheck_requested = 1)",
+        ];
+        $bindings = [];
+
+        [$scope, $scopeBindings] = Auth::groupScope('r.group_id');
+        if ($scope !== '') {
+            $clauses[] = $scope;
+            $bindings  = array_merge($bindings, $scopeBindings);
+        }
+
+        $gids = array_values(array_unique(array_filter(array_map('intval', (array) ($filters['gids'] ?? [])))));
+        if ($gids !== []) {
+            $clauses[] = 'r.group_id IN (' . implode(',', array_fill(0, count($gids), '?')) . ')';
+            foreach ($gids as $gid) {
+                $bindings[] = $gid;
+            }
+        }
+
+        $q = trim((string) ($filters['q'] ?? ''));
+        if ($q !== '') {
+            $like      = '%' . $q . '%';
+            $clauses[] = "(i.code LIKE ? OR i.name LIKE ? OR g.name LIKE ? OR COALESCE(l.name,'') LIKE ? OR COALESCE(i.category,'') LIKE ?)";
+            for ($i = 0; $i < 5; $i++) {
+                $bindings[] = $like;
+            }
+        }
+
+        return [' WHERE ' . implode(' AND ', $clauses), $bindings];
+    }
+
+    /**
      * Summary per group: total items, plus count, minus count, match count,
      * stock qty, counted qty, difference qty, difference amount, condition status.
      *
@@ -567,6 +655,117 @@ class Reconciliation extends Model
         ]);
 
         return true;
+    }
+
+    /**
+     * HITUNG ULANG angka rekonsiliasi langsung dari master item.
+     *
+     * Beda dengan syncFromItems() yang hanya menambah baris baru, method ini
+     * memperbarui baris yang SUDAH ADA (qty stock, qty hasil hitung, harga
+     * satuan, selisih, arah, dan semua amount) supaya angka di tabel tidak
+     * basi setelah koreksi / hitung ulang oleh petugas.
+     *
+     * Baris berstatus 'verified' dilewati: angkanya sudah disetujui & terkunci,
+     * jadi tidak boleh berubah diam-diam lewat proses massal.
+     *
+     * @param array{ids?:array<int,int>,filters?:array<string,mixed>,include_missing?:bool,cap?:int} $opts
+     * @return array{updated:int,unchanged:int,skipped:int,created:int,changes:array<int,array<string,mixed>>}
+     */
+    public function recalculate(array $opts = []): array
+    {
+        $result = ['updated' => 0, 'unchanged' => 0, 'skipped' => 0, 'created' => 0, 'changes' => []];
+
+        $givenIds = $opts['ids'] ?? [];
+        if (! is_array($givenIds)) {
+            $givenIds = [];
+        }
+        $givenIds = array_values(array_unique(array_filter(array_map('intval', $givenIds), static fn ($v) => $v > 0)));
+        $cap      = max(1, (int) ($opts['cap'] ?? 500));
+        $filters  = is_array($opts['filters'] ?? null) ? $opts['filters'] : [];
+
+        $ids = $givenIds;
+        if ($ids === []) {
+            $ids = array_map(static fn ($r) => (int) $r['id'], $this->idsForBulk($filters, $cap));
+        }
+
+        if ($ids !== []) {
+            $in = implode(',', array_fill(0, count($ids), '?'));
+            [$scope, $scopeBindings] = Auth::groupScope('r.group_id');
+            $sql = "SELECT r.id, r.item_id, r.status, r.stock_qty, r.counted_qty, r.unit_price,
+                           r.difference, r.direction, r.stock_amount, r.count_amount, r.diff_amount,
+                           i.code AS item_code, i.expected_qty, i.counted_qty AS item_counted,
+                           i.unit_price AS item_price
+                      FROM reconciliation r
+                      JOIN items i ON i.id = r.item_id
+                     WHERE r.id IN ($in)";
+            if ($scope !== '') {
+                $sql .= ' AND ' . $scope;
+            }
+
+            $rows = $this->query($sql, array_merge($ids, $scopeBindings));
+
+            foreach ($rows as $row) {
+                if ((string) $row['status'] === 'verified') {
+                    $result['skipped']++;
+                    continue;
+                }
+
+                $stockQty    = (int) $row['expected_qty'];
+                $countedQty  = $row['item_counted'] === null ? 0 : (int) $row['item_counted'];
+                $unitPrice   = (float) ($row['item_price'] ?? 0);
+                $diff        = $countedQty - $stockQty;
+                $direction   = $diff > 0 ? 'plus' : ($diff < 0 ? 'minus' : 'match');
+                $stockAmount = round($stockQty * $unitPrice, 2);
+                $countAmount = round($countedQty * $unitPrice, 2);
+                $diffAmount  = round($diff * $unitPrice, 2);
+
+                $same = (int) $row['stock_qty'] === $stockQty
+                    && (int) $row['counted_qty'] === $countedQty
+                    && abs((float) $row['unit_price'] - $unitPrice) < 0.005
+                    && (int) $row['difference'] === $diff
+                    && (string) $row['direction'] === $direction;
+
+                if ($same) {
+                    $result['unchanged']++;
+                    continue;
+                }
+
+                $this->updateById((int) $row['id'], [
+                    'stock_qty'    => $stockQty,
+                    'counted_qty'  => $countedQty,
+                    'unit_price'   => $unitPrice,
+                    'difference'   => $diff,
+                    'direction'    => $direction,
+                    'stock_amount' => $stockAmount,
+                    'count_amount' => $countAmount,
+                    'diff_amount'  => $diffAmount,
+                ]);
+
+                $result['updated']++;
+                $result['changes'][] = [
+                    'id'         => (int) $row['id'],
+                    'item_id'    => (int) $row['item_id'],
+                    'code'       => (string) ($row['item_code'] ?? ''),
+                    'old_qty'    => (int) $row['counted_qty'],
+                    'new_qty'    => $countedQty,
+                    'old_stock'  => (int) $row['stock_qty'],
+                    'new_stock'  => $stockQty,
+                    'old_price'  => (float) $row['unit_price'],
+                    'new_price'  => $unitPrice,
+                    'old_diff'   => (int) $row['difference'],
+                    'new_diff'   => $diff,
+                    'old_amount' => (float) $row['diff_amount'],
+                    'new_amount' => $diffAmount,
+                ];
+            }
+        }
+
+        // Opsional: sekalian masukkan item audited yang belum punya baris.
+        if (! empty($opts['include_missing']) && $givenIds === []) {
+            $result['created'] = $this->syncFromItems();
+        }
+
+        return $result;
     }
 
     /**

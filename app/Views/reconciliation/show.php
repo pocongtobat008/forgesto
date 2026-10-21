@@ -157,6 +157,23 @@ $isAdmin = in_array($myRole, ['poweradmin', 'adminsto'], true);
                     </div>
 
                     <div class="recon-action-tile">
+                        <div class="recon-action-ico"><?= icon('calculator') ?></div>
+                        <div class="recon-action-body">
+                            <strong><?= __('Hitung Ulang dari Master') ?></strong>
+                            <span class="text-xs muted"><?= __('Tarik ulang qty stock, hasil hitung, harga, dan nilai dari data master item (angka di halaman ini jadi tidak basi).') ?></span>
+                        </div>
+                        <form method="post" action="<?= url('reconciliation/' . (int) $recon['id'] . '/recalculate') ?>"
+                              data-confirm="<?= e(__('Hitung ulang angka baris ini dari master item?')) ?>"
+                              style="margin:0;">
+                            <?= csrf_field() ?>
+                            <input type="hidden" name="return_to" value="<?= e('/reconciliation/' . (int) $recon['id']) ?>">
+                            <button type="submit" class="btn btn-outline btn-sm" style="min-height:44px;">
+                                <?= icon('calculator') ?> Hitung Ulang
+                            </button>
+                        </form>
+                    </div>
+
+                    <div class="recon-action-tile">
                         <div class="recon-action-ico recon-action-ico-warn"><?= icon('clock') ?></div>
                         <div class="recon-action-body">
                             <strong><?= __('Minta Cek Ulang') ?></strong>

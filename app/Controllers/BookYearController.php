@@ -145,8 +145,11 @@ class BookYearController extends Controller
                 (string) \App\Core\Request::string('confirm_code'),
                 (int) Auth::id()
             );
-        } catch (\RuntimeException $e) {
-            $this->redirectWith('/tahun-buku', 'error', $e->getMessage());
+        } catch (\Throwable $e) {
+            // Kembali ke halaman konfirmasi agar pesan galat terlihat di tempat,
+            // bukan dilempar ke daftar Tahun Buku tanpa konteks.
+            error_log('[book.delete_period] ' . $e->getMessage());
+            $this->redirectWith('/tahun-buku/hapus/' . (int) ($params['id'] ?? 0), 'error', $e->getMessage());
         }
         $this->redirectWith('/tahun-buku', 'success',
             "Periode {$r['period']} dihapus ({$r['snapshots']} snapshot). Cadangan: {$r['backup']}");

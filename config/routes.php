@@ -16,6 +16,7 @@ use App\Controllers\DashboardController;
 use App\Controllers\DeviceController;
 use App\Controllers\DiscrepancyController;
 use App\Controllers\GroupController;
+use App\Controllers\InfoController;
 use App\Controllers\ImportController;
 use App\Controllers\ItemController;
 use App\Controllers\LocationController;
@@ -237,6 +238,10 @@ $router->get('/reconciliation', 'ReconciliationController@index');
 $router->get('/reconciliation/distinct', 'ReconciliationController@distinct');
 $router->post('/reconciliation/sync', 'ReconciliationController@sync');
 $router->post('/reconciliation/bulk-recheck', 'ReconciliationController@bulkRecheck');
+$router->post('/reconciliation/recalculate', 'ReconciliationController@recalculate');
+$router->post('/reconciliation/quick-count', 'ReconciliationController@quickCount');
+$router->get('/reconciliation/quick-items', 'ReconciliationController@quickItems');
+$router->get('/reconciliation/quick-groups', 'ReconciliationController@quickGroups');
 $router->get('/reconciliation/audit', 'ReconciliationController@auditTrail');
 $router->post('/reconciliation/export-sap', 'ReconciliationController@exportSap');
 $router->get('/exports', 'ExportController@index');
@@ -246,6 +251,7 @@ $router->get('/reconciliation/{id}', 'ReconciliationController@show');
 $router->post('/reconciliation/{id}', 'ReconciliationController@update');
 $router->post('/reconciliation/{id}/verify', 'ReconciliationController@verify');
 $router->post('/reconciliation/{id}/recheck', 'ReconciliationController@recheck');
+$router->post('/reconciliation/{id}/recalculate', 'ReconciliationController@recalculateOne');
 
 /*
 |--------------------------------------------------------------------------
@@ -253,6 +259,7 @@ $router->post('/reconciliation/{id}/recheck', 'ReconciliationController@recheck'
 |--------------------------------------------------------------------------
 */
 $router->get('/login', 'AuthController@showLogin');
+$router->get('/login/device', 'AuthController@deviceLookup');
 $router->post('/login', 'AuthController@login');
 $router->get('/logout', 'AuthController@logout');
 
@@ -273,6 +280,15 @@ $router->get('/import/logs/{id}/download', 'ImportController@download');
 | Notifications
 |--------------------------------------------------------------------------
 */
+// Informasi — admin menulis info penting, otomatis jadi notifikasi
+$router->get('/informasi', 'InfoController@index');
+$router->get('/informasi/create', 'InfoController@create');
+$router->post('/informasi', 'InfoController@store');
+$router->get('/informasi/edit/{id}', 'InfoController@edit');
+$router->post('/informasi/{id}/resend', 'InfoController@resend');
+$router->post('/informasi/{id}/delete', 'InfoController@destroy');
+$router->post('/informasi/{id}', 'InfoController@update');
+
 $router->get('/notifications', 'NotificationController@index');
 $router->post('/notifications/read-all', 'NotificationController@readAll');
 $router->post('/notifications/{id}/read', 'NotificationController@read');

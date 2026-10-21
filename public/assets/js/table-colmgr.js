@@ -30,6 +30,97 @@
     }
     var cfg = JSON.parse(JSON.stringify(saved));
 
+    // ===== PRESET & MODE (Default / Custom) =====
+    var presetRaw = (tbl.getAttribute('data-colmgr-preset') || '').trim();
+    var PRESET = presetRaw ? presetRaw.split(',').map(function (x) { return x.trim(); }).filter(Boolean) : [];
+    var hasPreset = PRESET.length > 0;
+    var MODE = (saved.mode === 'custom' || saved.mode === 'default')
+      ? saved.mode
+      : (hasPreset ? 'default' : 'custom');
+
+    function allThs() { return [].slice.call(headRow.children); }
+    function allKeys() { return allThs().map(getThKey).filter(Boolean); }
+
+    function labelFor(key) {
+      var found = '';
+      allThs().forEach(function (th) {
+        if (getThKey(th) !== key) return;
+        var el = th.querySelector('.xf-label');
+        var txt = (el ? el.textContent : th.textContent).replace(/\s+/g, ' ').trim();
+        found = txt || key;
+      });
+      return found;
+    }
+
+    /** Terapkan template standar: hanya kolom preset yang tampil, urutan sesuai preset. */
+    function applyPreset() {
+      if (!hasPreset) return;
+      var keys = allKeys();
+      var fixedKeys = allThs().filter(isFixed).map(getThKey).filter(Boolean);
+
+      /* Kolom non-fixed diurutkan sesuai preset; kolom fixed (checkbox / Aksi)
+         tetap di posisi aslinya di DOM. Dulu semua fixed ditaruh di depan,
+         sehingga moveColumn menggeser kolom lain dan urutan jadi tertukar
+         (mis. Selisih tampil sebelum Hitung). */
+      var rest = [];
+      PRESET.forEach(function (k) {
+        if (keys.indexOf(k) !== -1 && fixedKeys.indexOf(k) === -1 && rest.indexOf(k) === -1) rest.push(k);
+      });
+      keys.forEach(function (k) {
+        if (fixedKeys.indexOf(k) === -1 && rest.indexOf(k) === -1) rest.push(k);
+      });
+
+      /* Iterasi per <th> (bukan per key) supaya kolom tanpa data-col —
+         mis. checkbox "pilih semua" — tetap di slotnya dan indeks tidak
+         bergeser satu. */
+      var order = [];
+      var ri = 0;
+      allThs().forEach(function (th) {
+        var k = getThKey(th);
+        if (!k) { order.push(''); return; }
+        if (isFixed(th)) { order.push(k); return; }
+        order.push(rest[ri++]);
+      });
+
+      saved.order = order;
+      saved.hidden = {};
+      keys.forEach(function (k) {
+        if (fixedKeys.indexOf(k) !== -1) return;
+        if (PRESET.indexOf(k) === -1) saved.hidden[k] = true;
+      });
+      cfg = JSON.parse(JSON.stringify(saved));
+      persist();
+      applySavedOrder(order);
+      applyAll();
+    }
+
+    function setMode(mode) {
+      if (mode === MODE) return;
+      if (mode === 'default') {
+        if (MODE === 'custom') {
+          saved.custom = { hidden: JSON.parse(JSON.stringify(saved.hidden || {})), order: (saved.order || []).slice() };
+        }
+        MODE = 'default';
+        saved.mode = 'default';
+        applyPreset();
+        notify('Tampilan kolom: Default', 'info');
+      } else {
+        MODE = 'custom';
+        saved.mode = 'custom';
+        if (saved.custom) {
+          saved.hidden = saved.custom.hidden || {};
+          saved.order = saved.custom.order || [];
+          persist();
+          applySavedOrder(saved.order);
+          applyAll();
+        } else {
+          persist();
+        }
+        notify('Tampilan kolom: Custom', 'info');
+      }
+      buildPanelItems();
+    }
+
     function persist() {
       try {
         localStorage.setItem(KEY, JSON.stringify(saved));
@@ -206,11 +297,12 @@
     }
 
     function doReset() {
-      cfg = { hidden: {}, width: {}, order: [] };
-      saved = { hidden: {}, width: {}, order: [] };
+      MODE = hasPreset ? 'default' : 'custom';
+      cfg = { hidden: {}, width: {}, order: [], mode: MODE };
+      saved = { hidden: {}, width: {}, order: [], mode: MODE };
       persist();
 
-      applySavedOrder(initialDomOrder);
+      if (!hasPreset) applySavedOrder(initialDomOrder);
 
       [].slice.call(headRow.children).forEach(function (th) {
         th.classList.remove('is-col-hidden');
@@ -226,8 +318,9 @@
         });
       });
 
+      if (hasPreset) applyPreset();
       buildPanelItems();
-      notify('Pengaturan kolom direset ke default', 'info');
+      notify(hasPreset ? 'Kolom dikembalikan ke template standar' : 'Pengaturan kolom direset ke default', 'info');
     }
 
     // Bangun item kontrol kolom di dalam panel
@@ -246,11 +339,38 @@
       closeBtn.title = 'Tutup';
       closeBtn.setAttribute('aria-label', 'Tutup');
       closeBtn.addEventListener('click', function () {
+        if (typeof panel.__close === 'function') { panel.__close(); return; }
         panel.hidden = true;
         if (btn) btn.setAttribute('aria-expanded', 'false');
       });
       head.appendChild(closeBtn);
       panel.appendChild(head);
+
+      // 1b. Mode Default / Custom + hint
+      if (hasPreset) {
+        var modeWrap = document.createElement('div');
+        modeWrap.className = 'col-mgr-mode';
+        modeWrap.setAttribute('role', 'group');
+        modeWrap.setAttribute('aria-label', 'Tampilan kolom');
+        [['default', 'Default'], ['custom', 'Custom']].forEach(function (pair) {
+          var mb = document.createElement('button');
+          mb.type = 'button';
+          mb.className = 'col-mgr-mode-btn' + (MODE === pair[0] ? ' is-active' : '');
+          mb.setAttribute('data-mode', pair[0]);
+          mb.setAttribute('aria-pressed', MODE === pair[0] ? 'true' : 'false');
+          mb.textContent = pair[1];
+          mb.addEventListener('click', function (e) { e.stopPropagation(); setMode(pair[0]); });
+          modeWrap.appendChild(mb);
+        });
+        panel.appendChild(modeWrap);
+
+        var hint = document.createElement('div');
+        hint.className = 'col-mgr-hint';
+        hint.textContent = MODE === 'default'
+          ? 'Tampilan standar: ' + PRESET.map(labelFor).join(', ') + '.'
+          : 'Pilih kolom yang tampil dan atur urutannya sendiri.';
+        panel.appendChild(hint);
+      }
 
       // 2. Scrollable List
       var list = document.createElement('div');
@@ -338,6 +458,12 @@
         lab.appendChild(cb);
         lab.appendChild(txt);
         lab.appendChild(mvWrap);
+        if (hasPreset && MODE === 'default') {
+          lab.classList.add('is-locked');
+          cb.disabled = true;
+          bLeft.disabled = true;
+          bRight.disabled = true;
+        }
         list.appendChild(lab);
       });
 
@@ -356,6 +482,7 @@
       bDone.className = 'btn btn-brand btn-xs';
       bDone.textContent = 'Selesai';
       bDone.addEventListener('click', function () {
+        if (typeof panel.__close === 'function') { panel.__close(); return; }
         panel.hidden = true;
         if (btn) btn.setAttribute('aria-expanded', 'false');
       });
@@ -496,49 +623,100 @@
       });
     }
 
-    // Toggle Button Panel & Auto-Positioning
+    // ===== Toggle Panel: portal ke <body> + posisi terukur (anti-terpotong) =====
     if (btn && panel) {
-      function positionPanel() {
+      // Pindahkan panel ke body agar tidak terpotong ancestor ber-overflow:hidden (.card)
+      if (panel.parentNode !== document.body) document.body.appendChild(panel);
+      panel.classList.add('col-mgr-panel--portal');
+
+      function place() {
         var r = btn.getBoundingClientRect();
-        var pWidth = 290;
-        var rightEdge = window.innerWidth - r.right;
-        if (window.innerWidth - rightEdge - pWidth < 10) {
-          panel.style.right = 'auto';
-          panel.style.left = '10px';
-        } else {
-          panel.style.right = '0';
-          panel.style.left = 'auto';
+        var vw = document.documentElement.clientWidth || window.innerWidth;
+        var vh = window.innerHeight || document.documentElement.clientHeight;
+        var w = Math.min(300, Math.max(240, vw - 24));
+        var gap = 8;
+        var s = panel.style;
+
+        s.setProperty('position', 'fixed', 'important');
+        s.setProperty('width', w + 'px', 'important');
+        s.setProperty('right', 'auto', 'important');
+        s.setProperty('bottom', 'auto', 'important');
+        s.setProperty('z-index', '1400', 'important');
+        s.setProperty('display', 'flex', 'important');
+        s.setProperty('flex-direction', 'column', 'important');
+        s.setProperty('overflow', 'hidden', 'important');
+
+        var left = r.right - w;
+        if (left < 8) left = 8;
+        if (left + w > vw - 8) left = Math.max(8, vw - 8 - w);
+        s.setProperty('left', Math.round(left) + 'px', 'important');
+
+        // Panel dibuat cukup tinggi (daftar kolom lega) tapi SELALU utuh
+        // di dalam viewport: tidak terpotong atas, bawah, kiri, maupun kanan.
+        var maxH = Math.min(520, vh - 40);
+        var top = r.bottom + gap;
+        if (top + maxH > vh - 20) top = vh - 20 - maxH; // geser naik bila bawah tidak cukup
+        if (top < 10) top = 10;
+        maxH = Math.min(maxH, vh - top - 20);
+        if (maxH < 180) maxH = Math.max(160, vh - 30);
+        s.setProperty('top', Math.round(top) + 'px', 'important');
+        s.setProperty('max-height', Math.round(maxH) + 'px', 'important');
+
+        var list = panel.querySelector('.col-mgr-list');
+        if (list) {
+          list.style.setProperty('flex', '1 1 auto', 'important');
+          list.style.setProperty('min-height', '0', 'important');
+          list.style.setProperty('overflow-y', 'auto', 'important');
         }
+        var foot = panel.querySelector('.col-mgr-foot');
+        if (foot) foot.style.setProperty('flex', '0 0 auto', 'important');
       }
+
+      function openPanel() {
+        panel.hidden = false;
+        panel.style.setProperty('display', 'flex', 'important');
+        btn.setAttribute('aria-expanded', 'true');
+        place();
+      }
+
+      function closePanel() {
+        panel.hidden = true;
+        panel.style.setProperty('display', 'none', 'important');
+        btn.setAttribute('aria-expanded', 'false');
+      }
+
+      closePanel();
 
       btn.addEventListener('click', function (e) {
         e.stopPropagation();
-        var willOpen = panel.hidden;
-        panel.hidden = !willOpen;
-        btn.setAttribute('aria-expanded', String(willOpen));
-        if (willOpen) {
-          positionPanel();
-        }
+        if (panel.hidden) openPanel(); else closePanel();
       });
 
+      panel.addEventListener('click', function (e) { e.stopPropagation(); });
+
       document.addEventListener('click', function (e) {
-        if (!panel.hidden && !panel.contains(e.target) && !btn.contains(e.target)) {
-          panel.hidden = true;
-          btn.setAttribute('aria-expanded', 'false');
-        }
+        if (!panel.hidden && !panel.contains(e.target) && !btn.contains(e.target)) closePanel();
       });
 
       document.addEventListener('keydown', function (e) {
-        if (e.key === 'Escape' && !panel.hidden) {
-          panel.hidden = true;
-          btn.setAttribute('aria-expanded', 'false');
-          btn.focus();
-        }
+        if (e.key === 'Escape' && !panel.hidden) { closePanel(); btn.focus(); }
       });
+
+      window.addEventListener('resize', function () { if (!panel.hidden) place(); });
+      window.addEventListener('scroll', function () { if (!panel.hidden) place(); }, true);
+      if (window.visualViewport) {
+        window.visualViewport.addEventListener('resize', function () { if (!panel.hidden) place(); });
+        window.visualViewport.addEventListener('scroll', function () { if (!panel.hidden) place(); });
+      }
+      panel.__place = place;
+      panel.__close = closePanel;
     }
 
-    // Inisialisasi awal
-    if (saved.order && saved.order.length > 0) {
+    // Inisialisasi awal: template standar (default) atau konfigurasi custom tersimpan
+    if (hasPreset && MODE === 'default') {
+      saved.mode = 'default';
+      applyPreset();
+    } else if (saved.order && saved.order.length > 0) {
       applySavedOrder(saved.order);
     }
 

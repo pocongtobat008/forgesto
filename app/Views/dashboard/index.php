@@ -111,6 +111,35 @@ foreach ($groups as $g) {
     </form>
 </div>
 
+<!-- Informasi penting dari admin -->
+<div class="card" id="dash-info-card" style="margin-top:1rem;border-left:4px solid var(--warning-500, #f59e0b);">
+    <div class="card-header">
+        <h2><?= icon('info') ?> <?= __('Informasi Penting') ?></h2>
+        <a class="btn btn-outline btn-xs" href="<?= url('informasi') ?>"><?= __('Lihat semua') ?></a>
+        <div class="sf-info-tools">
+            <span class="faint text-sm" id="info-updated" data-label="<?= __('Diperbarui') ?>" data-tz="<?= e(date_default_timezone_get()) ?>"><?= __('Diperbarui') ?> <?= e(date('H:i:s')) ?></span>
+            <button type="button" class="btn btn-outline btn-xs" data-info-refresh data-card="#dash-info-card"
+                    title="<?= __('Muat ulang informasi tanpa logout') ?>">
+                <?= icon('refresh') ?> <span><?= __('Muat ulang') ?></span>
+            </button>
+        </div>
+    </div>
+    <div class="card-body" style="display:flex;flex-direction:column;gap:.7rem;">
+        <?php if ($infos === []): ?>
+            <div class="faint text-sm"><?= __('Belum ada informasi aktif. Tekan "Muat ulang" untuk memeriksa.') ?></div>
+        <?php endif; ?>
+        <?php foreach ($infos as $i => $info): ?>
+            <div<?= $i > 0 ? ' style="padding-top:.7rem;border-top:1px dashed var(--border);"' : '' ?>>
+                <div class="cell-title"><?= e((string) $info['title']) ?></div>
+                <?php if (! empty($info['body'])): ?>
+                    <div class="cell-sub"><?= e(mb_strimwidth((string) $info['body'], 0, 170, '…')) ?></div>
+                <?php endif; ?>
+                <div class="cell-sub faint"><?= e(date('d M Y H:i', strtotime((string) $info['created_at']))) ?></div>
+            </div>
+        <?php endforeach; ?>
+    </div>
+</div>
+
 <!-- Ringkasan item -->
 <div class="grid grid-4 mt-2">
     <div class="stat is-brand" style="--i:4">

@@ -608,12 +608,13 @@
 .prg-empty svg { width:18px; height:18px; }
 
 /* --- drawer --- */
-body.prg-lock { overflow:hidden; }
-.prg-backdrop { position:fixed; inset:0; background:rgba(15,23,42,.42); z-index:1000; opacity:0; transition:opacity .28s ease; }
+html:has(body.prg-lock) { overflow:hidden; }
+@media (max-width: 1023.98px) { body.prg-lock { overflow:hidden; } }
+.prg-backdrop { position:fixed; inset:0; background:rgba(15,23,42,.42); z-index:1390; opacity:0; transition:opacity .28s ease; }
 .prg-backdrop.is-open { opacity:1; }
 .prg-backdrop[hidden] { display:none; }
 .prg-drawer {
-    position:fixed; top:0; right:0; height:100%; width:min(520px,100vw); z-index:1001;
+    position:fixed; top:0; right:0; height:100dvh; width:min(520px,100vw); z-index:1400;
     background:var(--surface,#fff); display:flex; flex-direction:column;
     transform:translateX(100%); transition:transform .34s cubic-bezier(.32,.72,0,1);
     box-shadow:-28px 0 60px -34px rgba(15,23,42,.6);
@@ -635,6 +636,9 @@ body.prg-lock { overflow:hidden; }
 }
 .prg-drawer-foot[hidden] { display:none; }
 .prg-drawer-foot .btn { flex:1 1 auto; justify-content:center; min-height:42px; }
+/* PASS21: hormati notch/home-indicator agar tombol footer tidak terpotong */
+.prg-drawer-head { padding-top:max(1rem, env(safe-area-inset-top)); }
+.prg-drawer-foot { padding-bottom:max(.85rem, calc(.85rem + env(safe-area-inset-bottom))); }
 .prg-d-loading { display:flex; align-items:center; gap:.55rem; padding:2rem 0; color:#94a3b8; font-size:.88rem; justify-content:center; }
 .prg-spinner {
     width:16px; height:16px; border-radius:50%; border:2px solid #e2e8f0; border-top-color:#f2620f;
@@ -820,3 +824,23 @@ body.prg-lock { overflow:hidden; }
 [data-theme="dark"] .prg-role.is-none { background:#141b26; border-color:#243044; color:#7c8ba1; }
 [data-theme="dark"] .prg-d-officer { background:#141b26; border-color:#243044; color:#c7d3e3; }
 [data-theme="dark"] .prg-d-officer i { background:#243044; color:#93a4bd; }
+
+/* ============================================================================
+   PASS22 — BADGE OBS/AUD MELUBER KELUAR KARTU
+   .prg-card dirender sebagai <button>. flat-material.css punya aturan generik
+   `button, .btn, ... { align-items:center !important; justify-content:center
+   !important; gap:8px !important }` yang MENANG atas .prg-card (kelas kalah
+   oleh !important + urutan file). Akibatnya semua anak kartu memakai lebar
+   max-content dan terpusat: baris OBS/AUD jadi lebih lebar dari padding box
+   (~8px kiri & kanan) sehingga chip keluar dari border kartu.
+   Perbaikan: pulihkan layout kolom asli + jaring pengaman anti-meluber.
+   ========================================================================== */
+button.prg-card, .prg-card {
+    align-items: stretch !important;      /* anak kartu selebar kartu, bukan max-content */
+    justify-content: flex-start !important;
+    text-align: left !important;
+}
+.prg-card-officers { overflow: hidden; }          /* chip tidak boleh keluar border */
+.prg-role { max-width: 100%; }                     /* nama panjang -> ellipsis, bukan meluber */
+.prg-card-foot { min-width: 0; }
+

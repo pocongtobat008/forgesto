@@ -10,6 +10,7 @@ use App\Models\Device;
 use App\Models\Discrepancy;
 use App\Models\Group;
 use App\Models\ImportLog;
+use App\Models\InfoMessage;
 use App\Models\Item;
 use App\Models\Location;
 use App\Models\User;
@@ -55,6 +56,7 @@ class DashboardController extends Controller
             'discrepancyCount' => (new Discrepancy())->openCount(),
             'recentActivity'   => (new ActivityLog())->recent(6),
             'recentImports'    => (new ImportLog())->recent(4),
+            'infos'            => (new InfoMessage())->activeForUser(\App\Core\Auth::role(), 3),
             'totals'           => [
                 'groups'    => count($progress),
                 'users'     => (new User())->countWhere('is_active = 1'),

@@ -203,7 +203,7 @@
     var collapseBtn = document.createElement('button');
     collapseBtn.type = 'button';
     collapseBtn.className = 'sf-vm__collapse';
-    collapseBtn.title = 'Sembunyikan';
+    collapseBtn.title = 'Perkecil (minimize)';
     collapseBtn.setAttribute('aria-label', 'Sembunyikan pemilih tampilan');
     collapseBtn.innerHTML = '<svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 6.5 8 11l4.5-4.5"/></svg>';
     ctrl.appendChild(collapseBtn);
@@ -212,7 +212,7 @@
     handle.type = 'button';
     handle.className = 'sf-vm-handle';
     handle.hidden = true;
-    handle.title = 'Tampilkan pemilih tampilan';
+    handle.title = 'Perbesar (maximize)';
     handle.setAttribute('aria-label', 'Tampilkan pemilih tampilan');
     handle.setAttribute('aria-expanded', 'true');
     handle.setAttribute('aria-controls', 'sf-vm');
@@ -220,7 +220,13 @@
 
     handleEl = handle;
 
-    function setCollapsed(v, moveFocus) {
+    function setCollapsed(v, moveFocus, src) {
+      /* src='auto' berarti dipicu overlap-guard, bukan klik pengguna */
+      if (src !== 'auto') {
+        ctrl.__autoMin = false;
+        /* dibuka manual: biarkan tetap terbuka sampai pengguna menggulir */
+        ctrl.__holdExpand = !v;
+      }
       ctrl.classList.toggle('is-collapsed', v);
       if (v) { ctrl.setAttribute('inert', ''); ctrl.classList.remove('is-tucked'); }
       else { ctrl.removeAttribute('inert'); ctrl.classList.remove('is-tucked'); }
@@ -241,7 +247,78 @@
     document.body.appendChild(handle);
     document.body.classList.add('sf-vm-ready');
 
+    ctrl.__setCollapsed = setCollapsed;
     try { if (localStorage.getItem('sf-vm-collapsed') === '1') setCollapsed(true, false); } catch (e) {}
+  }
+
+  /* ------------------------------------------------- overlap guard (desktop)
+     Pil mengapung di kanan-bawah. Kalau areanya sedang menutupi baris tabel
+     atau kartu, pil otomatis diperkecil jadi tombol bulat (minimize) dan
+     kembali mengembang sendiri begitu areanya kosong lagi (maximize).
+     Pilihan manual pengguna selalu menang. */
+  function initOverlapGuard() {
+    if (!ctrl || !ctrl.__setCollapsed || ctrl.__guard) return;
+    ctrl.__guard = true;
+    var timer = 0;
+
+    /* posisi "seandainya pil terlihat" — tidak terpengaruh animasi tuck/collapse */
+    function rectOf() {
+      var w = ctrl.offsetWidth, h = ctrl.offsetHeight;
+      if (!w || !h) return null;
+      var cs = getComputedStyle(ctrl);
+      var right = parseFloat(cs.right) || 16;
+      var bottom = parseFloat(cs.bottom) || 16;
+      return {
+        left: window.innerWidth - right - w,
+        right: window.innerWidth - right,
+        top: window.innerHeight - bottom - h,
+        bottom: window.innerHeight - bottom
+      };
+    }
+
+    function hits(r) {
+      if (!r) return false;
+      var pad = 4;
+      var els = document.querySelectorAll('table.data tbody tr, .sf-card, .kpi-card, .stat-card');
+      for (var i = 0; i < els.length; i++) {
+        var el = els[i];
+        if (ctrl.contains(el) || el.offsetParent === null) continue;
+        var b = el.getBoundingClientRect();
+        if (b.width < 60 || b.height < 12) continue;
+        if (b.bottom < 0 || b.top > window.innerHeight) continue;
+        if (r.left < b.right - pad && r.right > b.left + pad &&
+            r.top < b.bottom - pad && r.bottom > b.top + pad) return true;
+      }
+      return false;
+    }
+
+    function run() {
+      timer = 0;
+      if (!window.matchMedia('(min-width: 900px)').matches) return;
+      if (ctrl.style.display === 'none') return;
+      if (document.body.classList.contains('sf-overlay-open')) return;
+      var r = rectOf();
+      var hit = hits(r);
+      var now = Date.now();
+      if (!ctrl.classList.contains('is-collapsed')) {
+        if (hit && !ctrl.__holdExpand) {
+          ctrl.__autoMin = true;
+          ctrl.__setCollapsed(true, false, 'auto');
+        }
+      } else if (ctrl.__autoMin && !hit) {
+        ctrl.__autoMin = false;
+        ctrl.__setCollapsed(false, false, 'auto');
+      }
+    }
+
+    function queue() { if (timer) return; timer = setTimeout(run, 150); }
+    window.addEventListener('scroll', function () { ctrl.__holdExpand = false; queue(); }, { passive: true });
+    window.addEventListener('resize', queue, { passive: true });
+    document.addEventListener('sf:table-rendered', queue);
+    window.addEventListener('load', queue);
+    setTimeout(run, 500);
+    setTimeout(run, 1400);
+    setTimeout(run, 2600);
   }
 
   function place() {
@@ -435,6 +512,7 @@
     applyMode(readMode());
     place();
     initAutoHide();
+    initOverlapGuard();
     window.addEventListener('resize', function () { schedule(); scheduleFit(); }, { passive: true });
     window.addEventListener('scroll', function () { place(); }, { passive: true });
     window.addEventListener('storage', function (e) {
@@ -456,4 +534,101 @@
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
   else boot();
+})();
+
+
+/* ---------------------------------------------------------------------------
+   Overlay guard — "Penyesuaian tampilan" tidak boleh menutupi pop up apa pun.
+   Setiap kali ada overlay terbuka (panel cepat, drawer baris, modal gudang,
+   dialog native, sheet, popover), body diberi .sf-overlay-open sehingga
+   .sf-vm / .sf-vm-handle disembunyikan oleh CSS.
+   Pemicu: MutationObserver (childList + class/hidden/style/open), klik,
+   Escape, pageshow, dan timer pendek selama overlay masih terbuka — supaya
+   tidak bergantung pada requestAnimationFrame (yang bisa berhenti di tab
+   background).
+   --------------------------------------------------------------------------- */
+(function () {
+  var SELECTORS = [
+    '.qe-backdrop:not([hidden])',
+    '.rd-drawer.is-open',
+    '.wh-modal.is-open',
+    '.sf-modal.is-open',
+    'dialog[open]',
+    '.modal.show',
+    '.modal.in',
+    '[data-sf-overlay]:not([hidden])',
+    '.sf-sheet.is-open',
+    '.sf-drawer.is-open',
+    '.sheet.is-open',
+    '.popover.is-open'
+  ];
+
+  var state = null, timer = 0, watch = 0;
+
+  function visible(el) {
+    if (!el || el.hidden) { return false; }
+    var s = window.getComputedStyle(el);
+    if (s.display === 'none' || s.visibility === 'hidden' || s.opacity === '0') { return false; }
+    var r = el.getBoundingClientRect();
+    return r.width > 0 && r.height > 0;
+  }
+
+  function anyOpen() {
+    for (var i = 0; i < SELECTORS.length; i++) {
+      var nodes = document.querySelectorAll(SELECTORS[i]);
+      for (var j = 0; j < nodes.length; j++) {
+        if (visible(nodes[j])) { return true; }
+      }
+    }
+    return false;
+  }
+
+  function apply(hit) {
+    if (hit === state) { return; }
+    state = hit;
+    document.body.classList.toggle('sf-overlay-open', hit);
+    var handles = document.querySelectorAll('.sf-vm-handle');
+    for (var i = 0; i < handles.length; i++) {
+      var h = handles[i];
+      h.setAttribute('aria-hidden', hit ? 'true' : 'false');
+      if (hit) { h.setAttribute('tabindex', '-1'); } else { h.removeAttribute('tabindex'); }
+    }
+    if (hit) { startWatch(); } else { stopWatch(); }
+  }
+
+  function sync() { apply(anyOpen()); }
+
+  function queue() {
+    if (timer) { return; }
+    timer = window.setTimeout(function () { timer = 0; sync(); }, 50);
+  }
+
+  /* selama overlay dianggap terbuka, cek ulang tiap 350ms (panel bisa
+     ditutup oleh kode lain tanpa mengubah class yang kita pantau) */
+  function startWatch() {
+    if (watch) { return; }
+    watch = window.setInterval(function () {
+      if (!anyOpen()) { sync(); }
+    }, 350);
+  }
+  function stopWatch() {
+    if (!watch) { return; }
+    window.clearInterval(watch); watch = 0;
+  }
+
+  function boot() {
+    sync();
+    if (window.MutationObserver) {
+      new MutationObserver(queue).observe(document.body, {
+        childList: true, subtree: true,
+        attributes: true, attributeFilter: ['class', 'hidden', 'style', 'open']
+      });
+    }
+    document.addEventListener('click', function () { setTimeout(sync, 30); setTimeout(sync, 260); }, true);
+    document.addEventListener('keyup', function (e) { if (e.key === 'Escape') { setTimeout(sync, 30); setTimeout(sync, 260); } });
+    window.addEventListener('pageshow', sync);
+  }
+
+  if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', boot); }
+  else { boot(); }
 })();

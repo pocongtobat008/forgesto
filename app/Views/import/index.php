@@ -13,7 +13,7 @@
         <p>Unggah data dari Excel (.xlsx) atau CSV. Data baru ditambahkan, data lama diperbarui.</p>
     </div>
     <div class="spacer"></div>
-    <a class="btn btn-brand" href="<?= url('templates/stockforge-master-v3.xlsx') ?>?v=<?= time() ?>"><?= icon('download') ?> Unduh Template Excel (.xlsx)</a>
+    <a class="btn btn-brand" href="<?= url('templates/stockforge-master-v6.xlsx') ?>?v=<?= time() ?>"><?= icon('download') ?> Unduh Template Excel (.xlsx)</a>
 </div>
 
 <?php if ($result !== null): ?>
@@ -57,7 +57,7 @@
             <div class="form-group">
                 <label for="master_file">File master (.xlsx) <span class="faint">*</span></label>
                 <input type="file" id="master_file" name="file" accept=".xlsx" required>
-                <span class="hint">Template: <a href="<?= url('templates/stockforge-master-v3.xlsx') ?>?v=<?= time() ?>">stockforge-master-v3.xlsx</a></span><span class="hint"> Berisi 3 sheet: <b>karyawan</b> (master data + rule group), <b>master</b> (1 baris = 1 kombinasi data lengkap), <b>petunjuk</b>. Wajib isi <code>period_month</code> (YYYY-MM), <code>period_start</code>, <code>period_end</code>. Kolom petugas cukup <code>auditor_employee_id</code> &amp; <code>observer_employee_id</code> — <b>nama di-lookup otomatis</b> dari sheet karyawan.</span>
+                <span class="hint">Template: <a href="<?= url('templates/stockforge-master-v6.xlsx') ?>?v=<?= time() ?>">stockforge-master-v6.xlsx</a></span><span class="hint"> Berisi 3 sheet: <b>karyawan</b> (karyawan + <b>group</b> + <b>device</b> + <b>PIC</b>), <b>master</b> (1 baris = 1 kombinasi data), <b>petunjuk</b>. <b>Tidak ada sheet group</b> &mdash; group dibuat otomatis dari <code>group_code</code> + <code>group_name</code> di sheet master. <b>PIC per group</b> diisi di kolom <code>pic_employee_id</code> sheet karyawan (cukup 1 baris per group, nama otomatis). <b>Periode</b> cukup <code>period_month</code> (YYYY-MM); <code>period_start</code> / <code>period_end</code> boleh kosong &rarr; otomatis awal &amp; akhir bulan. <b>Petugas &amp; device tidak ditulis di sheet master</b> &mdash; auditor, observer, dan semua device dipetakan otomatis lewat <code>group_code</code> dari sheet karyawan.</span>
             </div>
             <div class="form-actions" style="display:flex;gap:.5rem;flex-wrap:wrap;margin-top:.75rem;align-items:center;">
                 <button type="submit" name="mode" value="dry" class="btn" style="min-height:44px;"><?= icon('check') ?> Cek (dry-run)</button>

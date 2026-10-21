@@ -209,12 +209,40 @@
         drawer.querySelector('[data-rd-link]').onclick = function (e) { e.preventDefault(); closeDrawer(); };
     }
 
+
+    /* --- kunci scroll yang TIDAK menghilangkan posisi ---------------------
+       html.rd-lock saja (tanpa body) + simpan/restore posisi sebagai jaring
+       pengaman, supaya tutup popup detail tidak melompat ke atas. */
+    var __lockY = null, __lockBodyY = 0, __bodyLocked = false;
+    function lockPage() {
+        __lockY = window.pageYOffset || document.documentElement.scrollTop || 0;
+        __lockBodyY = document.body.scrollTop || 0;
+        var sbw = window.innerWidth - document.documentElement.clientWidth;
+        document.documentElement.style.setProperty('--rd-sbw', (sbw > 0 ? sbw : 0) + 'px');
+        document.documentElement.classList.add('rd-lock');
+        /* di mobile <body> yang jadi scroller → kunci juga, posisinya dipulihkan saat unlock */
+        /* body hanya jadi scroller kalau <html> sendiri tidak bisa discroll (mobile) */
+        __bodyLocked = document.documentElement.scrollHeight <= window.innerHeight + 2 &&
+                       document.body.scrollHeight > window.innerHeight + 4;
+        if (__bodyLocked) document.documentElement.classList.add('rd-lock-body');
+    }
+    function unlockPage() {
+        document.documentElement.classList.remove('rd-lock');
+        document.documentElement.classList.remove('rd-lock-body');
+        document.documentElement.style.removeProperty('--rd-sbw');
+        if (__bodyLocked) { document.body.scrollTop = __lockBodyY; __bodyLocked = false; }
+        if (__lockY !== null && Math.abs((window.pageYOffset || 0) - __lockY) > 1) {
+            try { window.scrollTo(0, __lockY); } catch (e) {}
+        }
+        __lockY = null;
+    }
+
     function openDrawer(row) {
         buildDrawer();
         activeRow = row;
         render(payload(row));
         lastFocus = document.activeElement;
-        document.documentElement.classList.add('rd-lock');
+        lockPage();
         row.classList.add('is-active-row');
 
         /* paksa layout keadaan "tertutup" dulu agar transisi slide tetap jalan,
@@ -247,7 +275,7 @@
         if (!drawer) return;
         drawer.classList.remove('is-open');
         backdrop.classList.remove('is-open');
-        document.documentElement.classList.remove('rd-lock');
+        unlockPage();
         drawer.classList.remove('has-more');
         if (activeRow) { activeRow.classList.remove('is-active-row'); activeRow = null; }
         if (lastFocus && lastFocus.focus) { try { lastFocus.focus({ preventScroll: true }); } catch (e) {} }

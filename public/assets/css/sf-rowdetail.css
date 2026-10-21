@@ -353,7 +353,21 @@ tr.rd-xrow.is-closing .rd-xpanel { opacity: 0; transform: translateY(-6px); }
 .rd-btn-primary { flex: 1 1 auto; background: var(--rd-brand); color: #fff; box-shadow: 0 10px 22px -12px rgba(37, 99, 235, .9); }
 .rd-btn-primary:hover { filter: brightness(1.06); }
 
-html.rd-lock, html.rd-lock body { overflow: hidden !important; }
+/* Kunci scroll HANYA di <html>.
+   Sebelumnya <body> juga di-overflow:hidden, dan kombinasi html+body itu
+   membuat Chrome/Edge me-reset scrollTop ke 0 → setelah popup detail ditutup
+   halaman melompat ke header. */
+/* Di mobile <body> yang jadi scroller (body{overflow-y:auto}); kunci juga
+   saat itu, tapi hanya kalau memang body yang scroll supaya desktop tidak
+   kehilangan posisi. */
+/* (dihapus) body{overflow:hidden} me-reset scrollTop → cukup html.rd-lock di bawah */
+@media (max-width: 1023.98px) { html.rd-lock body { overflow: hidden !important; } }
+
+html.rd-lock {
+    overflow: hidden !important;
+    padding-right: var(--rd-sbw, 0px); /* kompensasi scrollbar supaya tidak geser */
+    overscroll-behavior: none;
+}
 
 /* ---------- 5. dark ---------- */
 [data-theme="dark"] .rd-drawer { border-left-color: #24304a; }

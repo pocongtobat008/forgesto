@@ -19,8 +19,13 @@ class ProfileController extends Controller
     public function index(): string
     {
         $userModel = new User();
+        $current = Auth::user();
+        $role = (string) ($current['role'] ?? '');
+        // Observer & auditor tidak memakai password (login cukup ID karyawan),
+        // jadi tidak perlu melihat daftar user maupun matriks rules.
+        $showAdminPanels = in_array($role, ['poweradmin', 'adminsto'], true);
 
-        $users = $userModel->query(
+        $users = ! $showAdminPanels ? [] : $userModel->query(
             "SELECT u.*,
                     (SELECT GROUP_CONCAT(g.code ORDER BY g.code SEPARATOR ', ')
                        FROM user_groups ug JOIN `groups` g ON g.id = ug.group_id
@@ -29,11 +34,13 @@ class ProfileController extends Controller
              ORDER BY FIELD(u.role, 'poweradmin', 'adminsto', 'audit', 'observer'), u.name"
         );
 
-        $current = Auth::user();
-
         return $this->view('profile/index', [
             'title'   => __('Profil & Akses'),
             'users'   => $users,
+            'showAdminPanels' => $showAdminPanels,
+            'device'  => ! $showAdminPanels && $current !== null
+                ? (new \App\Models\Device())->findByUser((int) $current['id'])
+                : null,
             'current' => $current,
             'groups'  => $current !== null
                 ? (new Group())->query(
@@ -55,6 +62,10 @@ class ProfileController extends Controller
 
         if (! (bool) config('app.auth.dev_switcher', true)) {
             return $this->redirectWith('/profile', 'error', 'Pergantian user tidak diizinkan.');
+        }
+
+        if (! in_array((string) (Auth::role() ?? ''), ['poweradmin', 'adminsto'], true)) {
+            return $this->redirectWith('/profile', 'error', 'Pergantian user hanya untuk Power Admin / Admin STO.');
         }
 
         $userId = Request::int('user_id');

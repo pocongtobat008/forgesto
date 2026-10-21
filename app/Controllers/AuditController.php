@@ -12,6 +12,7 @@ use App\Models\Audit;
 use App\Models\AuditSubmission;
 use App\Models\Discrepancy;
 use App\Models\Item;
+use App\Models\ItemHistory;
 use App\Models\Notification;
 use App\Models\PostingBatch;
 
@@ -246,7 +247,28 @@ class AuditController extends Controller
         ]);
 
         if ($isMatch) {
-            $itemModel->updateById($id, ['audit_status' => Item::AUDIT_AUDITED]);
+            // Audit match WAJIB menaikkan count_status ke 'audited'. Tanpa ini
+            // item tetap 'submitted' dan tidak pernah muncul di daftar
+            // rekonsiliasi (Item::reconcilableItems mensyaratkan
+            // count_status IN ('audited','reconciled')).
+            $itemModel->updateById($id, [
+                'audit_status' => Item::AUDIT_AUDITED,
+                'count_status' => Item::COUNT_AUDITED,
+            ]);
+            ItemHistory::logChange(
+                $id,
+                ItemHistory::ACTION_AUDITED,
+                (string) ($item['count_status'] ?? Item::COUNT_SUBMITTED),
+                Item::COUNT_AUDITED,
+                (int) Auth::id(),
+                [
+                    'audited_qty'  => $auditedQty,
+                    'counted_qty'  => $counted,
+                    'result'       => 'match',
+                    'audit_status' => Item::AUDIT_AUDITED,
+                ],
+                $note
+            );
             (new Notification())->toRole(
                 'adminsto',
                 'Audit selesai',
@@ -265,6 +287,15 @@ class AuditController extends Controller
             'audit_status' => Item::AUDIT_DISCREPANCY,
             'is_locked'    => 0,
         ]);
+        ItemHistory::logChange(
+            $id,
+            ItemHistory::ACTION_DISCREPANCY,
+            (string) ($item['audit_status'] ?? 'pending'),
+            Item::AUDIT_DISCREPANCY,
+            (int) Auth::id(),
+            ['audited_qty' => $auditedQty, 'expected_qty' => $expected, 'counted_qty' => $counted],
+            $note ?? 'Selisih ditemukan saat audit'
+        );
 
         $discrepancy = new Discrepancy();
         $difference = $auditedQty - $expected;

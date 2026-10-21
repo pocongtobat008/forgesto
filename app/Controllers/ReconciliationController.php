@@ -883,6 +883,339 @@ class ReconciliationController extends Controller
     }
 
     /**
+     * HITUNG ULANG perhitungan rekonsiliasi (qty stock, selisih, nilai) dari
+     * master item — dipicu langsung dari menu Rekonsiliasi tanpa logout.
+     *
+     * Lingkup: ids[] terpilih, atau semua baris yang cocok dengan filter layar.
+     * Baris terverifikasi (terkunci) dilewati oleh model.
+     */
+    public function recalculate(): string
+    {
+        $this->requireReconAccess();
+        $this->verifyCsrf();
+
+        $returnTo = $this->safeReturn('/reconciliation');
+        $this->guardOpenPeriod($returnTo);
+
+        $ids = Request::input('ids', []);
+        if (is_string($ids)) {
+            $ids = array_filter(array_map('intval', explode(',', $ids)));
+        }
+        if (! is_array($ids)) {
+            $ids = [];
+        }
+        $ids = array_values(array_unique(array_filter(array_map('intval', $ids), static fn ($v) => $v > 0)));
+
+        $filters = [
+            'group_id'  => Request::has('group_id') && Request::string('group_id') !== '' ? Request::int('group_id') : null,
+            'direction' => in_array(Request::string('direction'), Reconciliation::DIRECTIONS, true) ? Request::string('direction') : null,
+            'status'    => in_array(Request::string('status'), Reconciliation::STATUSES, true) ? Request::string('status') : null,
+            'search'    => Request::string('search'),
+            'highlight' => in_array(Request::string('highlight'), ['plus', 'minus'], true) ? Request::string('highlight') : null,
+            'min_diff'  => Request::string('min_diff') === '10jt' ? '10jt' : null,
+        ];
+
+        $res = (new Reconciliation())->recalculate([
+            'ids'             => $ids,
+            'filters'         => $filters,
+            'include_missing' => $ids === [] && Request::string('include_missing', '1') !== '0',
+            'cap'             => 1000,
+        ]);
+
+        $parts = [];
+        $parts[] = $res['updated'] . ' baris diperbarui';
+        if ($res['unchanged'] > 0) { $parts[] = $res['unchanged'] . ' tidak berubah'; }
+        if ($res['skipped'] > 0) { $parts[] = $res['skipped'] . ' dilewati (sudah diverifikasi)'; }
+        if ($res['created'] > 0) { $parts[] = $res['created'] . ' item baru ditambahkan'; }
+
+        (new ActivityLog())->record(
+            'recalculate',
+            'reconciliation',
+            0,
+            'Hitung ulang perhitungan rekonsiliasi (' . ($ids !== [] ? count($ids) . ' baris terpilih' : 'sesuai filter layar') . '): ' . implode(', ', $parts) . '.',
+            null
+        );
+
+        $level = $res['updated'] > 0 || $res['created'] > 0 ? 'success' : 'info';
+
+        return $this->redirectWith($returnTo, $level, 'Hitung ulang selesai: ' . implode(', ', $parts) . '.');
+    }
+
+    /** Hitung ulang satu baris rekonsiliasi dari master item (aksi per baris / halaman detail). */
+    public function recalculateOne(array $params): string
+    {
+        $this->requireReconAccess();
+        $this->verifyCsrf();
+
+        $id = (int) $params['id'];
+        $returnTo = $this->safeReturn('/reconciliation/' . $id);
+        $this->guardOpenPeriod($returnTo);
+
+        $reconModel = new Reconciliation();
+        $row = $reconModel->find($id);
+        if ($row === null) {
+            $this->notFound('Data rekonsiliasi tidak ditemukan.');
+        }
+        $this->ensureGroupAccess((int) $row['group_id']);
+
+        $res = $reconModel->recalculate(['ids' => [$id]]);
+
+        if ($res['skipped'] > 0) {
+            return $this->redirectWith($returnTo, 'warning', 'Baris ini sudah diverifikasi (terkunci). Buka kunci / minta cek ulang dulu bila angkanya perlu dihitung ulang.');
+        }
+
+        if ($res['updated'] === 0) {
+            return $this->redirectWith($returnTo, 'info', 'Angka rekonsiliasi sudah sama dengan master item — tidak ada yang perlu diubah.');
+        }
+
+        $chg = $res['changes'][0] ?? [];
+        $history = new CountHistory();
+        foreach ([
+            ['stock_qty', $chg['old_stock'] ?? null, $chg['new_stock'] ?? null],
+            ['counted_qty', $chg['old_qty'] ?? null, $chg['new_qty'] ?? null],
+            ['unit_price', $chg['old_price'] ?? null, $chg['new_price'] ?? null],
+            ['difference', $chg['old_diff'] ?? null, $chg['new_diff'] ?? null],
+        ] as [$field, $old, $new]) {
+            if ($old === null || $new === null || (string) $old === (string) $new) {
+                continue;
+            }
+            $history->record((int) $row['item_id'], $id, $field, $old, $new, 'Hitung ulang dari master item oleh ' . Auth::role(), 'recalculate');
+        }
+
+        (new ActivityLog())->record(
+            'recalculate',
+            'reconciliation',
+            $id,
+            'Hitung ulang baris rekonsiliasi #' . $id . ' dari master item: selisih ' . ($chg['old_diff'] ?? 0) . ' -> ' . ($chg['new_diff'] ?? 0) . '.',
+            (int) $row['group_id']
+        );
+
+        return $this->redirectWith($returnTo, 'success', 'Perhitungan ulang selesai: selisih ' . (int) ($chg['old_diff'] ?? 0) . ' menjadi ' . (int) ($chg['new_diff'] ?? 0) . '.');
+    }
+
+    /**
+     * MODE CEPAT — data ringkas untuk panel (AJAX).
+     *
+     * GET ?q=&gids=1,2&limit=80&offset=0  ->  JSON {ok,total,items[],ms}
+     * Dibatasi LIMIT supaya panel tidak pernah menarik ribuan baris sekaligus.
+     */
+    public function quickItems(): never
+    {
+        $this->requireReconAccess();
+
+        $q      = trim(Request::string('q'));
+        $rawG   = Request::string('gids');
+        $gids   = $rawG === '' ? [] : array_values(array_filter(array_map('intval', explode(',', $rawG))));
+        $limit  = (int) Request::int('limit', 80);
+        $offset = (int) Request::int('offset', 0);
+
+        $model   = new Reconciliation();
+        $filters = ['q' => $q, 'gids' => $gids];
+
+        $t0    = microtime(true);
+        $rows  = $model->quickList($filters, $limit, $offset);
+        $total = $model->quickTotal($filters);
+
+        $items = [];
+        foreach ($rows as $r) {
+            $items[] = [
+                'id'      => (int) $r['id'],
+                'code'    => (string) $r['item_code'],
+                'name'    => (string) $r['item_name'],
+                'group'   => (string) $r['group_name'],
+                'gid'     => (int) $r['group_id'],
+                'loc'     => (string) $r['location_name'],
+                'unit'    => (string) ($r['unit'] ?? 'pcs'),
+                'cat'     => (string) ($r['category'] ?? 'Umum'),
+                'stock'   => (int) $r['stock_qty'],
+                'counted' => (int) $r['counted_qty'],
+                'diff'    => (float) $r['diff_amount'],
+                'dir'     => (string) $r['direction'],
+            ];
+        }
+
+        $this->jsonOut([
+            'ok'    => true,
+            'total' => $total,
+            'items' => $items,
+            'ms'    => (int) round((microtime(true) - $t0) * 1000),
+        ]);
+    }
+
+    /**
+     * MODE CEPAT — daftar group + jumlah item untuk filter multi-pilih.
+     */
+    public function quickGroups(): never
+    {
+        $this->requireReconAccess();
+
+        $model = new Reconciliation();
+        $out   = [];
+        foreach ($model->summaryPerGroup() as $g) {
+            $gid = (int) $g['group_id'];
+            $out[] = [
+                'id'   => $gid,
+                'name' => (string) $g['group_name'],
+                // jumlah mengikuti WHERE panel (termasuk baris recheck) supaya
+                // angka di dropdown sama dengan jumlah yang muncul saat dipilih
+                'n'    => $model->quickTotal(['gids' => [$gid]]),
+            ];
+        }
+
+        $this->jsonOut(['ok' => true, 'groups' => $out]);
+    }
+
+    /**
+     * MODE CEPAT (input lapangan): simpan hasil hitung BANYAK item sekaligus.
+     *
+     * Dipakai panel "Mode Cepat" di menu Rekonsiliasi supaya petugas bisa
+     * memasukkan puluhan angka tanpa scroll tabel dan tanpa membuka modal
+     * satu per satu. Hanya baris yang benar-benar berubah yang ditulis.
+     *
+     * Request (form-urlencoded): _token, ids[], qty[<id>], reason (opsional)
+     * Response: JSON {ok, updated, unchanged, skipped, rows[]}
+     */
+    public function quickCount(): never
+    {
+        $this->requireReconAccess();
+        $this->verifyCsrf();
+
+        // Periode tutup -> tolak dengan JSON (panel butuh jawaban mesin).
+        $period = \App\Models\BookPeriod::current();
+        if ($period !== null && (($period['status'] ?? 'open') === 'closed' || ! empty($period['is_archive_view']))) {
+            $this->jsonOut([
+                'ok'    => false,
+                'error' => 'Tahun Buku ' . ($period['audit_month'] ?? '') . ' sudah ditutup (read-only). Data tidak bisa diubah.',
+            ], 409);
+        }
+
+        $rawIds = Request::input('ids', []);
+        if (is_string($rawIds)) { $rawIds = explode(',', $rawIds); }
+        if (! is_array($rawIds)) { $rawIds = []; }
+        $ids = array_values(array_unique(array_filter(array_map('intval', $rawIds), static fn ($v) => $v > 0)));
+
+        $qtys = Request::input('qty', []);
+        if (! is_array($qtys)) { $qtys = []; }
+
+        if ($ids === []) {
+            $this->jsonOut(['ok' => false, 'error' => 'Tidak ada baris yang dikirim.'], 422);
+        }
+
+        $reason = trim(Request::string('reason'));
+        if ($reason === '') { $reason = 'Input cepat (mode lapangan)'; }
+        $reason = mb_substr($reason . ' — ' . Auth::role(), 0, 255);
+
+        $reconModel = new Reconciliation();
+        $itemModel  = new Item();
+        $history    = new CountHistory();
+        $now        = date('Y-m-d H:i:s');
+        $isAdmin    = in_array(Auth::role(), ['poweradmin', 'adminsto'], true);
+
+        $codeStmt = \App\Core\Database::connection()->prepare('SELECT code FROM items WHERE id = ?');
+
+        $updated = 0;
+        $unchanged = 0;
+        $skipped = 0;
+        $out = [];
+        $codes = [];
+        $logGroupId = 0;
+
+        foreach (array_slice($ids, 0, 300) as $id) {
+            $row = $reconModel->find($id);
+            if ($row === null) { $skipped++; continue; }
+            if (! Auth::canSeeGroup((int) $row['group_id'])) { $skipped++; continue; }
+
+            if (! array_key_exists($id, $qtys) && ! array_key_exists((string) $id, $qtys)) { $skipped++; continue; }
+            $raw = array_key_exists($id, $qtys) ? $qtys[$id] : $qtys[(string) $id];
+            if (! is_numeric($raw)) { $skipped++; continue; }
+            $newQty = (int) $raw;
+            if ($newQty < 0 || $newQty > 1000000000) { $skipped++; continue; }
+
+            $oldQty = (int) $row['counted_qty'];
+            if ($oldQty === $newQty) { $unchanged++; continue; }
+
+            $stockQty  = (int) $row['stock_qty'];
+            $unitPrice = (float) $row['unit_price'];
+            $diff      = $newQty - $stockQty;
+            $dir       = $diff > 0 ? 'plus' : ($diff < 0 ? 'minus' : 'match');
+            $newStatus = $isAdmin ? 'verified' : 'pending_verify';
+
+            $reconModel->updateById($id, [
+                'counted_qty'  => $newQty,
+                'difference'   => $diff,
+                'direction'    => $dir,
+                'stock_amount' => round($stockQty * $unitPrice, 2),
+                'count_amount' => round($newQty * $unitPrice, 2),
+                'diff_amount'  => round($diff * $unitPrice, 2),
+                'status'       => $newStatus,
+                'submitted_by' => Auth::id(),
+                'submitted_at' => $now,
+                'verified_by'  => $isAdmin ? Auth::id() : $row['verified_by'],
+                'verified_at'  => $isAdmin ? $now : $row['verified_at'],
+                'verify_note'  => $isAdmin ? 'Input cepat oleh ' . Auth::role() : $row['verify_note'],
+            ]);
+
+            // Sinkronkan master item supaya Data STO / Audit ikut angka terbaru.
+            $itemModel->updateById((int) $row['item_id'], [
+                'counted_qty' => $newQty,
+                'counted_by'  => Auth::id(),
+                'counted_at'  => $now,
+            ]);
+
+            $history->record((int) $row['item_id'], $id, 'counted_qty', $oldQty, $newQty, $reason, 'quick_entry');
+
+            $codeStmt->execute([(int) $row['item_id']]);
+            $codes[] = (string) ($codeStmt->fetchColumn() ?: ('#' . $id));
+
+            if ($logGroupId === 0) { $logGroupId = (int) $row['group_id']; }
+            $updated++;
+            $out[] = [
+                'id'           => $id,
+                'counted_qty'  => $newQty,
+                'difference'   => $diff,
+                'direction'    => $dir,
+                'diff_amount'  => round($diff * $unitPrice, 2),
+                'status'       => $newStatus,
+                'status_label' => $newStatus === 'verified' ? 'Terverifikasi' : 'Menunggu Verifikasi',
+            ];
+        }
+
+        if ($updated > 0) {
+            $list = implode(', ', array_slice($codes, 0, 10));
+            if (count($codes) > 10) { $list .= ' +' . (count($codes) - 10) . ' lainnya'; }
+            // group_id wajib diisi supaya entri muncul di halaman Aktivitas
+            // (processTrail memfilter per group yang terlihat oleh user).
+            (new ActivityLog())->record(
+                'update',
+                'reconciliation',
+                0,
+                "Input cepat (mode lapangan): {$updated} item diperbarui ({$list}).",
+                $logGroupId > 0 ? $logGroupId : null
+            );
+        }
+
+        $this->jsonOut([
+            'ok'        => true,
+            'updated'   => $updated,
+            'unchanged' => $unchanged,
+            'skipped'   => $skipped,
+            'rows'      => $out,
+        ]);
+    }
+
+    /** Kirim JSON lalu hentikan request (dipakai panel Mode Cepat). */
+    private function jsonOut(array $payload, int $status = 200): never
+    {
+        if (! headers_sent()) {
+            http_response_code($status);
+            header('Content-Type: application/json; charset=utf-8');
+            header('Cache-Control: no-store');
+        }
+        echo json_encode($payload, JSON_UNESCAPED_UNICODE);
+        exit;
+    }
+
+    /**
      * Sinkronisasi data rekonsiliasi dari items.
      */
     public function sync(): string

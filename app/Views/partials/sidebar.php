@@ -16,7 +16,7 @@ use App\Core\Request;
 
 $path = trim(Request::path(), '/');
 
-$allNavPaths = ['dashboard', 'progress', 'items', 'items/memo', 'items/memo_index', 'audit', 'tahun-buku', 'reports', 'discrepancies', 'reconciliation', 'reconciliation/audit', 'notifications', 'master-data', 'groups', 'users', 'user-rules', 'warehouses', 'locations', 'devices', 'import', 'exports', 'activity', 'profile'];
+$allNavPaths = ['dashboard', 'progress', 'items', 'items/memo', 'items/memo_index', 'audit', 'tahun-buku', 'reports', 'discrepancies', 'reconciliation', 'reconciliation/audit', 'notifications', 'informasi', 'employee-ids', 'master-data', 'groups', 'users', 'user-rules', 'warehouses', 'locations', 'devices', 'import', 'exports', 'activity', 'profile'];
 $isActivePath = '';
 foreach ($allNavPaths as $cand) {
     $candTrim = trim($cand, '/');
@@ -110,6 +110,7 @@ if ($__bp) {
         if (in_array(\App\Core\Auth::role(), ['poweradmin', 'adminsto'], true)) {
             $opItems[] = ['reconciliation/audit', 'reconciliation/audit', __('nav.recon_audit'), 'shield-check'];
         }
+        $opItems[] = ['informasi', 'informasi', __('Informasi'), 'info'];
         $opItems[] = ['notifications', 'notifications', __('nav.notifications'), 'bell', $unread];
 
         if (function_exists('can_view_menu')) {
@@ -152,7 +153,7 @@ if ($__bp) {
         }
         if (can('manage_users')) {
             $masterItems[] = ['users',     'users',     __('nav.users'),     'users'];
-            $masterItems[] = ['employee-ids', 'users', __('ID Karyawan'), 'barcode'];
+            $masterItems[] = ['employee-ids', 'employee-ids', __('ID Karyawan'), 'barcode'];
         }
         if (function_exists('can_view_menu') && can_view_menu('user-rules')) {
             $masterItems[] = ['user-rules', 'user-rules', __('Rules User'), 'shield'];

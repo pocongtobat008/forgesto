@@ -167,6 +167,21 @@ $errId  = (string) ($errors['employee_id'] ?? '');
                         </p>
                     </div>
 
+                    <div class="pp-field" id="ppDeviceField">
+                        <label for="device_display"><?= e(__('Tablet')) ?></label>
+                        <input
+                            type="text"
+                            id="device_display"
+                            value=""
+                            placeholder="<?= e(__('Terisi otomatis dari Nomor Karyawan')) ?>"
+                            readonly
+                            aria-describedby="device_help"
+                            style="background:#f5f3fb;cursor:default;text-overflow:ellipsis;">
+                        <p class="pp-hint" id="device_help">
+                            <?= e(__('Tablet yang didaftarkan untuk ID Anda. Status tablet berubah menjadi "dipakai" saat Anda masuk.')) ?>
+                        </p>
+                    </div>
+
                     <div class="pp-row">
                         <a href="#" class="pp-forgot" id="ppForgot"><?= e(__('Lupa Nomor Karyawan?')) ?></a>
                     </div>
@@ -212,7 +227,54 @@ $errId  = (string) ($errors['employee_id'] ?? '');
         toastTimer = setTimeout(function () { toast.classList.remove('is-on'); }, 3200);
     }
 
+    var deviceInput = document.getElementById('device_display');
+    var lookupUrl   = <?= json_encode(url('login/device'), JSON_UNESCAPED_SLASHES) ?>;
+    var lookupTimer = null;
+    var lookupSeq   = 0;
+
+    var helpEl   = document.getElementById('device_help');
+    var baseHelp = helpEl ? helpEl.textContent.trim() : '';
+
+    function setDevice(text, help) {
+        if (!deviceInput) return;
+        deviceInput.value = text;
+        deviceInput.title = text;
+        if (helpEl) { helpEl.textContent = help || baseHelp; }
+    }
+
+    function lookupDevice() {
+        if (!input || !deviceInput) return;
+        var id = (input.value || '').trim().toUpperCase();
+        if (id.length < 3) { setDevice(''); return; }
+
+        var seq = ++lookupSeq;
+        fetch(lookupUrl + '?employee_id=' + encodeURIComponent(id), {
+            headers: { 'Accept': 'application/json' },
+            credentials: 'same-origin'
+        })
+        .then(function (r) { return r.ok ? r.json() : null; })
+        .then(function (data) {
+            if (seq !== lookupSeq) return;
+            if (!data || !data.found) { setDevice(''); return; }
+            if (!data.device) { setDevice(<?= json_encode(__('Belum ada tablet terdaftar'), JSON_UNESCAPED_UNICODE) ?>); return; }
+            var d = data.device;
+            var label = d.code + ' \u00b7 ' + d.name;
+            var help = <?= json_encode(__('Lokasi'), JSON_UNESCAPED_UNICODE) ?> + ': ' + (d.location || '\u2014')
+                     + ' \u00b7 ' + <?= json_encode(__('Status'), JSON_UNESCAPED_UNICODE) ?> + ': '
+                     + (d.status === 'in_use' ? <?= json_encode(__('dipakai'), JSON_UNESCAPED_UNICODE) ?> : <?= json_encode(__('free'), JSON_UNESCAPED_UNICODE) ?>);
+            setDevice(label, help);
+        })
+        .catch(function () { /* diamkan */ });
+    }
+
     if (input) {
+        input.addEventListener('input', function () {
+            clearTimeout(lookupTimer);
+            lookupTimer = setTimeout(lookupDevice, 320);
+        });
+        input.addEventListener('blur', lookupDevice);
+        if ((input.value || '').trim().length >= 3) { lookupDevice(); }
+
         // ID karyawan selalu kapital
         input.addEventListener('input', function () {
             var pos = this.selectionStart;

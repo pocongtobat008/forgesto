@@ -621,3 +621,46 @@ html[data-theme="dark"] .sf-vm { background: color-mix(in srgb, var(--surface) 9
   .sf-vm.is-collapsed { transform: none; }
   .sf-vm-handle { transition: none; }
 }
+
+/* Dock tampilan TIDAK boleh menutupi tombol Simpan di popup mana pun */
+html.rd-lock .sf-vm,
+body.qe-lock .sf-vm,
+body.modal-open .sf-vm,
+body:has(.qe-backdrop:not([hidden])) .sf-vm,
+body:has(.rd-drawer.is-open) .sf-vm,
+body:has(.wh-modal.is-open) .sf-vm,
+body:has(.sf-modal.is-open) .sf-vm { display: none !important; }
+
+
+/* ==========================================================================
+   Dock "Penyesuaian tampilan" (.sf-vm + .sf-vm-handle)
+   Aturan: SELALU kalah di bawah pop up apa pun.
+   1. z-index diturunkan (30) — di bawah semua backdrop/modal (100+/940/1300).
+   2. Disembunyikan total selama ada dialog/panel/drawer terbuka, supaya tidak
+      pernah menutupi tombol Simpan / footer pop up.
+   ========================================================================== */
+.sf-vm-handle { z-index: 30 !important; }
+
+body.sf-overlay-open .sf-vm,
+body.sf-overlay-open .sf-vm-handle,
+html.rd-lock .sf-vm-handle,
+body.qe-lock .sf-vm-handle,
+body.modal-open .sf-vm-handle,
+body:has(dialog[open]) .sf-vm-handle,
+body:has(.modal.show) .sf-vm-handle,
+body:has(.modal.in) .sf-vm-handle,
+body:has(.sf-modal.is-open) .sf-vm-handle,
+body:has(.wh-modal.is-open) .sf-vm-handle,
+body:has(.rd-drawer.is-open) .sf-vm-handle,
+body:has(.qe-backdrop:not([hidden])) .sf-vm-handle {
+    opacity: 0 !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+    .sf-vm-handle {
+        transition: opacity .16s ease, visibility 0s linear .16s,
+                    transform .14s ease, background .14s ease, color .14s ease;
+    }
+}

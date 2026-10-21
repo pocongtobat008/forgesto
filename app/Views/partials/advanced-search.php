@@ -45,7 +45,7 @@ $AS_OPS = [
 $__asActive = count($asCurrent);
 ?>
 <div class="adv-backdrop" id="<?= e($backdropId) ?>" hidden></div>
-<aside class="adv-drawer" id="<?= e($panelId) ?>" role="dialog" aria-modal="true" aria-labelledby="<?= e($panelId) ?>-title" hidden>
+<aside class="adv-drawer" id="<?= e($panelId) ?>" data-adv-build="PASS20" role="dialog" aria-modal="true" aria-labelledby="<?= e($panelId) ?>-title" hidden>
     <div class="adv-drawer-head">
         <div>
             <strong id="<?= e($panelId) ?>-title"><?= e(__('label.advanced_search')) ?></strong>
@@ -187,7 +187,7 @@ $__asActive = count($asCurrent);
       var op = r.querySelector('.adv-op').value;
       var sel = selectedOfRow(r);
 
-      if (op === 'in') {
+      if (op === 'in' || sel.length > 1) {
         if (sel.length > 0) {
           trigger.classList.add('has-value');
           textEl.innerHTML = '<span class="adv-badge-check">' + SVG_CHECK + '</span> <strong>' + sel.length + '</strong> dipilih: ' + esc(sel.slice(0, 2).join(', ')) + (sel.length > 2 ? '...' : '');
@@ -215,8 +215,6 @@ $__asActive = count($asCurrent);
     function renderComboOptions() {
       if (!activeComboRow) return;
       var col = activeComboRow.querySelector('.adv-col').value;
-      var op = activeComboRow.querySelector('.adv-op').value;
-      var isMulti = (op === 'in');
       var vals = distinctCache[col] || [];
       var q = comboPop.querySelector('.adv-search-input').value.trim();
       var qLower = q.toLowerCase();
@@ -255,7 +253,7 @@ $__asActive = count($asCurrent);
         return esc(before) + '<mark class="adv-hl">' + esc(match) + '</mark>' + esc(after);
       }
 
-      if (isMulti) {
+      {
         listEl.innerHTML = filtered.map(function (v) {
           var on = currentMultiSet.indexOf(v) !== -1;
           return '<label class="adv-opt-item is-multi' + (on ? ' is-checked' : '') + '">' +
@@ -263,23 +261,32 @@ $__asActive = count($asCurrent);
                  '  <span class="adv-opt-label">' + highlight(v, q) + '</span>' +
                  '</label>';
         }).join('');
-      } else {
-        var curVal = (activeComboRow.querySelector('.adv-val').value || '').trim();
-        listEl.innerHTML = filtered.map(function (v) {
-          var isSel = (v === curVal);
-          return '<div class="adv-opt-item is-single' + (isSel ? ' is-selected' : '') + '" data-val="' + esc(v) + '" role="option">' +
-                 '  <span class="adv-opt-label">' + highlight(v, q) + '</span>' +
-                 (isSel ? '<span class="adv-opt-check">' + SVG_CHECK + '</span>' : '') +
-                 '</div>';
-        }).join('');
       }
+    }
+
+    // Pastikan popover pilihan nilai SELALU di atas overlay lain yang sedang terbuka
+    // (drawer pencarian lanjutan z-index 1200, qe-backdrop 1300, rd-drawer 1500, dst).
+    function liftComboAboveOverlays() {
+      var maxZ = 1000;
+      var nodes = document.querySelectorAll('body > *');
+      for (var i = 0; i < nodes.length; i++) {
+        var el = nodes[i];
+        if (el === comboPop || el === comboBackdrop) continue;
+        if (el.hidden) continue;
+        var cs = window.getComputedStyle(el);
+        if (cs.display === 'none' || cs.visibility === 'hidden') continue;
+        if (cs.position !== 'fixed' && cs.position !== 'absolute') continue;
+        var z = parseInt(cs.zIndex, 10);
+        if (!isNaN(z) && z > maxZ) maxZ = z;
+      }
+      comboBackdrop.style.setProperty('z-index', String(maxZ + 10), 'important');
+      comboPop.style.setProperty('z-index', String(maxZ + 20), 'important');
     }
 
     function openComboPop(r) {
       activeComboRow = r;
       var col = r.querySelector('.adv-col').value;
       var op = r.querySelector('.adv-op').value;
-      var isMulti = (op === 'in');
       var colLabel = COLS[col] || col;
 
       comboPop.querySelector('.adv-pop-title').textContent = 'Pilih ' + colLabel;
@@ -288,28 +295,20 @@ $__asActive = count($asCurrent);
       var applyBtn = comboPop.querySelector('.adv-pop-btn-apply');
       var cancelBtn = comboPop.querySelector('.adv-pop-btn-cancel');
 
-      if (isMulti) {
-        badge.textContent = 'Pilih Banyak (OR)';
-        badge.className = 'adv-pop-badge is-multi-badge';
-        multiActions.style.display = 'inline-flex';
-        applyBtn.style.display = 'inline-flex';
-        cancelBtn.textContent = 'Batal';
-        currentMultiSet = selectedOfRow(r);
-        applyBtn.textContent = currentMultiSet.length ? ('Terapkan (' + currentMultiSet.length + ')') : 'Terapkan';
-      } else {
-        badge.textContent = 'Pilih 1 Nilai';
-        badge.className = 'adv-pop-badge is-single-badge';
-        multiActions.style.display = 'none';
-        applyBtn.style.display = 'none';
-        var hasVal = !!r.querySelector('.adv-val').value.trim();
-        cancelBtn.textContent = hasVal ? 'Kosongkan Nilai' : 'Tutup';
-        currentMultiSet = [];
-      }
+      // Multi-pilih selalu aktif (tidak bergantung operator)
+      badge.textContent = 'Pilih 1 atau lebih';
+      badge.className = 'adv-pop-badge is-multi-badge';
+      multiActions.style.display = 'inline-flex';
+      applyBtn.style.display = 'inline-flex';
+      cancelBtn.textContent = 'Tutup';
+      currentMultiSet = selectedOfRow(r);
+      applyBtn.textContent = currentMultiSet.length ? ('Terapkan (' + currentMultiSet.length + ')') : 'Terapkan';
 
       var searchInp = comboPop.querySelector('.adv-search-input');
       searchInp.value = '';
       comboPop.querySelector('.adv-pop-list').innerHTML = '<div class="adv-empty-state"><p class="adv-empty-text">Memuat pilihan...</p></div>';
 
+      liftComboAboveOverlays();
       comboBackdrop.hidden = false;
       comboPop.hidden = false;
 
@@ -359,11 +358,31 @@ $__asActive = count($asCurrent);
 
     // Apply button for multi-select
     comboPop.querySelector('.adv-pop-btn-apply').addEventListener('click', function () {
-      if (!activeComboRow) return;
-      activeComboRow.querySelector('.adv-val').value = currentMultiSet.join('\x1f');
-      refreshTriggerLabel(activeComboRow);
-      closeComboPop();
+      applyComboSelection();
     });
+
+    // Terapkan pilihan: 0 = kosong, 1 = "=" , >1 = "salah satu dari" (in)
+    function applyComboSelection() {
+      if (!activeComboRow) return;
+      var row = activeComboRow;
+      var opSel = row.querySelector('.adv-op');
+      var valInput = row.querySelector('.adv-val');
+      var n = currentMultiSet.length;
+      var newVal = '';
+      if (n === 1) {
+        // Satu nilai: operator "salah satu dari" tidak relevan -> kembali ke "sama dengan".
+        // Operator lain (mengandung, diawali, ...) dibiarkan apa adanya.
+        if (opSel.value === 'in') opSel.value = 'equals';
+        newVal = currentMultiSet[0];
+      } else if (n > 1) {
+        if (opSel.value !== 'in' && opSel.value !== 'not_in') opSel.value = 'in';
+        newVal = currentMultiSet.join('\x1f');
+      }
+      valInput.value = newVal;
+      updateRowControls(row, newVal);
+      refreshTriggerLabel(row);
+      closeComboPop();
+    }
 
     // Cancel / Clear button
     comboPop.querySelector('.adv-pop-btn-cancel').addEventListener('click', function () {
@@ -395,48 +414,41 @@ $__asActive = count($asCurrent);
         return;
       }
 
-      var op = activeComboRow.querySelector('.adv-op').value;
-      var isMulti = (op === 'in');
+    });
 
-      if (isMulti) {
-        var cbLabel = e.target.closest('.adv-opt-item.is-multi');
-        if (cbLabel) {
-          var cb = cbLabel.querySelector('input.adv-opt-cb');
-          if (e.target !== cb) cb.checked = !cb.checked;
-          var val = cb.value;
-          var idx = currentMultiSet.indexOf(val);
-          if (cb.checked && idx === -1) {
-            currentMultiSet.push(val);
-          } else if (!cb.checked && idx !== -1) {
-            currentMultiSet.splice(idx, 1);
-          }
-          cbLabel.classList.toggle('is-checked', cb.checked);
-          var applyBtn = comboPop.querySelector('.adv-pop-btn-apply');
-          applyBtn.textContent = currentMultiSet.length ? ('Terapkan (' + currentMultiSet.length + ')') : 'Terapkan';
-        }
-      } else {
-        var singleItem = e.target.closest('.adv-opt-item.is-single');
-        if (singleItem) {
-          var chosenVal = singleItem.getAttribute('data-val');
-          activeComboRow.querySelector('.adv-val').value = chosenVal;
-          refreshTriggerLabel(activeComboRow);
-          closeComboPop();
-        }
+    // Perubahan centang (klik label, klik kotak, atau keyboard) disinkronkan di sini.
+    // Jangan toggle manual: <label> sudah men-toggle checkbox secara native.
+    comboPop.querySelector('.adv-pop-list').addEventListener('change', function (e) {
+      var cb = e.target.closest ? e.target.closest('input.adv-opt-cb') : null;
+      if (!cb) return;
+      var val = cb.value;
+      var idx = currentMultiSet.indexOf(val);
+      if (cb.checked && idx === -1) {
+        currentMultiSet.push(val);
+      } else if (!cb.checked && idx !== -1) {
+        currentMultiSet.splice(idx, 1);
       }
+      var lbl = cb.closest('.adv-opt-item');
+      if (lbl) lbl.classList.toggle('is-checked', cb.checked);
+      var applyBtn = comboPop.querySelector('.adv-pop-btn-apply');
+      applyBtn.textContent = currentMultiSet.length ? ('Terapkan (' + currentMultiSet.length + ')') : 'Terapkan';
     });
 
     // Keyboard navigation inside popover
     comboPop.addEventListener('keydown', function (e) {
       if (e.key === 'Escape') {
+        // jangan teruskan ke handler global: panel pencarian lanjutan tidak ikut tertutup
+        e.stopPropagation();
+        e.preventDefault();
         closeComboPop();
       } else if (e.key === 'Enter') {
+        e.stopPropagation();
         var list = comboPop.querySelector('.adv-pop-list');
-        var firstSingle = list.querySelector('.adv-opt-item.is-single');
         var useBtn = list.querySelector('.adv-use-custom-btn');
-        if (firstSingle) {
-          firstSingle.click();
-        } else if (useBtn) {
+        if (useBtn) {
           useBtn.click();
+        } else if (currentMultiSet.length) {
+          applyComboSelection();
         }
       }
     });
@@ -650,7 +662,10 @@ $__asActive = count($asCurrent);
     if (closeBtn) closeBtn.addEventListener('click', close);
     BACK.addEventListener('click', close);
     document.addEventListener('keydown', function (e) {
-      if (e.key === 'Escape' && !PANEL.hidden && comboPop.hidden) close();
+      if (e.key !== 'Escape') return;
+      // Esc menutup popover pilihan nilai dulu, baru drawer pencarian lanjutan
+      if (!comboPop.hidden) { closeComboPop(); return; }
+      if (!PANEL.hidden) close();
     });
     FORM.addEventListener('submit', writeHidden, true);
 

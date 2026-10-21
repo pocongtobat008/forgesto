@@ -49,6 +49,20 @@ $value = static function (string $key, mixed $default = '') use ($group) {
                     <?php if ($error = errors('name')): ?><span class="field-error"><?= e($error) ?></span><?php endif; ?>
                 </div>
 
+                <div class="form-group">
+                    <label for="pic_employee_id"><?= __('ID PIC') ?></label>
+                    <input type="text" id="pic_employee_id" name="pic_employee_id" value="<?= e($value('pic_employee_id')) ?>" maxlength="80" placeholder="WE100001" autocomplete="off">
+                    <span class="field-hint"><?= __('ID karyawan penanggung jawab group (opsional).') ?></span>
+                    <?php if ($error = errors('pic_employee_id')): ?><span class="field-error"><?= e($error) ?></span><?php endif; ?>
+                </div>
+
+                <div class="form-group">
+                    <label for="pic_name"><?= __('Nama PIC') ?></label>
+                    <input type="text" id="pic_name" name="pic_name" value="<?= e($value('pic_name')) ?>" maxlength="150" placeholder="Nama penanggung jawab" autocomplete="off">
+                    <span class="field-hint"><?= __('Kosongkan untuk mengambil nama dari master karyawan.') ?></span>
+                    <?php if ($error = errors('pic_name')): ?><span class="field-error"><?= e($error) ?></span><?php endif; ?>
+                </div>
+
                 <div class="form-group form-span-2">
                     <label for="description"><?= __('Deskripsi') ?></label>
                     <textarea id="description" name="description" rows="2" maxlength="255" placeholder="<?= __('Keterangan singkat group') ?>"><?= e($value('description')) ?></textarea>

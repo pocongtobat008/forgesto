@@ -52,6 +52,11 @@ class Application
                 return;
             }
         }
+        // Endpoint pendukung form login (mis. /login/device) tetap publik.
+        if (str_starts_with($path, '/login/')) {
+            return;
+        }
+
         if (preg_match('#^/(assets|templates|uploads|public)/#', $path) === 1) {
             return;
         }

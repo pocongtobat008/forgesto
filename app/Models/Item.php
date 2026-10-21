@@ -93,6 +93,7 @@ class Item extends Model
         'name'     => 'i.name',
         'group'    => 'g.name',
         'location' => 'l.name',
+        'subinv'   => 'i.sub_inventory',
         'device'   => 'd.name',
         'expected' => 'i.expected_qty',
         'counted'  => 'i.counted_qty',
@@ -940,6 +941,8 @@ class Item extends Model
 
     public function markCounted(int $id, int $qty, int $userId, ?string $note): void
     {
+        $before = (new ItemHistory())->statusOf($id);
+
         $this->updateById($id, [
             'counted_qty'    => $qty,
             'count_status'   => self::COUNT_COUNTED,
@@ -949,6 +952,16 @@ class Item extends Model
             'counted_at'     => date('Y-m-d H:i:s'),
             'needs_recount'  => 0,
         ]);
+
+        ItemHistory::logChange(
+            $id,
+            ItemHistory::ACTION_COUNTED,
+            $before,
+            self::COUNT_COUNTED,
+            $userId,
+            ['counted_qty' => $qty],
+            $note
+        );
     }
 
     /**
@@ -962,6 +975,8 @@ class Item extends Model
      */
     public function markPosted(int $id, int $userId): void
     {
+        $before = (new ItemHistory())->statusOf($id);
+
         $this->updateById($id, [
             'count_status'  => self::COUNT_POSTED,
             'audit_status'  => self::AUDIT_PENDING,
@@ -970,6 +985,15 @@ class Item extends Model
             'posted_at'     => date('Y-m-d H:i:s'),
             'is_locked'     => 1,
         ]);
+
+        ItemHistory::logChange(
+            $id,
+            ItemHistory::ACTION_POSTED,
+            $before,
+            self::COUNT_POSTED,
+            $userId,
+            ['via' => 'markPosted']
+        );
     }
 
     /**
@@ -979,12 +1003,24 @@ class Item extends Model
      */
     public function markRecount(int $id): void
     {
+        $before = (new ItemHistory())->statusOf($id);
+
         $this->updateById($id, [
             'count_status'  => self::COUNT_COUNTED,
             'audit_status'  => self::AUDIT_RECOUNT,
             'needs_recount' => 1,
             'is_locked'     => 0,
         ]);
+
+        ItemHistory::logChange(
+            $id,
+            ItemHistory::ACTION_RECOUNT_REQUEST,
+            $before,
+            self::COUNT_COUNTED,
+            null,
+            ['audit_status' => self::AUDIT_RECOUNT, 'needs_recount' => 1],
+            'Cek ulang diminta admin'
+        );
     }
 
     public function unlock(int $id): void
@@ -1180,6 +1216,12 @@ class Item extends Model
     /** Batalkan (recount) semua item dalam satu batch: kembali ke counted. */
     public function reopenBatch(int $batchId): int
     {
+        $rows = $this->query(
+            "SELECT id, count_status FROM items
+             WHERE batch_id = ? AND count_status IN ('posted','submitted','audited','reconciled')",
+            [$batchId]
+        );
+
         $stmt = $this->run(
             "UPDATE items
              SET count_status = 'counted', audit_status = 'recount', is_locked = 0
@@ -1187,7 +1229,24 @@ class Item extends Model
             [$batchId]
         );
 
-        return $stmt->rowCount();
+        $moved = $stmt->rowCount();
+
+        if ($moved > 0) {
+            $log = [];
+            foreach ($rows as $r) {
+                $log[] = [
+                    'item_id'  => (int) $r['id'],
+                    'action'   => ItemHistory::ACTION_RECOUNT,
+                    'from'     => (string) $r['count_status'],
+                    'to'       => self::COUNT_COUNTED,
+                    'metadata' => ['batch_id' => $batchId, 'audit_status' => self::AUDIT_RECOUNT],
+                    'notes'    => 'Batch #' . $batchId . ' dibuka ulang (recount)',
+                ];
+            }
+            ItemHistory::logMany($log);
+        }
+
+        return $moved;
     }
 
     /**
@@ -1195,10 +1254,22 @@ class Item extends Model
      */
     public function markReconciled(int $itemId): void
     {
+        $before = (new ItemHistory())->statusOf($itemId);
+
         $this->updateById($itemId, [
             'count_status' => self::COUNT_RECONCILED,
             'audit_status' => self::AUDIT_RESOLVED,
         ]);
+
+        ItemHistory::logChange(
+            $itemId,
+            ItemHistory::ACTION_RECONCILED,
+            $before,
+            self::COUNT_RECONCILED,
+            null,
+            ['audit_status' => self::AUDIT_RESOLVED],
+            'Rekonsiliasi selesai'
+        );
     }
 
     /**

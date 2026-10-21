@@ -262,6 +262,13 @@ require __DIR__ . '/../partials/progress_overview.php'; ?>
     var closeBtn = document.getElementById('prg-close');
     var emptyMsg = document.getElementById('prg-empty');
 
+    /* PASS21: keluarkan drawer dari .content/.app-shell.
+       .app-shell punya z-index:1 (sf-glass.css) dan .content punya animasi opacity,
+       keduanya membentuk stacking context -> drawer (z-index 1001) terkurung:
+       header tertutup topbar dan footer tertimpa pil "Tampilan" (.sf-vm, z-index 940). */
+    if (drawer.parentNode !== document.body) document.body.appendChild(drawer);
+    if (backdrop.parentNode !== document.body) document.body.appendChild(backdrop);
+
     var endpoint = <?= json_encode(url('progress/group'), JSON_UNESCAPED_SLASHES) ?>;
     var lastFocus = null;
     var activeGroup = null;

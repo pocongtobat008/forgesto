@@ -131,6 +131,9 @@ $xfBtn = static fn (string $k, string $lbl): string => '<button type="button" cl
                             <td data-col="name" data-label="<?= __('Nama Group') ?>">
                                 <div class="cell-title"><a href="<?= url('groups/' . (int) $group['id']) ?>" style="color:inherit;text-decoration:none;"><?= e($group['name']) ?></a></div>
                                 <div class="cell-sub"><?= e($group['description'] ?: '-') ?></div>
+                                <?php if (! empty($group['pic_name']) || ! empty($group['pic_employee_id'])): ?>
+                                    <div class="cell-sub"><?= __('PIC') ?>: <?= e($group['pic_name'] ?: $group['pic_employee_id']) ?><?= ! empty($group['pic_name']) && ! empty($group['pic_employee_id']) ? ' <span class="mono">(' . e($group['pic_employee_id']) . ')</span>' : '' ?></div>
+                                <?php endif; ?>
                             </td>
                             <td data-col="warehouse" data-label="<?= __('Gudang / Situs') ?>" class="col-hide-tablet">
                                 <?php if (!empty($group['warehouse_name'])): ?>

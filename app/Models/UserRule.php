@@ -97,6 +97,13 @@ class UserRule extends Model
                 'sample'       => 'Status Sampling',
             ],
         ],
+        'informasi' => [
+            'name'    => 'Informasi',
+            'group'   => 'operasional',
+            'icon'    => 'info',
+            'route'   => 'informasi',
+            'columns' => [],
+        ],
         'tahun-buku' => [
             'name'    => 'Tahun Buku',
             'group'   => 'operasional',
@@ -213,6 +220,18 @@ class UserRule extends Model
                 'role'     => 'Role Akses',
                 'group'    => 'Group Delegasi',
                 'status'   => 'Status Akun',
+            ],
+        ],
+        'employee-ids' => [
+            'name'    => 'ID Karyawan',
+            'group'   => 'master',
+            'icon'    => 'barcode',
+            'route'   => 'employee-ids',
+            'columns' => [
+                'employee_no' => 'ID Karyawan',
+                'name'        => 'Nama',
+                'group'       => 'Group',
+                'status'      => 'Status',
             ],
         ],
         'user-rules' => [
@@ -411,7 +430,7 @@ class UserRule extends Model
         $role ??= Auth::role() ?? 'observer';
 
         // Power Admin selalu berhak atas user-rules, users, & dashboard (safety guard agar tidak terkunci)
-        if ($role === 'poweradmin' && in_array($menuKey, ['user-rules', 'users', 'dashboard'], true)) {
+        if ($role === 'poweradmin' && in_array($menuKey, ['user-rules', 'users', 'employee-ids', 'dashboard'], true)) {
             return true;
         }
 
@@ -434,7 +453,7 @@ class UserRule extends Model
         $role ??= Auth::role() ?? 'observer';
 
         // Power Admin selalu punya full action pada user-rules & users
-        if ($role === 'poweradmin' && in_array($menuKey, ['user-rules', 'users'], true)) {
+        if ($role === 'poweradmin' && in_array($menuKey, ['user-rules', 'users', 'employee-ids'], true)) {
             return true;
         }
 

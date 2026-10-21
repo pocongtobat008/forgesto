@@ -292,3 +292,39 @@
 @media (min-width: 768px) and (max-width: 1023px) {
   html:not([data-view]) #items-table tbody td { vertical-align: middle; }
 }
+
+/* ---------- strip Qty Sistem / Hitung / Selisih di kartu ---------- */
+@media (max-width: 767px) {
+  html:not([data-view]) #items-table tbody td.qcell {
+    order: 9;
+    flex: 1 1 0;
+    min-width: 0;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: .05rem;
+    margin-top: .55rem;
+    padding: .38rem .2rem !important;
+    border: 1px solid var(--border-soft) !important;
+    border-radius: 10px !important;
+    background: color-mix(in srgb, var(--surface-2, #f6f8fc) 92%, transparent) !important;
+  }
+  html:not([data-view]) #items-table tbody td.qcell + td.qcell { margin-left: .35rem; }
+  html:not([data-view]) #items-table tbody td.qcell .qcell-lbl {
+    display: block;
+    font-size: .6rem;
+    line-height: 1;
+    letter-spacing: .05em;
+    text-transform: uppercase;
+    font-weight: 600;
+    color: var(--text-muted);
+  }
+  html:not([data-view]) #items-table tbody td.qcell .qcell-val {
+    font-weight: 700;
+    font-size: .95rem;
+    line-height: 1.15;
+  }
+  html:not([data-view]) #items-table tbody td.qcell.is-plus  .qcell-val { color: #b45309; }
+  html:not([data-view]) #items-table tbody td.qcell.is-minus .qcell-val { color: #b91c1c; }
+  html:not([data-view]) #items-table tbody td.qcell.is-zero  .qcell-val { color: #15803d; }
+}

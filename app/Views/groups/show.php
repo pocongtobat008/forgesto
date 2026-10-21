@@ -37,6 +37,7 @@ $pct = $stats['items'] > 0 ? (int) round($stats['counted'] * 100 / $stats['items
             <div><dt><?= __('Kode group') ?></dt><dd class="mono"><?= e($group['code']) ?></dd></div>
             <div><dt><?= __('Nama group') ?></dt><dd><?= e($group['name']) ?></dd></div>
             <div><dt><?= __('Gudang / Situs') ?></dt><dd><?= e($group['warehouse_name'] ?? '-') ?></dd></div>
+            <div><dt><?= __('PIC') ?></dt><dd><?= e($group['pic_name'] ?? '') ?><?= ! empty($group['pic_employee_id']) ? ' <span class="mono">(' . e($group['pic_employee_id']) . ')</span>' : '' ?><?= empty($group['pic_name']) && empty($group['pic_employee_id']) ? '-' : '' ?></dd></div>
             <div><dt><?= __('STO') ?></dt><dd><?= e($group['sto_name'] ?? '-') ?></dd></div>
             <div><dt><?= __('Jumlah rak / lokasi') ?></dt><dd><?= (int) $stats['locations'] ?></dd></div>
             <div><dt><?= __('Status') ?></dt><dd><span class="badge <?= (int) $group['is_active'] === 1 ? 'badge-success' : 'badge-danger' ?>"><?= (int) $group['is_active'] === 1 ? __('Aktif') : __('Nonaktif') ?></span></dd></div>

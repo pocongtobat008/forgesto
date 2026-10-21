@@ -3919,7 +3919,7 @@ body.sf-colresizing * {
   inset: 0 !important;
   background: rgba(15, 23, 42, 0.45) !important;
   backdrop-filter: blur(3px) !important;
-  z-index: 520 !important;
+  z-index: 1440 !important;
 }
 
 /* Popover Modal Terpusat Modern */
@@ -3934,7 +3934,7 @@ body.sf-colresizing * {
   border: 1px solid var(--border, #cbd5e1) !important;
   border-radius: 14px !important;
   box-shadow: 0 25px 60px -12px rgba(15, 23, 42, 0.35) !important;
-  z-index: 530 !important;
+  z-index: 1450 !important;
   display: flex !important;
   flex-direction: column !important;
   overflow: hidden !important;
@@ -8645,3 +8645,131 @@ table thead th .col-resize::after {
 /* Detail item: daftar label/nilai berjumlah ganjil -> item terakhir melebar
    penuh supaya tidak ada slot kosong di kolom kanan */
 .grid-2.text-sm > :last-child:nth-child(odd) { grid-column: 1 / -1; }
+
+
+/* ==========================================================================
+   PASS20: Kartu kondisi Pencarian Lanjutan lebih rapat
+   (jarak Kolom / Operator / Nilai Pencarian dipersempit, kontrol lebih pendek)
+   ========================================================================== */
+.adv-drawer-body .adv-row {
+  gap: 6px !important;
+  padding: 8px 10px !important;
+  margin-bottom: 8px !important;
+  border-radius: 10px !important;
+}
+.adv-drawer-body .adv-row .adv-field-label {
+  font-size: .63rem !important;
+  line-height: 1.1 !important;
+  margin-bottom: 2px !important;
+  letter-spacing: .03em !important;
+}
+.adv-drawer-body .adv-row-head {
+  gap: 6px !important;
+  align-items: flex-end !important;
+}
+.adv-drawer-body .adv-row-head select.adv-col,
+.adv-drawer-body .adv-row-head select.adv-op {
+  height: 34px !important;
+  min-height: 34px !important;
+  padding: .2rem .45rem !important;
+  font-size: .83rem !important;
+}
+.adv-drawer-body .adv-row-head .adv-del {
+  flex: 0 0 34px !important;
+  width: 34px !important;
+  height: 34px !important;
+  min-height: 34px !important;
+  font-size: 1.05rem !important;
+}
+.adv-drawer-body .adv-row .adv-val-container {
+  gap: 6px !important;
+  /* Baris kondisi kini flex-column: jangan pakai flex-basis 200px (warisan layout lama)
+     karena membuat jarak Kolom/Operator ke Nilai jadi jauh. */
+  flex: 0 0 auto !important;
+  min-height: 0 !important;
+  min-width: 0 !important;
+  width: 100% !important;
+  align-items: center !important;
+}
+.adv-drawer-body .adv-row .adv-val-trigger {
+  height: 34px !important;
+  min-height: 34px !important;
+  padding: 0 .6rem !important;
+  font-size: .83rem !important;
+}
+.adv-drawer-body .adv-row .adv-val-trigger .adv-val-text {
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+}
+.adv-drawer-body .adv-row input.adv-val {
+  height: 34px !important;
+  min-height: 34px !important;
+  font-size: .83rem !important;
+}
+.adv-drawer-body .adv-row .adv-val-mode {
+  width: 34px !important;
+  height: 34px !important;
+  min-height: 34px !important;
+  flex: 0 0 34px !important;
+}
+/* Panel: padding daftar kondisi dirapatkan */
+.adv-drawer-body { padding: 10px 12px !important; }
+
+/* ============================================================================
+   PASS21 — LAPISAN OVERLAY KONSISTEN
+   Masalah: topbar z-index 1000 dan pil tampilan (.sf-vm) z-index 940 berada di
+   atas drawer/modal lama (.adv-drawer 410, .col-mgr-panel 400, .modal-backdrop
+   250, .palette-backdrop 300) -> judul popup tertutup header, tombol footer
+   tertimpa pil "Tampilan". Selain itu .app-shell { z-index:1 } (sf-glass.css)
+   mengurung overlay yang dirender di dalam .content.
+   Skala baru: backdrop 1390 · panel 1400 · popover 1440+ · toast 1600.
+   ========================================================================== */
+/* Catatan: .adv-drawer/.adv-backdrop TIDAK diubah — sudah 1200/1190 !important
+   (sf-ui.css ~7430) sehingga sudah di atas topbar & pil tampilan. */
+.prg-backdrop       { z-index: 1390 !important; }
+.prg-drawer         { z-index: 1400 !important; }
+.rd-backdrop        { z-index: 1390 !important; }
+.rd-drawer          { z-index: 1400 !important; }
+.modal-backdrop     { z-index: 1390 !important; }
+.sf-modal-backdrop  { z-index: 1390 !important; }
+.palette-backdrop   { z-index: 1390 !important; }
+.col-mgr-panel      { z-index: 1380 !important; }
+.sf-toasts          { z-index: 1600 !important; }
+#sf-proc            { z-index: 1600 !important; }
+
+/* Pil "Tampilan" (Kartu/Tabel) disembunyikan selama drawer/modal terbuka,
+   supaya tidak menutupi tombol aksi di footer. */
+body:has(.adv-drawer:not([hidden])) .sf-vm,
+body:has(.prg-drawer.is-open) .sf-vm,
+body:has(.rd-drawer.is-open) .sf-vm,
+body:has(.modal-backdrop.is-open) .sf-vm,
+body:has(.sf-modal-backdrop.is-open) .sf-vm,
+body:has(.palette-backdrop.is-open) .sf-vm,
+body.prg-lock .sf-vm,
+body.qe-lock .sf-vm,
+body.no-scroll .sf-vm { display: none !important; }
+
+body:has(.adv-drawer:not([hidden])) .sf-vm-handle,
+body:has(.prg-drawer.is-open) .sf-vm-handle,
+body:has(.rd-drawer.is-open) .sf-vm-handle,
+body:has(.modal-backdrop.is-open) .sf-vm-handle,
+body:has(.sf-modal-backdrop.is-open) .sf-vm-handle,
+body:has(.palette-backdrop.is-open) .sf-vm-handle,
+body.prg-lock .sf-vm-handle,
+body.qe-lock .sf-vm-handle,
+body.no-scroll .sf-vm-handle { display: none !important; }
+
+/* Drawer/modal tidak boleh terpotong notch & home indicator */
+/* hanya drawer layar-penuh (top:0) yang perlu safe-area; .adv-drawer sudah
+   mulai di bawah topbar sehingga tidak boleh ditambah padding lagi */
+.rd-drawer-head { padding-top: max(1rem, env(safe-area-inset-top)) !important; }
+.rd-drawer-foot { padding-bottom: max(.85rem, calc(.85rem + env(safe-area-inset-bottom))) !important; }
+/* PASS21b — .app-shell tidak lagi menjadi stacking context.
+   Sebelumnya .app-shell { position:relative; z-index:1 } (sf-glass.css) mengurung
+   SEMUA overlay yang dirender di dalam .content: modal/drawer/palette kehilangan
+   z-index efektifnya dan tertimpa topbar (1000) maupun pil tampilan (940).
+   Latar aurora tetap di belakang karena urutan DOM (.sf-aurora sebelum .app-shell). */
+.app-shell { z-index: auto !important; }
+.sf-aurora { z-index: 0 !important; }
+

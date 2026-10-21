@@ -285,7 +285,16 @@ foreach ($__keepKeys as $__k) {
     </div>
     </div><!-- /.sf-tabtoolbar -->
     <div class="table-wrap">
-        <table class="data" id="items-table" data-rowdetail data-colmgr-key="items-v1" data-colmgr-prefix="items"><caption class="sr-only">Daftar barang</caption>
+        <?php
+    // Template standar (default) tabel item — sadar-role.
+    // Qty Sistem & Selisih HANYA untuk admin/poweradmin (can_see_stock_qty()).
+    $__canQty   = function_exists('can_see_stock_qty') && can_see_stock_qty();
+    $__preset   = ['actions', 'code', 'name', 'group', 'location', 'subinv'];
+    if ($__canQty) { $__preset[] = 'expected'; }
+    $__preset[] = 'counted';
+    if ($__canQty) { $__preset[] = 'diff'; }
+    ?>
+    <table class="data" id="items-table" data-rowdetail data-colmgr-key="items-v1" data-colmgr-prefix="items" data-colmgr-preset="<?= e(implode(',', $__preset)) ?>"><caption class="sr-only">Daftar barang</caption>
             <thead>
                 <tr>
                     <th data-col="select" style="width:44px" class="t-center th-select-all" title="<?= __('Pilih semua item tampil') ?>">
@@ -298,12 +307,24 @@ foreach ($__keepKeys as $__k) {
                     // REORDERED: Aksi + Status Hitung di kiri, HAPUS Sistem & Selisih (petugas tidak boleh lihat qty sistem)
                     $XF_COLS = [
                       ['count','Status Hitung',' t-center'],
-                      ['code','Kode',''], ['name','Nama',''], ['group','Group',''], ['location','Lokasi',''],
-                      ['device','Device',' col-hide-tablet'], 
-                      ['counted','Hitung',' col-hide-tablet t-center'], ['unit','Satuan',' col-hide-tablet t-center'],
+                      ['code','Kode',''], ['name','Nama',''], ['group','Group',''], ['location','Lokasi',''], ['subinv','Subinventory',''],
+                    ];
+                    // Qty Sistem & Selisih: hanya admin/poweradmin
+                    // Label pendek (kolom sempit) + tooltip panjang
+                    $__colTip = [
+                      'expected' => __('Qty sistem (stok menurut sistem)'),
+                      'counted'  => __('Qty hitung (hasil hitung petugas)'),
+                      'diff'     => __('Selisih = qty hitung - qty sistem'),
+                    ];
+                    if (! empty($__canQty)) { $XF_COLS[] = ['expected','Sistem',' t-center mono tabular']; }
+                    $XF_COLS[] = ['counted','Hitung',' t-center mono tabular'];
+                    if (! empty($__canQty)) { $XF_COLS[] = ['diff','Selisih',' t-center mono tabular']; }
+                    $XF_COLS = array_merge($XF_COLS, [
+                      ['device','Device',' col-hide-tablet'],
+                      ['unit','Satuan',' col-hide-tablet t-center'],
                       ['category','Kategori',' col-hide-tablet'], ['price','Harga',' col-hide-tablet t-right'],
                       ['audit','Status Audit',' t-center'],
-                    ];
+                    ]);
                     if (function_exists('is_col_hidden')) {
                         $XF_COLS = array_values(array_filter($XF_COLS, static fn ($c) => ! is_col_hidden('items', $c[0])));
                     }
@@ -316,14 +337,14 @@ foreach ($__keepKeys as $__k) {
                         $on = $colActive($k) || $sortKey === $k;
                         $arrow = $sortKey === $k ? ($sortDir === 'DESC' ? ' &#9662;' : ' &#9652;') : '';
                     ?>
-                    <th class="xf-th<?= $cls ?>" data-col="<?= $k ?>"><span class="xf-label"><?= e(__($lbl)) ?><?= $arrow ?></span><button type="button" class="xf-btn<?= $on ? ' is-active' : '' ?>" data-xf="<?= $k ?>" aria-label="<?= e(__( 'Filter &amp; urutkan kolom :l', ['l' => __($lbl)])) ?>" aria-haspopup="dialog" title="<?= __('Filter &amp; urutkan') ?>"><?= icon('filter') ?></button></th>
+                    <th class="xf-th<?= $cls ?>" data-col="<?= $k ?>"<?= isset($__colTip[$k]) ? ' title="' . e($__colTip[$k]) . '"' : '' ?>><span class="xf-label"><?= e(__($lbl)) ?><?= $arrow ?></span><button type="button" class="xf-btn<?= $on ? ' is-active' : '' ?>" data-xf="<?= $k ?>" aria-label="<?= e(__( 'Filter &amp; urutkan kolom :l', ['l' => __($lbl)])) ?>" aria-haspopup="dialog" title="<?= __('Filter &amp; urutkan') ?>"><?= icon('filter') ?></button></th>
                     <?php endforeach; ?>
                 </tr>
             </thead>
             <tbody>
                 <?php if ($items['items'] === []): ?>
                     <tr>
-                        <td colspan="13">
+                        <td colspan="<?= count($XF_COLS) + 2 ?>">
                             <div class="empty-state">
                                 <div class="empty-icon"><?= icon('package') ?></div>
                                 <h3><?= __('Tidak ada data') ?></h3>
@@ -417,12 +438,27 @@ foreach ($__keepKeys as $__k) {
                             <?php if (! is_col_hidden('items', 'location')): ?>
                             <td data-label="<?= __('Lokasi') ?>"><?= e($item['location_name'] ?: '-') ?></td>
                             <?php endif; ?>
-                            <?php if (! is_col_hidden('items', 'device')): ?>
-                            <td data-label="<?= __('Device') ?>" class="col-hide-tablet"><?= e($item['device_name'] ?: '-') ?></td>
+                            <?php if (! is_col_hidden('items', 'subinv')): ?>
+                            <td data-label="<?= __('Subinventory') ?>" class="col-hide-tablet"><?= e(($item['sub_inventory'] ?? '') !== '' ? $item['sub_inventory'] : '-') ?></td>
                             <?php endif; ?>
 
+                            <?php if (! empty($__canQty) && ! is_col_hidden('items', 'expected')): ?>
+                            <td data-label="<?= __('Qty Sistem') ?>" class="t-center mono tabular qcell qcell-sys"><span class="qcell-lbl"><?= __('Sistem') ?></span><span class="qcell-val"><?= ($item['expected_qty'] === null) ? '—' : (int) $item['expected_qty'] ?></span></td>
+                            <?php endif; ?>
                             <?php if (! is_col_hidden('items', 'counted')): ?>
-                            <td data-label="<?= __('Hitung') ?>" class="col-hide-tablet t-center mono tabular"><?= $item['counted_qty'] === null ? '—' : (int) $item['counted_qty'] ?></td>
+                            <td data-label="<?= __('Qty Hitung') ?>" class="t-center mono tabular qcell qcell-count"><span class="qcell-lbl"><?= __('Hitung') ?></span><span class="qcell-val"><?= $item['counted_qty'] === null ? '—' : (int) $item['counted_qty'] ?></span></td>
+                            <?php endif; ?>
+                            <?php
+                            if (! empty($__canQty) && ! is_col_hidden('items', 'diff')):
+                                $__exp  = ($item['expected_qty'] === null) ? null : (int) $item['expected_qty'];
+                                $__cnt  = ($item['counted_qty'] === null) ? null : (int) $item['counted_qty'];
+                                $__diff = ($__exp === null || $__cnt === null) ? null : ($__cnt - $__exp);
+                                $__dcls = $__diff === null ? '' : ($__diff === 0 ? 'is-zero' : ($__diff > 0 ? 'is-plus' : 'is-minus'));
+                            ?>
+                            <td data-label="<?= __('Selisih') ?>" class="t-center mono tabular qcell qcell-diff <?= $__dcls ?>"><span class="qcell-lbl"><?= __('Selisih') ?></span><span class="qcell-val"><?= $__diff === null ? '—' : (($__diff > 0 ? '+' : '') . $__diff) ?></span></td>
+                            <?php endif; ?>
+                            <?php if (! is_col_hidden('items', 'device')): ?>
+                            <td data-label="<?= __('Device') ?>" class="col-hide-tablet"><?= e($item['device_name'] ?: '-') ?></td>
                             <?php endif; ?>
                             <?php if (! is_col_hidden('items', 'unit')): ?>
                             <td data-label="<?= __('Satuan') ?>" class="col-hide-tablet t-center"><?= e($item['unit'] ?: '-') ?></td>
@@ -465,7 +501,7 @@ foreach ($__keepKeys as $__k) {
   var f = document.getElementById('items-filter');
   var pop = document.getElementById('xf-pop');
   if (!f || !pop) return;
-  var LABELS = <?= json_encode(array_filter(['code'=>__('Kode'),'name'=>__('Nama'),'group'=>__('Group'),'location'=>__('Lokasi'),'device'=>__('Device'),'expected'=>__('Sistem'),'counted'=>__('Hitung'),'unit'=>__('Satuan'),'category'=>__('Kategori'),'price'=>__('Harga'),'count'=>__('Status Hitung'),'audit'=>__('Status Audit')], static fn ($k) => $k !== 'expected' || can_see_stock_qty(), ARRAY_FILTER_USE_KEY), JSON_UNESCAPED_UNICODE) ?>;
+  var LABELS = <?= json_encode(array_filter(['code'=>__('Kode'),'name'=>__('Nama'),'group'=>__('Group'),'location'=>__('Lokasi'),'subinv'=>__('Subinventory'),'device'=>__('Device'),'expected'=>__('Sistem'),'counted'=>__('Hitung'),'unit'=>__('Satuan'),'category'=>__('Kategori'),'price'=>__('Harga'),'count'=>__('Status Hitung'),'audit'=>__('Status Audit')], static fn ($k) => $k !== 'expected' || can_see_stock_qty(), ARRAY_FILTER_USE_KEY), JSON_UNESCAPED_UNICODE) ?>;
   var NUMK = { expected:1, counted:1, price:1 };
   var sortKey = <?= json_encode($sortKey ?? null) ?>, sortDir = <?= json_encode($sortDir ?? null) ?>;
   var DISPLAY = <?= json_encode(['counted'=>__('Sudah dihitung'),'pending'=>__('Belum dihitung'),'posted'=>__('Terposting'),'audited'=>__('Sudah diaudit'),'discrepancy'=>__('Selisih'),'resolved'=>__('Selesai')], JSON_UNESCAPED_UNICODE) ?>;

@@ -56,7 +56,7 @@ $xfBtn = static fn (string $k, string $lbl): string => '<button type="button" cl
         'type'     => __('Tipe'),
         'serial'   => __('Serial'),
         'location' => __('Lokasi'),
-        'status'   => __('Status'),
+        'status'   => __('Status Pakai'),
     ];
     $asCurrent  = $__adv;
     $asNumeric  = $advNumeric ?? [];
@@ -74,7 +74,8 @@ $xfBtn = static fn (string $k, string $lbl): string => '<button type="button" cl
                     <th class="xf-th" data-col="type" style="width:105px;"><span class="xf-label"><?= __('Tipe') ?></span><?= $xfBtn('type', 'Tipe') ?></th>
                     <th class="xf-th" data-col="serial" style="width:130px;"><span class="xf-label"><?= __('Serial') ?></span><?= $xfBtn('serial', 'Serial') ?></th>
                     <th class="xf-th" data-col="location"><span class="xf-label"><?= __('Lokasi / Group') ?></span><?= $xfBtn('location', 'Lokasi') ?></th>
-                    <th class="t-center xf-th" data-col="status" style="width:110px;"><span class="xf-label"><?= __('Status') ?></span><?= $xfBtn('status', 'Status') ?></th>
+                    <th data-col="assigned"><?= __('Didaftarkan ke') ?></th>
+                    <th class="t-center xf-th" data-col="status" style="width:130px;"><span class="xf-label"><?= __('Status Pakai') ?></span><?= $xfBtn('status', 'Status') ?></th>
                     <?php if (can('manage_master')): ?>
                         <th data-col="actions" class="t-right" style="width:85px;min-width:85px;"><?= __('Aksi') ?></th>
                     <?php endif; ?>
@@ -83,7 +84,7 @@ $xfBtn = static fn (string $k, string $lbl): string => '<button type="button" cl
             <tbody>
                 <?php if ($devices['items'] === []): ?>
                     <tr>
-                        <td colspan="7">
+                        <td colspan="8">
                             <div class="empty-state">
                                 <div class="empty-icon"><?= icon('tablet') ?></div>
                                 <h3><?= __('Belum ada device') ?></h3>
@@ -102,10 +103,27 @@ $xfBtn = static fn (string $k, string $lbl): string => '<button type="button" cl
                                 <div class="cell-title"><?= e($device['location_name']) ?></div>
                                 <div class="cell-sub"><?= e($device['group_name']) ?></div>
                             </td>
-                            <td data-label="<?= __('Status') ?>" data-col="status" class="t-center">
-                                <span class="badge <?= (int) $device['is_active'] === 1 ? 'badge-success' : 'badge-danger' ?>">
-                                    <?= (int) $device['is_active'] === 1 ? __('Aktif') : __('Nonaktif') ?>
+                            <td data-label="<?= __('Didaftarkan ke') ?>" data-col="assigned">
+                                <?php if (! empty($device['assigned_name'])): ?>
+                                    <div class="cell-title"><?= e((string) $device['assigned_name']) ?></div>
+                                    <div class="cell-sub"><?= e((string) ($device['assigned_username'] ?? '')) ?></div>
+                                <?php else: ?>
+                                    <span class="faint">—</span>
+                                <?php endif; ?>
+                            </td>
+                            <td data-label="<?= __('Status Pakai') ?>" data-col="status" class="t-center">
+                                <span class="badge <?= ($device['status'] ?? 'free') === 'in_use' ? 'badge-warning' : 'badge-success' ?>">
+                                    <?= ($device['status'] ?? 'free') === 'in_use' ? __('Dipakai') : __('Free') ?>
                                 </span>
+                                <?php if (($device['status'] ?? 'free') === 'in_use' && ! empty($device['holder_name'])): ?>
+                                    <div class="cell-sub"><?= e((string) $device['holder_name']) ?></div>
+                                    <?php if (! empty($device['in_use_at'])): ?>
+                                        <div class="cell-sub"><?= e(date('d/m H:i', strtotime((string) $device['in_use_at']))) ?></div>
+                                    <?php endif; ?>
+                                <?php endif; ?>
+                                <?php if ((int) $device['is_active'] !== 1): ?>
+                                    <div class="cell-sub text-danger"><?= __('Nonaktif') ?></div>
+                                <?php endif; ?>
                             </td>
                             <?php if (can('manage_master')): ?>
                                 <td data-label="<?= __('Aksi') ?>" class="t-right">
@@ -133,8 +151,8 @@ $xfBtn = static fn (string $k, string $lbl): string => '<button type="button" cl
 </div>
 
 <?php
-$cfLabels = ['code' => __('Kode'), 'name' => __('Nama Device'), 'type' => __('Tipe'), 'serial' => __('Serial'), 'location' => __('Lokasi'), 'status' => __('Status')];
-$cfDisplay = ['1' => 'Aktif', '0' => 'Nonaktif'];
+$cfLabels = ['code' => __('Kode'), 'name' => __('Nama Device'), 'type' => __('Tipe'), 'serial' => __('Serial'), 'location' => __('Lokasi'), 'status' => __('Status Pakai')];
+$cfDisplay = ['free' => 'Free', 'in_use' => 'Dipakai'];
 $cfForm = 'dev-filter';
 $cfDistinct = url('devices/distinct');
 require __DIR__ . '/../partials/colfilter.php';

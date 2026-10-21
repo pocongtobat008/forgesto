@@ -71,6 +71,19 @@ $value = static function (string $key, mixed $default = '') use ($device) {
                 </div>
 
                 <div class="form-group col-span-2">
+                    <label for="user_id"><?= __('Didaftarkan untuk (ID Karyawan)') ?></label>
+                    <select id="user_id" name="user_id">
+                        <option value=""><?= __('— Belum didaftarkan —') ?></option>
+                        <?php foreach (($users ?? []) as $u): ?>
+                            <option value="<?= (int) $u['id'] ?>" <?= (int) $value('user_id', 0) === (int) $u['id'] ? 'selected' : '' ?>>
+                                <?= e((string) $u['name']) ?> &middot; <?= e((string) $u['username']) ?> (<?= e((string) $u['role']) ?>)
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                    <span class="faint text-sm"><?= __('Tablet ini otomatis berstatus dipakai saat ID tersebut login.') ?></span>
+                </div>
+
+                <div class="form-group col-span-2">
                     <label class="checkbox">
                         <input type="checkbox" name="is_active" value="1" <?= (int) $value('is_active', 1) === 1 ? 'checked' : '' ?>>
                         Device aktif

@@ -12,6 +12,7 @@ use App\Models\ActivityLog;
 use App\Models\AuditSubmission;
 use App\Models\GroupObserver;
 use App\Models\Item;
+use App\Models\ItemHistory;
 use App\Models\PostingBatch;
 use PDO;
 
@@ -147,6 +148,18 @@ class ItemPostingController extends Controller
                     );
                     $stmt->execute(array_merge([$userId, $batchId], $groupItemIds));
                     $moved = $stmt->rowCount();
+
+                    if ($moved > 0) {
+                        ItemHistory::logBulk(
+                            $groupItemIds,
+                            ItemHistory::ACTION_POSTED,
+                            Item::COUNT_COUNTED,
+                            Item::COUNT_SUBMITTED,
+                            $userId,
+                            ['batch_id' => $batchId, 'period' => $period ?? null, 'via' => 'posting'],
+                            'Posting batch #' . $batchId
+                        );
+                    }
 
                     $totalItems += $moved;
                     $totalCounted += $groupTotalCounted;
@@ -291,6 +304,18 @@ class ItemPostingController extends Controller
                     $stmt->execute(array_merge([$userId, $batchId], $groupItemIds));
                     $moved = $stmt->rowCount();
 
+                    if ($moved > 0) {
+                        ItemHistory::logBulk(
+                            $groupItemIds,
+                            ItemHistory::ACTION_POSTED,
+                            Item::COUNT_COUNTED,
+                            Item::COUNT_SUBMITTED,
+                            $userId,
+                            ['batch_id' => $batchId, 'period' => $period ?? null, 'via' => 'posting'],
+                            'Posting batch #' . $batchId
+                        );
+                    }
+
                     $totalItems += $moved;
                     $totalCounted += $groupTotalCounted;
 
@@ -431,6 +456,17 @@ class ItemPostingController extends Controller
 
                 // Pindahkan seluruh item 'counted' + item 'posted' legacy
                 // (belum punya batch_id) ke batch ini.
+                $legacyIds = array_map(
+                    static fn ($r) => (int) $r['id'],
+                    $this->items->query(
+                        "SELECT id FROM items
+                         WHERE group_id = ?
+                           AND (count_status = 'counted'
+                                OR (count_status = 'posted' AND batch_id IS NULL))",
+                        [$groupId]
+                    )
+                );
+
                 $stmt = $this->pdo->prepare(
                     "UPDATE items
                      SET count_status = 'submitted', audit_status = 'pending',
@@ -442,6 +478,18 @@ class ItemPostingController extends Controller
                 );
                 $stmt->execute([$userId, $batchId, $groupId]);
                 $moved = $stmt->rowCount();
+
+                if ($moved > 0) {
+                    ItemHistory::logBulk(
+                        $legacyIds,
+                        ItemHistory::ACTION_POSTED,
+                        Item::COUNT_COUNTED,
+                        Item::COUNT_SUBMITTED,
+                        $userId,
+                        ['batch_id' => $batchId, 'period' => $period ?? null, 'via' => 'posting_group'],
+                        'Posting massal group #' . $groupId
+                    );
+                }
 
                 $totalItems += $moved;
                 $totalCounted += $totalCountedValue;
@@ -539,6 +587,13 @@ class ItemPostingController extends Controller
                 )
             );
 
+            $recountRows = $this->items->query(
+                "SELECT id, count_status FROM items
+                 WHERE id IN ({$placeholders})
+                   AND count_status IN ('posted','submitted','audited','reconciled')",
+                $itemIds
+            );
+
             $stmt = $this->pdo->prepare(
                 "UPDATE items
                  SET count_status = 'counted', audit_status = 'recount', is_locked = 0
@@ -547,6 +602,21 @@ class ItemPostingController extends Controller
             );
             $stmt->execute($itemIds);
             $affected = $stmt->rowCount();
+
+            if ($affected > 0) {
+                $log = [];
+                foreach ($recountRows as $r) {
+                    $log[] = [
+                        'item_id'  => (int) $r['id'],
+                        'action'   => ItemHistory::ACTION_RECOUNT,
+                        'from'     => (string) $r['count_status'],
+                        'to'       => Item::COUNT_COUNTED,
+                        'metadata' => ['audit_status' => 'recount'],
+                        'notes'    => 'Recount dari tab terposting',
+                    ];
+                }
+                ItemHistory::logMany($log, (int) Auth::id());
+            }
 
             foreach ($batchIds as $bid) {
                 $this->items->updateBatchStatus($bid, PostingBatch::STATUS_RECOUNT);

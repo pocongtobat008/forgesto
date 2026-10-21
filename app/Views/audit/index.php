@@ -22,6 +22,19 @@ foreach ($progress as $r) {
 }
 $groupCount = count($progress);
 
+/* ---- helper tampilan qty (Sistem / Hitung / Selisih) ---- */
+$__qdiff = static function ($expected, $counted): ?int {
+    if ($expected === null || $counted === null) { return null; }
+    return (int) $counted - (int) $expected;
+};
+$__qcls = static function (?int $d): string {
+    if ($d === null) { return ''; }
+    return $d > 0 ? 'is-plus' : ($d < 0 ? 'is-minus' : 'is-zero');
+};
+$__qtxt = static function (?int $d): string {
+    return $d === null ? '—' : (($d > 0 ? '+' : '') . $d);
+};
+
 /* ---- payload detail kaya (dibaca drawer detail generik sf-tables-expand.js) ---- */
 $__xrdGroup = static function (array $row, int $audited, int $needed, int $pct, bool $ok, int $minPercent): string {
     $f = [
@@ -245,20 +258,21 @@ $__rechCount = (int) $recheck['total'];
     </div>
 
     <div class="table-wrap">
-        <table class="data" id="audit-sample-table" data-colmgr-key="audit-sample-v1" data-colmgr-prefix="audit-sample"><caption class="sr-only">Rekomendasi audit belum memenuhi target</caption>
+        <table class="data" id="audit-sample-table" data-colmgr-key="audit-sample-v2" data-colmgr-prefix="audit-sample" data-colmgr-preset="code,name,group,expected,counted,diff" data-qty-count="<?= can_see_stock_qty() ? 3 : 1 ?>"><caption class="sr-only">Rekomendasi audit belum memenuhi target</caption>
             <thead>
                 <tr>
                     <th data-col="code" class="xf-th"><span class="xf-label"><?= __('Kode') ?></span><?= $xfBtn('code', 'Kode') ?></th>
                     <th data-col="name" class="col-hide-tablet xf-th"><span class="xf-label"><?= __('Nama') ?></span><?= $xfBtn('name', 'Nama') ?></th>
                     <th data-col="group" class="col-hide-tablet xf-th"><span class="xf-label"><?= __('Group') ?></span><?= $xfBtn('group', 'Group') ?></th>
-                    <?php if (can_see_stock_qty()): ?><th data-col="expected" class="col-hide-tablet t-center xf-th"><span class="xf-label"><?= __('Sistem') ?></span><?= can_see_stock_qty() ? $xfBtn('expected', 'Sistem') : '' ?></th><?php endif; ?>
-                    <th data-col="counted" class="col-hide-tablet t-center xf-th"><span class="xf-label"><?= __('Hasil hitung') ?></span><?= $xfBtn('counted', 'Hasil hitung') ?></th>
+                    <?php if (can_see_stock_qty()): ?><th data-col="expected" class="t-center xf-th" title="<?= __('Qty sistem (stok menurut sistem)') ?>"><span class="xf-label"><?= __('Sistem') ?></span><?= can_see_stock_qty() ? $xfBtn('expected', 'Sistem') : '' ?></th><?php endif; ?>
+                    <th data-col="counted" class="t-center xf-th" title="<?= __('Qty hasil hitung petugas') ?>"><span class="xf-label"><?= __('Hitung') ?></span><?= $xfBtn('counted', 'Hitung') ?></th>
+                    <?php if (can_see_stock_qty()): ?><th data-col="diff" class="t-center xf-th" title="<?= __('Selisih = qty hitung − qty sistem') ?>"><span class="xf-label"><?= __('Selisih') ?></span><?= $xfBtn('diff', 'Selisih') ?></th><?php endif; ?>
                     <th data-col="aksi" class="t-right"><?= __('Aksi') ?></th>
                 </tr>
             </thead>
             <tbody>
                 <?php if ($__recCount === 0): ?>
-                    <tr><td colspan="<?= can_see_stock_qty() ? 6 : 5 ?>"><div class="empty-state"><div class="empty-icon"><?= icon('check') ?></div><h3><?= __('Tidak ada rekomendasi') ?></h3><p>Semua group sudah memenuhi target <?= (int) $minPercent ?>% audit.</p></div></td></tr>
+                    <tr><td colspan="<?= can_see_stock_qty() ? 7 : 6 ?>"><div class="empty-state"><div class="empty-icon"><?= icon('check') ?></div><h3><?= __('Tidak ada rekomendasi') ?></h3><p>Semua group sudah memenuhi target <?= (int) $minPercent ?>% audit.</p></div></td></tr>
                 <?php else: ?>
                     <?php foreach ($recommendation as $item): ?>
                         <?php $__json = $__xrdItem($item); ?>
@@ -266,8 +280,10 @@ $__rechCount = (int) $recheck['total'];
                             <td data-label="<?= __('Kode') ?>"><?= e($item['code']) ?></td>
                             <td data-label="<?= __('Nama') ?>" class="cell-title"><?= e($item['name']) ?></td>
                             <td data-label="<?= __('Group') ?>" class="col-hide-tablet"><?= e($item['group_name']) ?></td>
-                            <?php if (can_see_stock_qty()): ?><td data-label="<?= __('Sistem') ?>" class="col-hide-tablet t-center mono tabular"><?= can_see_stock_qty() ? (int) $item['expected_qty'] : '<span class="faint">***</span>' ?></td><?php endif; ?>
-                            <td data-label="<?= __('Hasil hitung') ?>" class="col-hide-tablet t-center mono tabular"><?= $item['counted_qty'] === null ? '—' : (int) $item['counted_qty'] ?></td>
+                            <?php if (can_see_stock_qty()): ?><td data-label="<?= __('Qty Sistem') ?>" class="t-center mono tabular qcell qcell-sys"><span class="qcell-lbl"><?= __('Sistem') ?></span><span class="qcell-val"><?= (int) $item['expected_qty'] ?></span></td><?php endif; ?>
+                            <?php $__d = $__qdiff($item['expected_qty'] ?? null, $item['counted_qty'] ?? null); ?>
+                            <td data-label="<?= __('Qty Hitung') ?>" class="t-center mono tabular qcell qcell-count"><span class="qcell-lbl"><?= __('Hitung') ?></span><span class="qcell-val"><?= $item['counted_qty'] === null ? '—' : (int) $item['counted_qty'] ?></span></td>
+                            <?php if (can_see_stock_qty()): ?><td data-label="<?= __('Selisih') ?>" class="t-center mono tabular qcell qcell-diff <?= $__qcls($__d) ?>"><span class="qcell-lbl"><?= __('Selisih') ?></span><span class="qcell-val"><?= $__qtxt($__d) ?></span></td><?php endif; ?>
                             <td data-label="" class="t-right">
                                 <?php if (empty($isReadOnly)): ?>
                                 <button type="button" class="btn btn-sm js-audit-open"
@@ -315,21 +331,22 @@ $__rechCount = (int) $recheck['total'];
         </div>
     </div>
     <div class="table-wrap">
-        <table class="data" id="audit-posted-table" data-colmgr-key="audit-posted-v1" data-colmgr-prefix="audit-posted"><caption class="sr-only">Audit yang sudah diposting</caption>
+        <table class="data" id="audit-posted-table" data-colmgr-key="audit-posted-v2" data-colmgr-prefix="audit-posted" data-colmgr-preset="code,name,group,expected,counted,diff,audit" data-qty-count="<?= can_see_stock_qty() ? 3 : 1 ?>"><caption class="sr-only">Audit yang sudah diposting</caption>
             <thead>
                 <tr>
                     <th data-col="code" class="xf-th"><span class="xf-label"><?= __('Kode') ?></span><?= $xfBtn('code', 'Kode') ?></th>
                     <th data-col="name" class="col-hide-tablet xf-th"><span class="xf-label"><?= __('Nama') ?></span><?= $xfBtn('name', 'Nama') ?></th>
                     <th data-col="group" class="col-hide-tablet xf-th"><span class="xf-label"><?= __('Group') ?></span><?= $xfBtn('group', 'Group') ?></th>
-                    <?php if (can_see_stock_qty()): ?><th data-col="expected" class="col-hide-tablet t-center xf-th"><span class="xf-label"><?= __('Sistem') ?></span><?= can_see_stock_qty() ? $xfBtn('expected', 'Sistem') : '' ?></th><?php endif; ?>
-                    <th data-col="counted" class="col-hide-tablet t-center xf-th"><span class="xf-label"><?= __('Hasil hitung') ?></span><?= $xfBtn('counted', 'Hasil hitung') ?></th>
+                    <?php if (can_see_stock_qty()): ?><th data-col="expected" class="t-center xf-th" title="<?= __('Qty sistem (stok menurut sistem)') ?>"><span class="xf-label"><?= __('Sistem') ?></span><?= can_see_stock_qty() ? $xfBtn('expected', 'Sistem') : '' ?></th><?php endif; ?>
+                    <th data-col="counted" class="t-center xf-th" title="<?= __('Qty hasil hitung petugas') ?>"><span class="xf-label"><?= __('Hitung') ?></span><?= $xfBtn('counted', 'Hitung') ?></th>
+                    <?php if (can_see_stock_qty()): ?><th data-col="diff" class="t-center xf-th" title="<?= __('Selisih = qty hitung − qty sistem') ?>"><span class="xf-label"><?= __('Selisih') ?></span><?= $xfBtn('diff', 'Selisih') ?></th><?php endif; ?>
                     <th data-col="audit" class="t-center xf-th"><span class="xf-label"><?= __('Status audit') ?></span><?= $xfBtn('audit', 'Status audit') ?></th>
                     <th data-col="aksi" class="t-right"><?= __('Aksi') ?></th>
                 </tr>
             </thead>
             <tbody>
                 <?php if ($postedAll['items'] === []): ?>
-                    <tr><td colspan="<?= can_see_stock_qty() ? 7 : 6 ?>" class="text-center faint" style="padding:1.4rem;"><?= __('Belum ada item diposting.') ?></td></tr>
+                    <tr><td colspan="<?= can_see_stock_qty() ? 8 : 7 ?>" class="text-center faint" style="padding:1.4rem;"><?= __('Belum ada item diposting.') ?></td></tr>
                 <?php else: ?>
                     <?php foreach ($postedAll['items'] as $item): ?>
                         <?php $__as = (string) $item['audit_status']; ?>
@@ -338,8 +355,10 @@ $__rechCount = (int) $recheck['total'];
                             <td data-label="<?= __('Kode') ?>"><?= e($item['code']) ?></td>
                             <td data-label="<?= __('Nama') ?>" class="cell-title"><?= e($item['name']) ?></td>
                             <td data-label="<?= __('Group') ?>" class="col-hide-tablet"><?= e($item['group_name']) ?></td>
-                            <?php if (can_see_stock_qty()): ?><td data-label="<?= __('Sistem') ?>" class="col-hide-tablet t-center mono tabular"><?= can_see_stock_qty() ? (int) $item['expected_qty'] : '<span class="faint">***</span>' ?></td><?php endif; ?>
-                            <td data-label="<?= __('Hasil hitung') ?>" class="col-hide-tablet t-center mono tabular"><?= $item['counted_qty'] === null ? '—' : (int) $item['counted_qty'] ?></td>
+                            <?php if (can_see_stock_qty()): ?><td data-label="<?= __('Qty Sistem') ?>" class="t-center mono tabular qcell qcell-sys"><span class="qcell-lbl"><?= __('Sistem') ?></span><span class="qcell-val"><?= (int) $item['expected_qty'] ?></span></td><?php endif; ?>
+                            <?php $__d = $__qdiff($item['expected_qty'] ?? null, $item['counted_qty'] ?? null); ?>
+                            <td data-label="<?= __('Qty Hitung') ?>" class="t-center mono tabular qcell qcell-count"><span class="qcell-lbl"><?= __('Hitung') ?></span><span class="qcell-val"><?= $item['counted_qty'] === null ? '—' : (int) $item['counted_qty'] ?></span></td>
+                            <?php if (can_see_stock_qty()): ?><td data-label="<?= __('Selisih') ?>" class="t-center mono tabular qcell qcell-diff <?= $__qcls($__d) ?>"><span class="qcell-lbl"><?= __('Selisih') ?></span><span class="qcell-val"><?= $__qtxt($__d) ?></span></td><?php endif; ?>
                             <td data-label="<?= __('Status audit') ?>" class="t-center">
                                 <span class="badge <?= $__as === 'audited' ? 'badge-success' : ($__as === 'discrepancy' ? 'badge-danger' : ($__as === 'resolved' ? 'badge-info' : 'badge-danger')) ?>">
                                     <?= e(['pending' => __('Belum diaudit'), 'audited' => __('Sesuai'), 'discrepancy' => __('Selisih'), 'resolved' => __('Selesai')][$__as] ?? $__as) ?>
@@ -393,22 +412,23 @@ $__rechCount = (int) $recheck['total'];
         </div>
     </div>
     <div class="table-wrap">
-        <table class="data" id="audit-recheck-table" data-colmgr-key="audit-recheck-v1" data-colmgr-prefix="audit-recheck"><caption class="sr-only">Cek ulang Admin STO</caption>
+        <table class="data" id="audit-recheck-table" data-colmgr-key="audit-recheck-v2" data-colmgr-prefix="audit-recheck" data-colmgr-preset="code,name,group,location,expected,counted,diff,status" data-qty-count="<?= can_see_stock_qty() ? 3 : 1 ?>"><caption class="sr-only">Cek ulang Admin STO</caption>
             <thead>
                 <tr>
                     <th data-col="code" class="xf-th"><span class="xf-label"><?= __('Kode') ?></span><?= $xfBtn('code', 'Kode') ?></th>
                     <th data-col="name" class="col-hide-tablet xf-th"><span class="xf-label"><?= __('Nama') ?></span><?= $xfBtn('name', 'Nama') ?></th>
                     <th data-col="group" class="col-hide-tablet xf-th"><span class="xf-label"><?= __('Group') ?></span><?= $xfBtn('group', 'Group') ?></th>
                     <th data-col="location" class="col-hide-tablet xf-th"><span class="xf-label"><?= __('Lokasi') ?></span><?= $xfBtn('location', 'Lokasi') ?></th>
-                    <?php if (can_see_stock_qty()): ?><th data-col="expected" class="col-hide-tablet t-center xf-th"><span class="xf-label"><?= __('Sistem') ?></span><?= can_see_stock_qty() ? $xfBtn('expected', 'Sistem') : '' ?></th><?php endif; ?>
-                    <th data-col="counted" class="col-hide-tablet t-center xf-th"><span class="xf-label"><?= __('Hitung') ?></span><?= $xfBtn('counted', 'Hitung') ?></th>
+                    <?php if (can_see_stock_qty()): ?><th data-col="expected" class="t-center xf-th" title="<?= __('Qty sistem (stok menurut sistem)') ?>"><span class="xf-label"><?= __('Sistem') ?></span><?= can_see_stock_qty() ? $xfBtn('expected', 'Sistem') : '' ?></th><?php endif; ?>
+                    <th data-col="counted" class="t-center xf-th" title="<?= __('Qty hasil hitung petugas') ?>"><span class="xf-label"><?= __('Hitung') ?></span><?= $xfBtn('counted', 'Hitung') ?></th>
+                    <?php if (can_see_stock_qty()): ?><th data-col="diff" class="t-center xf-th" title="<?= __('Selisih = qty hitung − qty sistem') ?>"><span class="xf-label"><?= __('Selisih') ?></span><?= $xfBtn('diff', 'Selisih') ?></th><?php endif; ?>
                     <th data-col="status" class="t-center xf-th"><span class="xf-label"><?= __('Status') ?></span><?= $xfBtn('status', 'Status') ?></th>
                     <th data-col="aksi" class="t-right"><?= __('Aksi') ?></th>
                 </tr>
             </thead>
             <tbody>
                 <?php if ($recheck['items'] === []): ?>
-                    <tr><td colspan="<?= can_see_stock_qty() ? 8 : 7 ?>"><div class="empty-state"><div class="empty-icon"><?= icon('check') ?></div><h3><?= __('Tidak ada permintaan cek ulang') ?></h3><p><?= __('Belum ada item yang diminta dicek ulang oleh Admin STO.') ?></p></div></td></tr>
+                    <tr><td colspan="<?= can_see_stock_qty() ? 9 : 8 ?>"><div class="empty-state"><div class="empty-icon"><?= icon('check') ?></div><h3><?= __('Tidak ada permintaan cek ulang') ?></h3><p><?= __('Belum ada item yang diminta dicek ulang oleh Admin STO.') ?></p></div></td></tr>
                 <?php else: ?>
                     <?php foreach ($recheck['items'] as $item): ?>
                         <?php $__rs = (string) $item['recon_status']; ?>
@@ -418,8 +438,10 @@ $__rechCount = (int) $recheck['total'];
                             <td data-label="<?= __('Nama') ?>" class="cell-title"><?= e($item['name']) ?></td>
                             <td data-label="<?= __('Group') ?>" class="col-hide-tablet"><?= e($item['group_name']) ?></td>
                             <td data-label="<?= __('Lokasi') ?>" class="col-hide-tablet"><?= e($item['location_name'] ?: '-') ?></td>
-                            <?php if (can_see_stock_qty()): ?><td data-label="<?= __('Sistem') ?>" class="col-hide-tablet t-center mono tabular"><?= can_see_stock_qty() ? (int) $item['expected_qty'] : '<span class="faint">***</span>' ?></td><?php endif; ?>
-                            <td data-label="<?= __('Hitung') ?>" class="col-hide-tablet t-center mono tabular"><?= $item['recon_counted'] === null ? '—' : (int) $item['recon_counted'] ?></td>
+                            <?php if (can_see_stock_qty()): ?><td data-label="<?= __('Qty Sistem') ?>" class="t-center mono tabular qcell qcell-sys"><span class="qcell-lbl"><?= __('Sistem') ?></span><span class="qcell-val"><?= (int) $item['expected_qty'] ?></span></td><?php endif; ?>
+                            <?php $__d = $__qdiff($item['expected_qty'] ?? null, $item['recon_counted'] ?? null); ?>
+                            <td data-label="<?= __('Qty Hitung') ?>" class="t-center mono tabular qcell qcell-count"><span class="qcell-lbl"><?= __('Hitung') ?></span><span class="qcell-val"><?= $item['recon_counted'] === null ? '—' : (int) $item['recon_counted'] ?></span></td>
+                            <?php if (can_see_stock_qty()): ?><td data-label="<?= __('Selisih') ?>" class="t-center mono tabular qcell qcell-diff <?= $__qcls($__d) ?>"><span class="qcell-lbl"><?= __('Selisih') ?></span><span class="qcell-val"><?= $__qtxt($__d) ?></span></td><?php endif; ?>
                             <td data-label="<?= __('Status') ?>" class="t-center">
                                 <span class="badge <?= $__rs === 'verified' ? 'badge-success' : ($__rs === 'rejected' ? 'badge-danger' : 'badge-warning') ?>">
                                     <?= e(['draft' => 'Draft', 'pending_verify' => 'Menunggu verifikasi', 'verified' => 'Terverifikasi', 'rejected' => 'Ditolak'][$__rs] ?? $__rs) ?>

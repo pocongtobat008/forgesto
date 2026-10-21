@@ -33,7 +33,9 @@ body {
 }
 
 html { overflow-x: clip; }
-body.no-scroll { overflow: hidden; }
+/* Kunci scroll di <html>: body{overflow:hidden} memaksa Chrome/Edge/Safari
+   me-reset scrollTop ke 0 → halaman melompat ke header saat popup ditutup. */
+html:has(body.no-scroll) { overflow: hidden; }
 
 a { color: var(--brand-ink); text-decoration: none; }
 a:hover { text-decoration: underline; text-underline-offset: 2px; }
@@ -2858,7 +2860,7 @@ html.sidebar-collapsed .sidebar .sidebar-group-toggle .sidebar-group-chev {
 /* 3. Action tiles di halaman detail (Koreksi | Kirim ke Petugas) */
 .recon-action-grid {
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
     gap: .85rem;
 }
 @media (max-width: 720px) { .recon-action-grid { grid-template-columns: 1fr; } }
@@ -3119,11 +3121,11 @@ html.sidebar-collapsed .sidebar .sidebar-group-toggle .sidebar-group-chev {
 }
 
 /* ------------------------------------------------------------------ */
-/* 4. Tile aksi halaman detail (Koreksi | Kirim ke Petugas)            */
+/* 4. Tile aksi halaman detail (Koreksi | Hitung Ulang | Cek Ulang)    */
 /* ------------------------------------------------------------------ */
 .recon-action-grid {
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
     gap: .85rem;
 }
 @media (max-width: 720px) { .recon-action-grid { grid-template-columns: 1fr; } }
@@ -3281,6 +3283,12 @@ html.sidebar-collapsed .sidebar .sidebar-group-toggle .sidebar-group-chev {
     color: var(--brand-ink);
 }
 .btn-icon-edit:hover { background: var(--brand-500); color: #fff; }
+.btn-icon-calc { color: var(--text-2); }
+.btn-icon-calc:hover {
+    background: var(--brand-soft);
+    border-color: var(--brand-500);
+    color: var(--brand-ink);
+}
 .btn-icon-recheck:hover {
     background: var(--warning-soft);
     border-color: var(--warning);
@@ -3559,6 +3567,7 @@ html.sidebar-collapsed .sidebar .sidebar-group-toggle .sidebar-group-chev {
 .recon-chip.is-clear svg { width: 13px; height: 13px; }
 
 .recon-bulk { margin: 0; }
+.recon-quickbar-actions { display: flex; flex-wrap: wrap; gap: .5rem; align-items: center; }
 .recon-bulk .btn { min-height: 40px; }
 .recon-bulk .btn:disabled { opacity: .55; cursor: not-allowed; }
 
@@ -3601,7 +3610,9 @@ html.sidebar-collapsed .sidebar .sidebar-group-toggle .sidebar-group-chev {
 /* --- responsive: quickbar menumpuk, tombol bulk full width --- */
 @media (max-width: 560px) {
     .recon-quickbar { flex-direction: column; align-items: stretch; }
+    .recon-bulk { flex: 1 1 100%; width: 100%; }
     .recon-bulk .btn { width: 100%; justify-content: center; }
+    .recon-quickbar-actions { width: 100%; }
 }
 
 /* --- audit page: unify KPI cards on .stat, retire .stat-card look --- */
@@ -7257,4 +7268,479 @@ html, body {
     .sidebar.is-open .sidebar-close {
         display: flex !important;
     }
+}
+
+/* ==========================================================================
+   MODE CEPAT REKONSILIASI — input hasil hitung banyak item (lapangan)
+   Panel sheet kanan (desktop) / layar penuh (mobile). Dipakai oleh
+   assets/js/recon-quick.js. Tidak mengubah tabel utama sampai disimpan.
+   ========================================================================== */
+html:has(body.qe-lock) { overflow: hidden; }
+/* Di mobile <body> yang jadi scroller (body{overflow-y:auto;height:100vh});
+   kunci di body aman di sana karena scrollTop tidak di-reset. */
+@media (max-width: 1023.98px) {
+    body.no-scroll, body.qe-lock { overflow: hidden; }
+}
+
+.qe-backdrop {
+    position: fixed; inset: 0; z-index: 1300;
+    background: rgba(15, 23, 42, .5);
+    display: flex; justify-content: flex-end;
+}
+.qe-backdrop[hidden] { display: none; }
+
+.qe-sheet {
+    width: min(760px, 100%); height: 100%;
+    background: var(--surface, #fff);
+    display: flex; flex-direction: column;
+    box-shadow: -18px 0 48px rgba(15, 23, 42, .22);
+    /* Fade saja (tanpa transform): kalau animasi tidak sempat jalan di suatu
+       browser, panel tidak tertinggal bergeser 28px dan tombol di kanan
+       (gear / Simpan) tetap di dalam layar. */
+    animation: qeFadeIn .16s ease-out;
+}
+@keyframes qeFadeIn { from { opacity: .55; } to { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .qe-sheet { animation: none; } }
+
+/* Header panel: judul satu baris + tombol tutup. Tidak ada elemen yang
+   diletakkan di samping judul dua baris (itu yang membuat kotak cari terlihat
+   menempel/tertutup). */
+.qe-head {
+    display: flex; gap: .75rem; align-items: center; justify-content: space-between;
+    padding: .95rem 1rem .7rem; border-bottom: 0;
+    background: var(--surface, #fff); flex: 0 0 auto;
+}
+.qe-head h3 {
+    margin: 0; font-size: .98rem; font-weight: 700; line-height: 1.25;
+    display: flex; align-items: center; gap: .45rem; min-width: 0;
+}
+.qe-head h3 svg { width: 18px; height: 18px; flex: 0 0 18px; color: var(--brand, #2563eb); }
+.qe-hintline kbd, .qe-hint kbd {
+    font-family: inherit; font-size: .64rem; padding: .05rem .3rem;
+    border: 1px solid var(--border); border-radius: 4px;
+    background: var(--surface, #fff); color: var(--text-muted);
+    box-shadow: 0 1px 0 var(--border);
+}
+
+/* Baris pencarian: full-width, 44px, ikon kiri + tombol bersihkan kanan */
+.qe-searchbar { padding: 0 1rem .15rem; background: var(--surface, #fff); flex: 0 0 auto; }
+.qe-find {
+    display: flex; align-items: center; gap: .55rem;
+    width: 100%; height: 44px; padding: 0 .7rem 0 .85rem;
+    border: 1px solid var(--border); border-radius: 12px;
+    background: var(--surface-2, #f8fafc); cursor: text;
+    transition: background .15s ease, border-color .15s ease, box-shadow .15s ease;
+}
+.qe-find { box-shadow: inset 0 1px 2px rgba(15, 23, 42, .04); padding-right: 10px; }
+.qe-find:hover { border-color: var(--text-muted); }
+/* Tema gelap: token --border terlalu dekat dengan --surface-2, kotak cari jadi
+   nyaris tanpa tepi. Beri tepi + latar berbasis putih transparan. */
+html[data-theme="dark"] .qe-find {
+    background: rgba(255, 255, 255, .045);
+    border-color: rgba(255, 255, 255, .12);
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, .3);
+}
+html[data-theme="dark"] .qe-find:hover { border-color: rgba(255, 255, 255, .2); }
+html[data-theme="dark"] .qe-find:focus-within {
+    background: rgba(255, 255, 255, .07);
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, .22);
+}
+.qe-find:focus-within {
+    background: var(--surface, #fff);
+    border-color: var(--brand, #2563eb);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, .16);
+}
+.qe-find-ico { display: grid; place-items: center; flex: 0 0 18px; color: var(--text-muted); }
+.qe-find-ico svg { width: 18px; height: 18px; }
+.qe-find:focus-within .qe-find-ico { color: var(--brand, #2563eb); }
+.qe-search {
+    flex: 1 1 auto; width: 100%; height: 100%; padding: 0;
+    border: 0; background: transparent; font-size: .875rem; color: var(--text);
+    min-width: 0;
+}
+/* Input di dalam kotak cari: garis & ring fokus milik .qe-find, bukan milik
+   input. Aturan global `input:focus{border-color:brand;box-shadow:0 0 0 3px}`
+   membuat garis biru kedua di dalam kotak (terlihat dobel di tepi kiri). */
+.qe-search,
+.qe-search:hover,
+.qe-search:focus,
+.qe-search:focus-visible {
+    border: 0 !important;
+    outline: none !important;
+    box-shadow: none !important;
+    background: transparent !important;
+    border-radius: 0;
+}
+.qe-search::-webkit-search-cancel-button,
+.qe-search::-webkit-search-decoration { -webkit-appearance: none; appearance: none; display: none; }
+.qe-search::placeholder { color: var(--text-muted); opacity: 1; }
+/* Tombol bersihkan: bulat 24px. Lapisan global memberi `button{border-radius:8px;
+   width:28px; min-height:...}` sehingga tanpa !important bentuknya jadi kotak. */
+.qe-find-clear {
+    flex: 0 0 24px !important; width: 24px !important; height: 24px !important;
+    min-width: 24px !important; min-height: 24px !important; max-height: 24px !important;
+    display: grid !important; place-items: center; padding: 0 !important;
+    border: 0 !important; border-radius: 999px !important; cursor: pointer;
+    background: var(--border) !important; color: var(--text-muted) !important;
+    transition: background .12s ease, color .12s ease;
+}
+.qe-find-clear[hidden] { display: none; }
+.qe-find-clear:hover { background: var(--text-muted) !important; color: var(--surface, #fff) !important; }
+.qe-find-clear svg { width: 12px; height: 12px; }
+.qe-hintline {
+    margin-top: 7px;
+    margin: .5rem 2px 0; font-size: .71rem; line-height: 1.5;
+    color: var(--text-muted); display: flex; flex-wrap: wrap; align-items: center; gap: .28rem;
+}
+.qe-x {
+    width: 32px; height: 32px; flex: 0 0 32px; cursor: pointer;
+    border: 1px solid transparent; border-radius: 10px; display: grid; place-items: center;
+    background: transparent; color: var(--text-muted); padding: 0;
+    transition: background .12s ease, color .12s ease;
+}
+.qe-x svg { width: 16px; height: 16px; }
+.qe-x:hover { background: var(--surface-2, #f1f5f9); color: var(--text); }
+
+#qe-form { display: flex; flex-direction: column; flex: 1 1 auto; min-height: 0; }
+
+.qe-list {
+    flex: 1 1 auto; min-height: 0; overflow-y: auto;
+    padding: .6rem .75rem 1rem; display: grid; gap: .35rem;
+    align-content: start; overscroll-behavior: contain;
+}
+
+.qe-row {
+    display: grid; align-items: center; gap: .5rem;
+    grid-template-columns: minmax(0, 1fr) 132px 118px;
+    grid-template-areas: "main meta field";
+    padding: .4rem .55rem;
+    border: 1px solid var(--border); border-radius: 10px;
+    background: var(--surface, #fff);
+    transition: border-color .12s ease, background .12s ease, box-shadow .12s ease;
+}
+.qe-row.is-focus { border-color: var(--brand, #2563eb); box-shadow: 0 0 0 3px rgba(37, 99, 235, .14); }
+.qe-row.is-dirty { border-color: #f59e0b; background: #fffbeb; }
+.qe-row.is-saved { border-color: #16a34a; background: #f0fdf4; }
+
+.qe-main { grid-area: main; min-width: 0; display: flex; flex-direction: column; gap: .1rem; }
+.qe-code {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: .68rem; font-weight: 700; letter-spacing: .02em;
+    color: var(--text-muted);
+}
+.qe-name { font-size: .82rem; font-weight: 600; line-height: 1.25; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+.qe-meta { grid-area: meta; display: flex; flex-direction: column; align-items: flex-end; gap: .1rem; font-size: .7rem; color: var(--text-muted); }
+.qe-stock b { font-variant-numeric: tabular-nums; color: var(--text); }
+.qe-delta { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-weight: 700; }
+.qe-delta.is-plus { color: #16a34a; }
+.qe-delta.is-minus { color: #dc2626; }
+.qe-delta.is-match { color: var(--text-muted); }
+.qe-tag {
+    font-size: .6rem; text-transform: uppercase; letter-spacing: .04em;
+    padding: .05rem .3rem; border-radius: 4px;
+    background: #dcfce7; color: #15803d;
+}
+
+.qe-field { grid-area: field; display: flex; align-items: center; gap: .3rem; justify-content: flex-end; }
+.qe-input {
+    width: 78px; height: 42px; text-align: right;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 1.02rem; font-weight: 700;
+    padding: 0 .5rem; border: 1px solid var(--border); border-radius: 8px;
+    background: var(--surface, #fff); color: var(--text);
+}
+.qe-input:focus { outline: none; border-color: var(--brand, #2563eb); box-shadow: 0 0 0 3px rgba(37, 99, 235, .15); }
+.qe-input::-webkit-outer-spin-button, .qe-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.qe-input[type=number] { -moz-appearance: textfield; appearance: textfield; }
+.qe-unit { font-size: .66rem; color: var(--text-muted); min-width: 26px; }
+
+.qe-foot {
+    flex: 0 0 auto; display: flex; align-items: center; gap: .6rem;
+    padding: .65rem 1rem; border-top: 1px solid var(--border);
+    background: var(--surface, #fff);
+    padding-bottom: calc(.65rem + env(safe-area-inset-bottom, 0px));
+}
+.qe-count { font-size: .78rem; font-weight: 600; }
+.qe-hint { font-size: .7rem; color: var(--text-muted); }
+.qe-foot .spacer { flex: 1 1 auto; }
+
+@media (max-width: 760px) {
+    .qe-sheet { width: 100%; }
+    .qe-head { padding: .8rem .75rem .5rem; }
+    .qe-searchbar { padding: 0 .75rem .1rem; }
+    .qe-find { height: 46px; }
+    .qe-hintline { font-size: .68rem; }
+    .qe-row {
+        grid-template-columns: minmax(0, 1fr) 112px;
+        grid-template-areas: "main field" "meta field";
+        row-gap: .15rem;
+    }
+    .qe-meta { flex-direction: row; align-items: center; justify-content: flex-start; gap: .55rem; }
+    .qe-hint { display: none; }
+}
+.qe-stat { font-size: .72rem; color: var(--text-muted); }
+
+
+/* ==========================================================================
+   MODE CEPAT v2 — toolbar filter group (multi pilih), pengaturan tampilan,
+   dan empty state "daftar masih kosong". Dipakai assets/js/recon-quick.js.
+   ========================================================================== */
+.qe-tools {
+    display: flex; align-items: center; gap: .45rem; flex-wrap: wrap;
+    padding: .55rem .75rem; position: relative; z-index: 2;
+    margin-top: 10px;
+    border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
+    background: var(--surface-2, #f8fafc);
+    flex: 0 0 auto;
+}
+.qe-gbtn {
+    display: inline-flex; align-items: center; gap: .35rem;
+    height: 32px; padding: 0 .7rem;
+    border: 1px solid var(--border); border-radius: 999px;
+    background: var(--surface, #fff); color: var(--text);
+    font-size: .76rem; font-weight: 600; cursor: pointer;
+    max-width: 60%; white-space: nowrap;
+}
+.qe-gbtn svg { width: 14px; height: 14px; flex: 0 0 14px; }
+.qe-gbtn:hover { border-color: var(--brand, #2563eb); color: var(--brand, #2563eb); }
+.qe-gbtn.is-on { background: rgba(37, 99, 235, .1); border-color: rgba(37, 99, 235, .45); color: var(--brand, #2563eb); }
+
+.qe-gmenu {
+    position: absolute; top: calc(100% - 2px); left: .75rem; z-index: 8;
+    width: min(330px, 92vw); max-height: 54vh; overflow: auto;
+    padding: .35rem; border: 1px solid var(--border); border-radius: 12px;
+    background: var(--surface, #fff);
+    box-shadow: 0 20px 44px -20px rgba(15, 23, 42, .5);
+}
+.qe-gmenu[hidden] { display: none; }
+.qe-gmenu-h {
+    padding: .35rem .5rem .3rem; font-size: .64rem; font-weight: 700;
+    text-transform: uppercase; letter-spacing: .05em; color: var(--text-muted);
+}
+.qe-gopt {
+    display: flex; align-items: center; gap: .5rem;
+    padding: .42rem .5rem; border-radius: 8px;
+    font-size: .78rem; cursor: pointer;
+}
+.qe-gopt:hover { background: var(--surface-2, #f1f5f9); }
+.qe-gopt input { width: 15px; height: 15px; flex: 0 0 15px; accent-color: var(--brand, #2563eb); }
+.qe-gopt span { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.qe-gopt b { font-size: .68rem; color: var(--text-muted); font-variant-numeric: tabular-nums; }
+.qe-gmenu-f { display: flex; gap: .4rem; margin-top: .25rem; padding: .35rem .35rem .15rem; border-top: 1px solid var(--border); }
+.qe-gmenu-f button {
+    flex: 1 1 auto; height: 28px; cursor: pointer;
+    border: 1px solid var(--border); border-radius: 7px;
+    background: var(--surface, #fff); color: var(--text); font-size: .72rem;
+}
+.qe-gmenu-f button:hover { background: var(--surface-2, #f1f5f9); }
+
+.qe-gear {
+    margin-left: auto; width: 32px; height: 32px; flex: 0 0 32px;
+    display: inline-flex; align-items: center; justify-content: center;
+    border: 1px solid var(--border); border-radius: 999px;
+    background: var(--surface, #fff); color: var(--text-muted); cursor: pointer;
+}
+.qe-gear:hover { color: var(--brand, #2563eb); border-color: var(--brand, #2563eb); }
+.qe-gear svg { width: 16px; height: 16px; }
+
+.qe-uipop {
+    position: absolute; right: .75rem; top: calc(100% - 2px); z-index: 9;
+    width: min(290px, 92vw); padding: .6rem .7rem;
+    border: 1px solid var(--border); border-radius: 12px;
+    background: var(--surface, #fff);
+    box-shadow: 0 20px 44px -20px rgba(15, 23, 42, .5);
+}
+.qe-uipop[hidden] { display: none; }
+.qe-uipop-h {
+    margin-bottom: .45rem; font-size: .66rem; font-weight: 700;
+    text-transform: uppercase; letter-spacing: .05em; color: var(--text-muted);
+}
+.qe-uipop-row { display: flex; align-items: center; justify-content: space-between; gap: .5rem; margin-bottom: .5rem; font-size: .78rem; }
+.qe-seg { display: inline-flex; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+.qe-seg button { border: 0; padding: .28rem .55rem; cursor: pointer; background: var(--surface, #fff); color: var(--text-muted); font-size: .72rem; }
+.qe-seg button.is-on { background: rgba(37, 99, 235, .12); color: var(--brand, #2563eb); font-weight: 700; }
+.qe-uipop-chk { display: flex; align-items: center; gap: .45rem; padding: .25rem 0; font-size: .78rem; cursor: pointer; }
+.qe-uipop-chk input { accent-color: var(--brand, #2563eb); }
+
+.qe-filterinfo { font-size: .72rem; color: var(--text-muted); }
+
+.qe-empty {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: .3rem; padding: 2.2rem 1rem; text-align: center; color: var(--text-muted);
+}
+.qe-empty[hidden] { display: none; }
+.qe-empty-ico {
+    width: 52px; height: 52px; margin-bottom: .45rem; border-radius: 16px;
+    display: grid; place-items: center;
+    border: 0; padding: 0; cursor: pointer; font: inherit;
+    transition: transform .16s ease, box-shadow .16s ease;
+    background: linear-gradient(180deg, rgba(37, 99, 235, .12), rgba(37, 99, 235, .05));
+    color: var(--brand, #2563eb);
+    box-shadow: inset 0 0 0 1px rgba(37, 99, 235, .18);
+}
+.qe-empty-ico svg { width: 24px; height: 24px; }
+.qe-empty-ico:hover { transform: translateY(-1px); box-shadow: inset 0 0 0 1px rgba(37, 99, 235, .3), 0 6px 14px -10px rgba(37, 99, 235, .6); }
+.qe-empty-ico:focus-visible { outline: 2px solid var(--brand, #2563eb); outline-offset: 2px; }
+.qe-empty h4 { margin: 0; font-size: .92rem; color: var(--text); }
+.qe-empty p { margin: 0; max-width: 46ch; font-size: .76rem; line-height: 1.55; }
+.qe-empty p b { color: var(--text); font-weight: 600; }
+
+.qe-chips {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: .4rem; width: min(560px, 100%); margin: .95rem auto 0;
+}
+.qe-chip {
+    display: flex; align-items: center; gap: .42rem;
+    padding: .45rem .55rem; cursor: pointer; text-align: left;
+    border: 1px solid var(--border); border-radius: 10px;
+    background: var(--surface, #fff); color: var(--text); font-size: .74rem;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, .04);
+    transition: border-color .14s ease, box-shadow .14s ease, transform .14s ease;
+}
+.qe-chip:hover {
+    border-color: rgba(37, 99, 235, .5); color: var(--brand, #2563eb);
+    box-shadow: 0 8px 18px -12px rgba(37, 99, 235, .7); transform: translateY(-1px);
+}
+.qe-chip:focus-visible { outline: 2px solid var(--brand, #2563eb); outline-offset: 2px; }
+.qe-chip-ico { display: inline-flex; flex: 0 0 auto; color: var(--text-muted); }
+.qe-chip:hover .qe-chip-ico { color: var(--brand, #2563eb); }
+.qe-chip-ico svg { width: 15px; height: 15px; }
+.qe-chip-t { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.qe-chip-n {
+    flex: 0 0 auto; font-size: .66rem; font-weight: 700;
+    color: var(--text-muted); font-variant-numeric: tabular-nums;
+}
+.qe-chip.is-on {
+    background: rgba(37, 99, 235, .1); border-color: rgba(37, 99, 235, .45);
+    color: var(--brand, #2563eb); font-weight: 600;
+}
+
+.qe-gname {
+    font-size: .66rem; color: var(--text-muted);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.qe-flag {
+    display: none; padding: .05rem .3rem; border-radius: 4px;
+    font-size: .6rem; text-transform: uppercase; letter-spacing: .04em;
+    background: #fef3c7; color: #b45309;
+}
+.qe-row.is-dirty .qe-flag { display: inline-block; }
+.qe-row.is-offquery { border-style: dashed; }
+
+/* kepadatan / elemen opsional */
+.qe-compact .qe-row { padding: .25rem .5rem; }
+.qe-compact .qe-input { height: 36px; }
+.qe-compact .qe-gname { display: none; }
+.qe-nometa .qe-meta { visibility: hidden; }
+.qe-nogroup .qe-gname { display: none; }
+
+@media (max-width: 760px) {
+    .qe-tools { padding: .45rem .6rem; }
+    .qe-filterinfo { display: none; }
+    .qe-gbtn { max-width: 62%; }
+    .qe-gmenu { left: .6rem; width: calc(100% - 1.2rem); }
+    .qe-uipop { right: .6rem; width: calc(100% - 1.2rem); }
+}
+
+/* dark */
+[data-theme="dark"] .qe-gmenu,
+[data-theme="dark"] .qe-uipop { background: #16202f; border-color: #24304a; }
+[data-theme="dark"] .qe-gopt:hover { background: #1d2939; }
+[data-theme="dark"] .qe-chip,
+[data-theme="dark"] .qe-gbtn,
+[data-theme="dark"] .qe-gear { background: #16202f; border-color: #24304a; }
+[data-theme="dark"] .qe-flag { background: #3b2a06; color: #fbbf24; }
+[data-theme="dark"] .qe-empty-ico { background: rgba(37, 99, 235, .18); }
+
+/* ==========================================================================
+   MODE CEPAT v3 — tombol "hanya yang diedit", tombol muat lagi, toast
+   ========================================================================== */
+.qe-onlybtn { border-style: dashed; }
+.qe-onlybtn b {
+    font-variant-numeric: tabular-nums;
+    background: var(--surface-2, #f1f5f9);
+    border-radius: 999px;
+    padding: 0 .35rem;
+    font-size: .68rem;
+}
+.qe-onlybtn.is-on { background: #f59e0b; border-color: #d97706; color: #fff; }
+.qe-onlybtn.is-on b { background: rgba(255, 255, 255, .28); color: #fff; }
+
+.qe-more {
+    width: 100%;
+    margin: .15rem 0 .4rem;
+    padding: .55rem;
+    border: 1px dashed var(--border);
+    border-radius: 10px;
+    background: transparent;
+    color: var(--text-muted);
+    font: inherit;
+    font-size: .76rem;
+    cursor: pointer;
+}
+.qe-more:hover { background: var(--surface-2, #f8fafc); color: var(--text); }
+
+.qe-gmenu-foot {
+    display: flex;
+    gap: .4rem;
+    padding: .35rem .3rem .15rem;
+    border-top: 1px solid var(--border);
+    margin-top: .2rem;
+}
+.qe-gmenu-foot button {
+    flex: 1;
+    padding: .32rem .4rem;
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    background: var(--surface, #fff);
+    font: inherit;
+    font-size: .7rem;
+    cursor: pointer;
+}
+.qe-gmenu-foot button:hover { background: var(--surface-2, #f1f5f9); }
+
+.qe-toast {
+    position: fixed;
+    left: 50%;
+    bottom: 22px;
+    transform: translateX(-50%);
+    z-index: 1700;
+    padding: .55rem .95rem;
+    border-radius: 10px;
+    background: #0f172a;
+    color: #fff;
+    font-size: .78rem;
+    box-shadow: 0 10px 30px rgba(2, 6, 23, .3);
+    transition: opacity .3s ease, transform .3s ease;
+}
+.qe-toast.is-ok { background: #15803d; }
+.qe-toast.is-err { background: #b91c1c; }
+.qe-toast.is-warn { background: #b45309; }
+.qe-toast.is-out { opacity: 0; transform: translateX(-50%) translateY(6px); }
+[data-theme="dark"] .qe-onlybtn b { background: rgba(255, 255, 255, .12); }
+
+/* v3: di layar sempit, label tombol "Hanya yang diedit" disembunyikan
+   supaya group + tombol ini + gear tetap satu baris */
+@media (max-width: 560px) {
+    .qe-onlybtn span { display: none; }
+    .qe-onlybtn { padding-inline: .55rem; }
+}
+
+/* Tombol Simpan Mode Cepat saat nonaktif: tetap brand, teks putih (kontras cukup) */
+/* Nonaktif = tint brand muda + teks biru pudar (bukan opacity global .4 yang
+   membuat teks putih di atas biru pucat nyaris tak terbaca). */
+#qe-save:disabled {
+    opacity: 1 !important;
+    background: #e3ecfc !important;
+    border: 1px solid #cfdffa !important;
+    color: #4a6a9e !important;
+    box-shadow: none !important;
+    cursor: not-allowed;
+}
+html[data-theme="dark"] #qe-save:disabled {
+    background: rgba(59, 130, 246, .14) !important;
+    border-color: rgba(59, 130, 246, .22) !important;
+    color: rgba(147, 197, 253, .92) !important;
 }

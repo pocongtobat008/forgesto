@@ -83,7 +83,7 @@ $actionBadge = static fn (string $a): string => match (true) {
 
 <div class="card">
     <div class="card-header flex flex-wrap gap-md items-center justify-between" style="border-bottom:1px solid var(--border);padding:.85rem 1.1rem;">
-        <form method="get" action="<?= url('reconciliation/audit') ?>" class="flex flex-wrap gap-sm items-center" style="margin:0;">
+        <form method="get" action="<?= url('reconciliation/audit') ?>#audit-table-wrap" class="flex flex-wrap gap-sm items-center" style="margin:0;">
             <div class="form-group" style="margin:0;">
                 <select name="group_id" onchange="this.form.submit()" aria-label="<?= __('Filter Group') ?>" style="font-size:.82rem;padding:.35rem .6rem;">
                     <option value=""><?= __('Semua Group') ?></option>
@@ -109,7 +109,7 @@ $actionBadge = static fn (string $a): string => match (true) {
                 </select>
             </div>
             <?php if (! empty($filters['group_id']) || ! empty($filters['action']) || ! empty($filters['field']) || ! empty($filters['search'])): ?>
-                <a href="<?= url('reconciliation/audit') ?>" class="btn btn-outline btn-xs" title="<?= __('Reset filter') ?>"><?= icon('x') ?> Reset</a>
+                <a href="<?= url('reconciliation/audit') ?>#audit-table-wrap" class="btn btn-outline btn-xs" title="<?= __('Reset filter') ?>"><?= icon('x') ?> Reset</a>
             <?php endif; ?>
         </form>
 
@@ -123,7 +123,7 @@ $actionBadge = static fn (string $a): string => match (true) {
         </div>
     </div>
 
-    <div class="table-wrap recon-table-wrap">
+    <div class="table-wrap recon-table-wrap" id="audit-table-wrap">
         <table class="data" id="audit-table" data-colmgr-key="recon-audit-v1" data-colmgr-prefix="recon-audit"><caption class="sr-only">Rincian rekonsiliasi</caption>
             <thead>
                 <tr>
@@ -162,7 +162,7 @@ $actionBadge = static fn (string $a): string => match (true) {
                             data-reason="<?= strtolower(e($h['reason'] ?? '')) ?>">
                             <td data-label="<?= __('Waktu') ?>" class="text-sm nowrap"><?= e(format_date($h['changed_at'], 'd M Y H:i')) ?></td>
                             <td data-label="<?= __('Item') ?>">
-                                <span class="code-badge mono"><span class="code-badge-prefix"><?= e(explode('-', (string) ($h['item_code'] ?? '-'))[0]) ?></span><?= e(substr((string) ($h['item_code'] ?? '-'), strlen(explode('-', (string) ($h['item_code'] ?? '-'))[0]))) ?></span>
+                                <span class="code-badge mono" title="<?= e((string) ($h['item_code'] ?? '-')) ?>"><span class="code-badge-prefix"><?= e(explode('-', (string) ($h['item_code'] ?? '-'))[0]) ?></span><span class="code-badge-val"><?= e(substr((string) ($h['item_code'] ?? '-'), strlen(explode('-', (string) ($h['item_code'] ?? '-'))[0]))) ?></span></span>
                                 <div class="cell-sub muted text-xs"><?= e($h['item_name'] ?? '') ?></div>
                             </td>
                             <td data-label="<?= __('Group') ?>" class="col-group-loc"><?= e($h['group_name'] ?? '—') ?></td>
@@ -201,10 +201,10 @@ $actionBadge = static fn (string $a): string => match (true) {
             <div class="text-xs muted">Halaman <?= (int) $rows['page'] ?> dari <?= (int) $rows['last_page'] ?> (Total <?= (int) $rows['total'] ?> audit)</div>
             <div class="pagination flex gap-xs">
                 <?php if ((int) $rows['page'] > 1): ?>
-                    <a href="<?= url('reconciliation/audit?' . query(['page' => (int) $rows['page'] - 1])) ?>" class="btn btn-outline btn-xs">&larr; Sebelumnya</a>
+                    <a href="<?= url('reconciliation/audit?' . query(['page' => (int) $rows['page'] - 1])) ?>#audit-table-wrap" class="btn btn-outline btn-xs">&larr; Sebelumnya</a>
                 <?php endif; ?>
                 <?php if ((int) $rows['page'] < (int) $rows['last_page']): ?>
-                    <a href="<?= url('reconciliation/audit?' . query(['page' => (int) $rows['page'] + 1])) ?>" class="btn btn-outline btn-xs">Berikutnya &rarr;</a>
+                    <a href="<?= url('reconciliation/audit?' . query(['page' => (int) $rows['page'] + 1])) ?>#audit-table-wrap" class="btn btn-outline btn-xs">Berikutnya &rarr;</a>
                 <?php endif; ?>
             </div>
         </div>

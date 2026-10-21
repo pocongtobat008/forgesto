@@ -22,7 +22,6 @@
         dg.hidden = false;
         opened = true;
         document.documentElement.style.overflow = 'hidden';
-        document.body.style.overflow = 'hidden';
         var first = dg.querySelector('.wh-opt.is-active') || dg.querySelector('.wh-opt');
         if (first) { try { first.focus({ preventScroll: true }); } catch (e) { first.focus(); } }
     }
@@ -34,7 +33,6 @@
         dg.hidden = true;
         opened = false;
         document.documentElement.style.overflow = '';
-        document.body.style.overflow = '';
         if (lastFocus && typeof lastFocus.focus === 'function') {
             try { lastFocus.focus({ preventScroll: true }); } catch (e) { /* noop */ }
         }

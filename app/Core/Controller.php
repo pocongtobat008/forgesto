@@ -14,6 +14,14 @@ abstract class Controller
      */
     protected function view(string $view, array $data = [], ?string $layout = 'layouts/app'): string
     {
+        // Halaman HTML tidak boleh di-cache browser: informasi/notifikasi baru harus
+        // langsung terlihat tanpa perlu logout-login atau hard refresh.
+        if (! headers_sent()) {
+            header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
+            header('Pragma: no-cache');
+            header('Expires: 0');
+        }
+
         return View::render($view, $data, $layout);
     }
 
@@ -36,6 +44,12 @@ abstract class Controller
         if (! Auth::can($ability)) {
             $this->abort(403, 'Role Anda tidak memiliki akses untuk aksi ini (' . $ability . ').');
         }
+    }
+
+    /** Tolak akses dengan 403 (alias ringkas dari abort(403)). */
+    protected function forbidden(string $message = 'Akses ditolak.'): never
+    {
+        $this->abort(403, $message);
     }
 
     protected function abort(int $status, string $message = ''): never

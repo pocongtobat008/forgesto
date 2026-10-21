@@ -504,13 +504,20 @@ table[data-xrd] tbody td .rd-toggle {
    Chevron selalu jadi elemen pertama kolom konten pertama: rata kiri,
    sejajar tengah dengan isi sel, jarak 8px, di semua menu. */
 table[data-xrd] tbody td.rd-host {
+    /* JANGAN display:flex di <td>: sel harus tetap table-cell supaya
+       tingginya mengikuti baris (tanpa ruang kosong di bawah kode). */
+    text-align: left;
+    vertical-align: middle;
+}
+
+table[data-xrd] tbody td.rd-host > .rd-flex {
     display: flex;
     align-items: center;
     gap: 8px;
     text-align: left;
 }
 
-table[data-xrd] tbody td.rd-host > .rd-hostmain {
+table[data-xrd] tbody td.rd-host > .rd-flex > .rd-hostmain {
     display: block;
     min-width: 0;
     flex: 1 1 auto;
@@ -519,7 +526,7 @@ table[data-xrd] tbody td.rd-host > .rd-hostmain {
 
 /* tombol = replika Data STO: 30x24, margin-right 7px + gap 8px (efektif 15px),
    selalu sejajar tengah dengan isi sel */
-table[data-xrd] tbody td.rd-host > .rd-toggle {
+table[data-xrd] tbody td.rd-host > .rd-flex > .rd-toggle {
     margin: 0 7px 0 0;
     flex: 0 0 auto;
     align-self: center;
@@ -527,7 +534,339 @@ table[data-xrd] tbody td.rd-host > .rd-toggle {
 
 /* mobile: tetap sebaris dengan isi (tanpa float), persis seperti Data STO */
 @media (max-width: 760px) {
-    table[data-xrd] tbody td.rd-host { display: flex; align-items: center; text-align: left; }
-    table[data-xrd] tbody td.rd-host > .rd-toggle { float: none; margin: 0 7px 0 0; }
-    table[data-xrd] tbody td.rd-host > .rd-hostmain { display: block; min-width: 0; flex: 1 1 auto; }
+    table[data-xrd] tbody td.rd-host > .rd-flex { align-items: center; text-align: left; }
+    table[data-xrd] tbody td.rd-host > .rd-flex > .rd-toggle { float: none; margin: 0 7px 0 0; }
+    table[data-xrd] tbody td.rd-host > .rd-flex > .rd-hostmain { display: block; min-width: 0; flex: 1 1 auto; }
+}
+
+/* ==========================================================================
+   COL-MGR FINAL (portal) — panel "Sesuaikan Kolom" tidak boleh terpotong
+   + Mode tampilan Default / Custom
+   ========================================================================== */
+.col-mgr-panel--portal{
+  border:1px solid var(--border,#e2e8f0)!important;
+  border-radius:14px!important;
+  background:var(--surface,#fff)!important;
+  box-shadow:0 18px 48px rgba(2,6,23,.18),0 2px 8px rgba(2,6,23,.08)!important;
+  color:var(--text,#0f172a)!important;
+}
+.col-mgr-panel--portal .col-mgr-head{
+  display:flex;align-items:center;justify-content:space-between;gap:.5rem;
+  padding:.7rem .8rem .55rem;border-bottom:1px solid var(--border,#e2e8f0);
+  font-weight:700;font-size:.86rem;flex:0 0 auto;
+}
+.col-mgr-panel--portal .col-mgr-close{
+  border:0;background:transparent;font-size:1.15rem;line-height:1;color:var(--text-muted,#64748b);
+  cursor:pointer;padding:.1rem .4rem;border-radius:8px;
+}
+.col-mgr-panel--portal .col-mgr-close:hover{background:var(--surface-2,#f1f5f9);color:var(--text,#0f172a);}
+.col-mgr-panel--portal .col-mgr-list{padding:.3rem .45rem .45rem;}
+.col-mgr-panel--portal .col-mgr-item{display:flex;align-items:center;gap:.45rem;padding:.34rem .4rem;border-radius:9px;}
+.col-mgr-panel--portal .col-mgr-item:hover{background:var(--surface-2,#f8fafc);}
+.col-mgr-panel--portal .col-mgr-item-label{flex:1 1 auto;min-width:0;font-size:.82rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.col-mgr-panel--portal .col-mgr-foot{
+  display:flex;justify-content:space-between;gap:.5rem;
+  padding:.55rem .8rem .7rem;border-top:1px solid var(--border,#e2e8f0);
+  background:var(--surface,#fff);flex:0 0 auto;
+}
+.col-mgr-mode{display:flex;gap:.3rem;padding:.6rem .8rem .35rem;flex:0 0 auto;}
+.col-mgr-mode-btn{
+  flex:1 1 0;padding:.38rem .5rem;font-size:.78rem;font-weight:600;
+  border:1px solid var(--border,#e2e8f0);background:var(--surface,#fff);
+  color:var(--text-muted,#64748b);border-radius:9px;cursor:pointer;transition:.15s;
+}
+.col-mgr-mode-btn:hover{border-color:var(--brand-500,#2563eb);color:var(--brand-600,#1d4ed8);}
+.col-mgr-mode-btn.is-active{background:var(--brand-500,#2563eb);border-color:var(--brand-500,#2563eb);color:#fff;}
+.col-mgr-hint{padding:0 .8rem .45rem;font-size:.71rem;line-height:1.35;color:var(--text-muted,#64748b);flex:0 0 auto;}
+.col-mgr-item.is-locked{opacity:.7;}
+.col-mgr-item.is-locked .col-mv{display:none;}
+.col-mgr-panel--portal .col-mv{display:flex;gap:.15rem;flex:0 0 auto;}
+
+/* Toolbar Data STO: tombol tidak boleh terpotong di layar sedang */
+.sf-tabtoolbar .items-toolbar-right{min-width:0;}
+.items-toolbar-right .col-mgr{flex:0 0 auto;}
+@media (max-width:1200px){
+  .sf-tabtoolbar .items-toolbar-right{flex-wrap:wrap!important;row-gap:.45rem;}
+}
+
+/* ===== Qty Sistem / Qty Hitung / Selisih (items) ===== */
+#items-table td.tabular { font-variant-numeric: tabular-nums; }
+#items-table tbody td.is-plus  { color: #b45309 !important; font-weight: 700 !important; }   /* lebih besar dari sistem */
+#items-table tbody td.is-minus { color: #b91c1c !important; font-weight: 700 !important; }   /* kurang dari sistem */
+#items-table tbody td.is-zero  { color: #15803d !important; font-weight: 700 !important; }   /* pas */
+[data-theme="dark"] #items-table tbody td.is-plus  { color: #fbbf24 !important; }
+[data-theme="dark"] #items-table tbody td.is-minus { color: #f87171 !important; }
+[data-theme="dark"] #items-table tbody td.is-zero  { color: #4ade80 !important; }
+
+/* lebar ringkas kolom qty */
+#items-table th[data-col="expected"], #items-table th[data-col="counted"], #items-table th[data-col="diff"] { width: 92px; min-width: 92px; max-width: 92px; }
+#items-table th[data-col="subinv"] { width: 122px; min-width: 122px; }
+#items-table td.tabular { white-space: nowrap; }
+
+/* label qty hanya tampil di kartu mobile */
+#items-table .qcell-lbl { display: none; }
+
+
+/* ==========================================================================
+   QTY CELLS — Sistem / Hitung / Selisih
+   Dipakai seragam di Data STO, Audit, dan Rekonsiliasi: header pendek,
+   angka selisih berwarna, dan strip 3 kotak saat tabel jadi kartu di HP.
+   ========================================================================== */
+table.data td.qcell .qcell-lbl { display: none; }
+
+table.data td.qcell.is-plus  .qcell-val { color: #b45309; }
+table.data td.qcell.is-minus .qcell-val { color: #b91c1c; }
+table.data td.qcell.is-zero  .qcell-val { color: #15803d; }
+[data-theme="dark"] table.data td.qcell.is-plus  .qcell-val { color: #fbbf24; }
+[data-theme="dark"] table.data td.qcell.is-minus .qcell-val { color: #f87171; }
+[data-theme="dark"] table.data td.qcell.is-zero  .qcell-val { color: #4ade80; }
+
+@media (max-width: 767px) {
+  :is(#audit-sample-table, #audit-posted-table, #audit-recheck-table, #recon-table) tbody td.qcell {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: .05rem;
+    width: calc((100% - 1rem) / 3) !important;
+    max-width: none !important;
+    margin: .6rem 0 0 !important;
+    padding: .42rem .2rem !important;
+    border: 1px solid var(--border, #e2e8f0) !important;
+    border-radius: 10px !important;
+    background: color-mix(in srgb, var(--surface-2, #f6f8fc) 94%, transparent) !important;
+    text-align: center !important;
+    white-space: nowrap !important;
+  }
+  :is(#audit-sample-table, #audit-posted-table, #audit-recheck-table, #recon-table) tbody td.qcell + td.qcell {
+    margin-left: .3rem !important;
+  }
+  :is(#audit-sample-table, #audit-posted-table, #audit-recheck-table, #recon-table) tbody td.qcell::before {
+    content: none !important;
+    display: none !important;
+  }
+  :is(#audit-sample-table, #audit-posted-table, #audit-recheck-table, #recon-table) tbody td.qcell .qcell-lbl {
+    display: block;
+    font-size: .6rem;
+    line-height: 1;
+    letter-spacing: .05em;
+    text-transform: uppercase;
+    font-weight: 600;
+    color: var(--text-muted, #64748b);
+  }
+  :is(#audit-sample-table, #audit-posted-table, #audit-recheck-table, #recon-table) tbody td.qcell .qcell-val {
+    display: block;
+    font-weight: 700;
+    font-size: .95rem;
+    line-height: 1.15;
+  }
+  /* jumlah kotak qty yang tampil: 2 (observer rekonsiliasi) / 1 (observer audit) */
+  :is(#audit-sample-table, #audit-posted-table, #audit-recheck-table, #recon-table)[data-qty-count="2"] tbody td.qcell {
+    width: calc((100% - .5rem) / 2) !important;
+  }
+  :is(#audit-sample-table, #audit-posted-table, #audit-recheck-table, #recon-table)[data-qty-count="1"] tbody td.qcell {
+    width: 100% !important;
+  }
+  /* kotak qty diletakkan setelah info lain, sebelum kolom Aksi */
+  :is(#audit-sample-table, #audit-posted-table, #audit-recheck-table, #recon-table) tbody td.qcell { order: 5; }
+  :is(#audit-sample-table, #audit-posted-table, #audit-recheck-table, #recon-table) tbody td:last-child { order: 9; }
+}
+
+/* ==========================================================================
+   PG-MODE STACK — "Menampilkan x dari y data" + switch tidak berdesakan di HP
+   ========================================================================== */
+@media (max-width: 767px) {
+  .pg-bar .pg-mode {
+    flex-direction: column;
+    align-items: stretch;
+    gap: .55rem;
+  }
+  .pg-bar .pg-mode-info { font-size: .8rem; line-height: 1.35; }
+  .pg-bar .pg-switch { align-self: flex-start; }
+}
+
+/* ==========================================================================
+   QTY-DENSITY — tabel Audit & Rekonsiliasi kini punya 3 kolom qty tambahan
+   (Sistem / Hitung / Selisih). Padding dirapatkan supaya 9 kolom tetap muat
+   di kartu 1130px pada desktop, tanpa scroll horizontal di dalam tabel.
+   Padding bawaan memakai !important + var(--sf-cell-x), jadi variabelnya
+   yang diturunkan (16px -> 8px), bukan padding-nya.
+   ========================================================================== */
+@media (min-width: 768px) {
+  :is(#audit-sample-table, #audit-posted-table, #audit-recheck-table, #recon-table) {
+    --sf-cell-x: 8px;
+  }
+  /* rekonsiliasi punya aturan padding sendiri di app.css (!important + id) */
+  #recon-table.data td { padding-left: 8px !important; padding-right: 8px !important; }
+  :is(#audit-sample-table, #audit-posted-table, #audit-recheck-table, #recon-table) tbody td.qcell {
+    padding-left: 4px !important;
+    padding-right: 4px !important;
+  }
+  :is(#audit-sample-table, #audit-posted-table, #audit-recheck-table, #recon-table) tbody td:last-child .btn-group {
+    gap: 6px !important;
+  }
+  :is(#audit-sample-table, #audit-posted-table, #audit-recheck-table) tbody td[data-label="Nama"] {
+    max-width: 220px;
+  }
+  #recon-table tbody td[data-label="Nama Item"] { max-width: 210px; }
+  /* tombol sort/filter di header dikecilkan supaya kolom tidak melar */
+  :is(#audit-sample-table, #audit-posted-table, #audit-recheck-table, #recon-table) thead th.xf-th {
+    padding-right: 14px !important;
+  }
+  :is(#audit-sample-table, #audit-posted-table, #audit-recheck-table, #recon-table) thead th.xf-th .xf-btn {
+    width: 26px;
+    height: 26px;
+    margin-left: .35rem;
+  }
+  :is(#audit-sample-table, #audit-posted-table, #audit-recheck-table, #recon-table) thead th.xf-th .xf-btn svg {
+    width: 13px;
+    height: 13px;
+  }
+  #recon-table tbody td[data-label="Group"],
+  #recon-table thead th[data-col="grp"] {
+    max-width: 132px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+/* ==========================================================================
+   STICKY-AKSI — kolom Aksi selalu terlihat di tepi kanan walau tabel
+   sedikit lebih lebar dari kartu (Audit & Rekonsiliasi punya 9-10 kolom).
+   ========================================================================== */
+@media (min-width: 768px) {
+  :is(#audit-sample-table, #audit-posted-table, #audit-recheck-table, #recon-table) thead th[data-col="aksi"],
+  :is(#audit-sample-table, #audit-posted-table, #audit-recheck-table, #recon-table) tbody td:last-child {
+    position: sticky;
+    right: 0;
+    background: var(--surface, #fff);
+    box-shadow: -8px 0 10px -10px rgba(15, 23, 42, .45);
+  }
+  :is(#audit-sample-table, #audit-posted-table, #audit-recheck-table, #recon-table) thead th[data-col="aksi"] {
+    z-index: 3;
+  }
+  :is(#audit-sample-table, #audit-posted-table, #audit-recheck-table, #recon-table) tbody td:last-child {
+    z-index: 2;
+  }
+  :is(#audit-sample-table, #audit-posted-table, #audit-recheck-table, #recon-table) tbody tr:hover td:last-child {
+    background: var(--row-hover, #f8fafc);
+  }
+}
+
+/* ==========================================================================
+   QTY-WIDTHS — lebar kolom eksplisit supaya tabel 9-10 kolom tidak melebar
+   melebihi kartu di desktop (auto-layout tadinya memberi Status 231px).
+   ========================================================================== */
+@media (min-width: 768px) {
+  :is(#audit-sample-table, #audit-posted-table, #audit-recheck-table) thead th[data-col="code"] { width: 118px; }
+  :is(#audit-sample-table, #audit-posted-table, #audit-recheck-table) thead th[data-col="name"] { width: 208px; }
+  :is(#audit-sample-table, #audit-posted-table, #audit-recheck-table) thead th[data-col="group"] { width: 128px; }
+  :is(#audit-sample-table, #audit-posted-table, #audit-recheck-table) thead th[data-col="loc"] { width: 112px; }
+  :is(#audit-sample-table, #audit-posted-table, #audit-recheck-table) thead th[data-col="status"] { width: 112px; }
+  :is(#audit-sample-table, #audit-posted-table, #audit-recheck-table) thead th[data-col="aksi"] { width: 150px; }
+
+  /* Rekonsiliasi sudah punya sistem lebar kolom sendiri di app.css
+     (#recon-table.data th:nth-child…), jadi tidak ditimpa di sini. */
+
+  :is(#audit-sample-table, #audit-posted-table, #audit-recheck-table, #recon-table) thead th[data-col="expected"],
+  :is(#audit-sample-table, #audit-posted-table, #audit-recheck-table, #recon-table) thead th[data-col="counted"],
+  :is(#audit-sample-table, #audit-posted-table, #audit-recheck-table, #recon-table) thead th[data-col="diff"] {
+    width: 74px;
+  }
+}
+
+/* ==========================================================================
+   STATUS-CLAMP — sel Status di Rekonsiliasi berisi badge + sub-teks panjang.
+   Di desktop tabel nyaris selebar kartu, jadi teksnya dulu menembus ke bawah
+   kolom AKSI (sticky). Sekarang dipotong rapi dengan ellipsis.
+   ========================================================================== */
+@media (min-width: 768px) {
+  #recon-table td[data-label="Status"] { max-width: 150px; }
+  #recon-table td[data-label="Status"] .cell-stack { max-width: 100%; overflow: hidden; }
+  #recon-table td[data-label="Status"] .cell-stack > * {
+    max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+}
+
+/* ==========================================================================
+   CODE-CLAMP — kode item panjang tidak boleh menembus kolom sebelah.
+   .code-badge = inline-flex (prefix + sisa kode) dan tadinya selebar isinya,
+   jadi kode seperti 105190-28250-F meluber ke kolom NAMA.
+   ========================================================================== */
+.code-badge { max-width: 100%; min-width: 0; }
+.code-badge-prefix { flex: 0 0 auto; }
+.code-badge-val {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* rantai flex di dalam sel harus boleh menyusut (min-width:0) */
+table.data tbody td .rd-flex,
+table.data tbody td .rd-hostmain,
+table.data tbody td .sf-vm-val,
+table.data tbody td .cell-stack { min-width: 0; max-width: 100%; }
+table.data tbody td > .code-badge,
+table.data tbody td > .badge { max-width: 100%; }
+
+/* sel kode berupa teks biasa (Audit) — potong rapi, jangan meluber */
+table.data tbody td[data-col="code"],
+table.data tbody td[data-col="kode"] {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+table.data tbody td[data-col="code"]:not(.rd-host),
+table.data tbody td[data-col="kode"]:not(.rd-host) { white-space: nowrap; }
+
+/* ==========================================================================
+   CODE-WIDTH — kolom KODE di Rekonsiliasi dilebarkan supaya kode panjang
+   (mis. 105190-28250-F) tampil utuh, bukan meluber ke kolom NAMA.
+   Sisanya diambil dari kolom STATUS (isi badge sudah dipotong ellipsis).
+   ========================================================================== */
+@media (min-width: 768px) {
+  #recon-table.data thead th[data-col="kode"] { width: 180px !important; min-width: 180px !important; }
+  #recon-table td[data-label="Status"] { max-width: 112px; }
+}
+
+/* ==========================================================================
+   STAY-TABLE — setelah filter/urut/pindah halaman, halaman mendarat di tabel,
+   bukan balik ke header. Topbar fixed 60px, jadi beri jarak 76px.
+   ========================================================================== */
+#recon-table-wrap,
+#master-table-wrap,
+#audit-table-wrap { scroll-margin-top: 76px; }
+
+/* ==========================================================================
+   FIX · kartu tabel di dalam .filter-section (halaman Pengguna)
+   .filter-section adalah flex row; .card-body jadi flex item dengan
+   min-width:auto, sehingga tabel lebar (min-content ~923px) mendorong kartu
+   keluar dari <main> dan tepi kanan (kolom AKSI) terpotong viewport.
+   min-width:0 membuat kartu boleh menyusut dan .table-wrap yang menggulir.
+   ========================================================================== */
+.filter-section > .card-body {
+  min-width: 0;
+  max-width: 100%;
+  flex: 1 1 100%;
+}
+.filter-section > .table-wrap,
+.filter-section > .card > .table-wrap {
+  max-width: 100%;
+}
+
+/* FIX · tabel Pengguna muat di desktop 1228px (tidak perlu geser horizontal)
+   padding sel 16px x 6 kolom = 192px; dirapatkan + sub-teks (email) dipotong
+   halus supaya kolom STATUS & AKSI tetap terlihat penuh. */
+@media (min-width: 768px) {
+  /* padding sel dipakai lewat var (aturan !important di app.css), jadi
+     variabelnya yang diturunkan: 16px -> 10px (hemat 72px untuk 6 kolom) */
+  #users-table { --sf-cell-x: 8px; }
+}
+/* hanya di mode tabel; mode kartu butuh teks utuh */
+html:not([data-view="cards"]) #users-table .cell-sub {
+  max-width: 168px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }

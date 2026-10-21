@@ -11,7 +11,8 @@ class Device extends Model
 {
     protected string $table = 'devices';
 
-    protected array $fillable = ['location_id', 'code', 'name', 'type', 'serial_number', 'is_active'];
+    protected array $fillable = ['location_id', 'code', 'name', 'type', 'serial_number', 'is_active',
+        'user_id', 'status', 'in_use_by', 'in_use_at'];
 
     /**
      * @param array{group_id?:int|null,location_id?:int|null,search?:string} $filters
@@ -23,7 +24,9 @@ class Device extends Model
         'type'     => 'd.type',
         'serial'   => 'd.serial_number',
         'location' => 'l.name',
-        'status'   => 'd.is_active',
+        'status'   => 'd.status',
+        'active'   => 'd.is_active',
+        'holder'   => 'h.name',
     ];
 
     /** @return array<string, list<string>> */
@@ -122,12 +125,97 @@ class Device extends Model
         $where = $clauses === [] ? '' : ' WHERE ' . implode(' AND ', $clauses);
 
         $sql = 'SELECT d.*, l.name AS location_name, l.code AS location_code,
-                       g.id AS group_id, g.code AS group_code, g.name AS group_name
+                       g.id AS group_id, g.code AS group_code, g.name AS group_name,
+                       u.name AS assigned_name, u.username AS assigned_username,
+                       h.name AS holder_name, h.username AS holder_username
                 FROM devices d
                 JOIN locations l ON l.id = d.location_id
-                JOIN `groups` g ON g.id = l.group_id' . $where;
+                JOIN `groups` g ON g.id = l.group_id
+                LEFT JOIN users u ON u.id = d.user_id
+                LEFT JOIN users h ON h.id = d.in_use_by' . $where;
 
         return $this->paginate($sql . ' ORDER BY g.name, l.name, d.name', $bindings, $page, $perPage);
+    }
+
+    /** Device yang didaftarkan (di-assign) untuk satu user. */
+    public function findByUser(int $userId): ?array
+    {
+        $row = $this->query(
+            'SELECT d.*, l.name AS location_name, l.code AS location_code
+             FROM devices d JOIN locations l ON l.id = d.location_id
+             WHERE d.user_id = ? ORDER BY d.is_active DESC, d.id ASC LIMIT 1',
+            [$userId]
+        );
+
+        return $row[0] ?? null;
+    }
+
+    /**
+     * Tandai tablet milik user sebagai sedang dipakai (free -> in_use).
+     * Device lain yang masih tercatat dipegang user ini dilepas lebih dulu.
+     */
+    public function bindToUser(int $userId): ?array
+    {
+        $device = $this->findByUser($userId);
+        if ($device === null) {
+            return null;
+        }
+
+        $this->run(
+            "UPDATE devices SET status = 'free', in_use_by = NULL, in_use_at = NULL
+             WHERE in_use_by = ? AND id <> ?",
+            [$userId, (int) $device['id']]
+        );
+        $this->run(
+            "UPDATE devices SET status = 'in_use', in_use_by = ?, in_use_at = NOW() WHERE id = ?",
+            [$userId, (int) $device['id']]
+        );
+
+        $device['status']    = 'in_use';
+        $device['in_use_by'] = $userId;
+
+        return $device;
+    }
+
+    /** Lepas semua tablet yang dipegang user (dipakai saat logout). */
+    public function releaseByUser(int $userId): int
+    {
+        return $this->run(
+            "UPDATE devices SET status = 'free', in_use_by = NULL, in_use_at = NULL WHERE in_use_by = ?",
+            [$userId]
+        )->rowCount();
+    }
+
+    /**
+     * Lepas tablet yang "nyangkut" in_use tanpa sesi aktif.
+     * Dipanggil saat halaman login / daftar tablet dibuka, supaya aturan
+     * "login = dipakai, tidak login = free" tetap benar walau browser ditutup
+     * tanpa logout (sesi yatim).
+     */
+    public function releaseStale(int $hours = 12): int
+    {
+        return $this->run(
+            "UPDATE devices
+                SET status = 'free', in_use_by = NULL, in_use_at = NULL
+              WHERE status = 'in_use'
+                AND (in_use_at IS NULL OR in_use_at < (NOW() - INTERVAL ? HOUR))",
+            [$hours]
+        )->rowCount();
+    }
+
+    /** Ringkasan status pemakaian untuk dashboard menu tablet. @return array{free:int,in_use:int} */
+    public function usageSummary(): array
+    {
+        $rows = $this->query("SELECT status, COUNT(*) AS c FROM devices GROUP BY status");
+        $out = ['free' => 0, 'in_use' => 0];
+        foreach ($rows as $r) {
+            $k = (string) $r['status'];
+            if (isset($out[$k])) {
+                $out[$k] = (int) $r['c'];
+            }
+        }
+
+        return $out;
     }
 
     public function inLocation(int $locationId): array

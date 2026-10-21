@@ -9,11 +9,14 @@ use App\Core\Request;
 use App\Models\ActivityLog;
 use App\Models\Device;
 use App\Models\Location;
+use App\Models\User;
 
 class DeviceController extends Controller
 {
     public function index(): string
     {
+        (new Device())->releaseStale(); // sesi yatim: tidak login -> free
+
         $this->authorize('view_all_groups');
 
         $filters = [
@@ -57,6 +60,7 @@ class DeviceController extends Controller
             'device'    => null,
             'locations' => (new Location())->forActiveUser(),
             'types'     => ['tablet', 'handheld', 'scanner', 'printer', 'pc', 'other'],
+            'users'     => $this->userOptions(),
         ]);
     }
 
@@ -86,6 +90,7 @@ class DeviceController extends Controller
             'name'          => Request::string('name'),
             'type'          => Request::string('type') ?: null,
             'serial_number' => Request::string('serial_number') ?: null,
+            'user_id'       => Request::int('user_id') > 0 ? Request::int('user_id') : null,
             'is_active'     => Request::has('is_active') ? 1 : 0,
         ]);
 
@@ -108,6 +113,7 @@ class DeviceController extends Controller
             'device'    => $device,
             'locations' => (new Location())->forActiveUser(),
             'types'     => ['tablet', 'handheld', 'scanner', 'printer', 'pc', 'other'],
+            'users'     => $this->userOptions(),
         ]);
     }
 
@@ -136,12 +142,21 @@ class DeviceController extends Controller
             'name'          => Request::string('name'),
             'type'          => Request::string('type') ?: null,
             'serial_number' => Request::string('serial_number') ?: null,
+            'user_id'       => Request::int('user_id') > 0 ? Request::int('user_id') : null,
             'is_active'     => Request::has('is_active') ? 1 : 0,
         ]);
 
         (new ActivityLog())->record('update', 'device', $id, 'Mengubah device ' . Request::string('name'));
 
         return $this->redirectWith('/devices', 'success', 'Device berhasil diperbarui.');
+    }
+
+    /** Opsi "didaftarkan untuk" — user aktif, urut nama. */
+    private function userOptions(): array
+    {
+        return (new User())->query(
+            'SELECT id, name, username, role FROM users WHERE is_active = 1 ORDER BY name ASC'
+        );
     }
 
     public function destroy(array $params): string

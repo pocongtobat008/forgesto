@@ -80,12 +80,17 @@ INSERT INTO `locations` (`id`, `group_id`, `code`, `name`, `address`) VALUES
 -- ---------------------------------------------------------------------
 --  Devices (tablet lokasi dll)
 -- ---------------------------------------------------------------------
-INSERT INTO `devices` (`id`, `location_id`, `code`, `name`, `type`, `serial_number`) VALUES
-(1, 1, 'DEV-A1', 'Tablet lokasi Alpha 1', 'tablet', 'TBL-A1-0001'),
-(2, 2, 'DEV-A2', 'Tablet lokasi Alpha 2', 'tablet', 'TBL-A2-0002'),
-(3, 3, 'DEV-B1', 'Tablet lokasi Bravo 1', 'tablet', 'TBL-B1-0003'),
-(4, 5, 'DEV-C1', 'Tablet lokasi Charlie 1', 'tablet', 'TBL-C1-0004'),
-(5, 6, 'DEV-D1', 'Tablet lokasi Delta 1', 'tablet', 'TBL-D1-0005');
+--  Setiap sample ID langsung terikat ke satu tablet (user_id + status in_use),
+--  supaya form login otomatis menampilkan tabletnya saat ID diketik.
+INSERT INTO `devices` (`id`, `location_id`, `code`, `name`, `type`, `serial_number`, `user_id`, `status`, `in_use_by`, `in_use_at`) VALUES
+(1, 1, 'DEV-A1', 'Tablet lokasi Alpha 1',   'tablet', 'TBL-A1-0001', 1, 'in_use', 1, NOW()),
+(2, 2, 'DEV-A2', 'Tablet lokasi Alpha 2',   'tablet', 'TBL-A2-0002', 2, 'in_use', 2, NOW()),
+(3, 3, 'DEV-B1', 'Tablet lokasi Bravo 1',   'tablet', 'TBL-B1-0003', 3, 'in_use', 3, NOW()),
+(4, 5, 'DEV-C1', 'Tablet lokasi Charlie 1', 'tablet', 'TBL-C1-0004', 4, 'in_use', 4, NOW()),
+(5, 6, 'DEV-D1', 'Tablet lokasi Delta 1',   'tablet', 'TBL-D1-0005', 5, 'in_use', 5, NOW()),
+(6, 1, 'TAB-S-01', 'Tablet sample Bravo',   'tablet', 'TBL-S-0006',  6, 'in_use', 6, NOW()),
+(7, 3, 'TAB-S-02', 'Tablet sample Charlie', 'tablet', 'TBL-S-0007',  7, 'in_use', 7, NOW()),
+(8, 5, 'TAB-S-03', 'Tablet sample Delta',   'tablet', 'TBL-S-0008',  8, 'in_use', 8, NOW());
 
 -- ---------------------------------------------------------------------
 --  Items - Group Alpha (100% dihitung)
